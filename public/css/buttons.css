@@ -1,0 +1,69 @@
+/* Shared button styles for the app */
+:root {
+    --btn-border-radius: .375rem;
+    --btn-padding-y: .5rem;
+    --btn-padding-x: .75rem;
+    --btn-transition-duration: 180ms;
+    --btn-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base button tweaks (builds on Bootstrap .btn) */
+.btn {
+    border-radius: var(--btn-border-radius);
+    padding: var(--btn-padding-y) var(--btn-padding-x);
+    font-weight: 600;
+    transition: transform var(--btn-transition-duration) var(--btn-transition-easing),
+                box-shadow var(--btn-transition-duration) var(--btn-transition-easing);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(13,110,253,0.06);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn:focus {
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.15);
+}
+
+/* Small variant */
+.btn-sm {
+    padding: .25rem .5rem;
+    font-size: .875rem;
+}
+
+/* Rounded variant */
+.btn-rounded {
+    border-radius: 9999px !important;
+}
+
+/* Subtle outline style */
+.btn-outline-custom {
+    border-width: 1px;
+}
+
+/* Utility: block-style button with full width */
+.btn-block {
+    display: block;
+    width: 100%;
+}
+
+/* Danger/primary emphasis tweaks (non-breaking) */
+.btn-primary {
+    font-weight: 700;
+}
+
+.btn-danger {
+    font-weight: 700;
+}
+
+/* Accessibility: ensure focus visible for keyboard users */
+.btn:focus-visible {
+    outline: 2px solid rgba(0,0,0,0.08);
+    outline-offset: 2px;
+}
