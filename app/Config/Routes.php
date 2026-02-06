@@ -22,3 +22,72 @@ $routes->post('/users/update/(:num)', 'UserController::update/$1');
 $routes->get('/users/delete/(:num)', 'UserController::delete/$1');
 $routes->get('/users/search', 'UserController::search');
 
+$routes->get('/assets', 'AssetController::index');
+$routes->get('/assets/create', 'AssetController::create');
+$routes->post('/assets/store', 'AssetController::store');
+$routes->get('/assets/edit/(:num)', 'AssetController::edit/$1');
+$routes->post('/assets/update/(:num)', 'AssetController::update/$1');
+$routes->get('/assets/delete/(:num)', 'AssetController::delete/$1');
+$routes->get('/assets/details/(:num)', 'AssetController::details/$1');
+$routes->get('/assets/export-pdf/(:num)', 'AssetController::exportPdf/$1');
+$routes->get('/assets/search', 'AssetController::search');
+
+$routes->get('/assets/item/edit/(:num)', 'AssetController::editItem/$1');
+$routes->post('/assets/item/update/(:num)', 'AssetController::updateItem/$1');
+$routes->get('/assets/item/delete/(:num)', 'AssetController::deleteItem/$1');
+$routes->post('/assets/item/store', 'AssetController::storeItem');
+
+// Asset Peripheral routes
+$routes->post('/assets/peripheral/store', 'AssetController::storePeripheral');
+$routes->get('/assets/peripheral/edit/(:num)', 'AssetController::editPeripheral/$1');
+$routes->post('/assets/peripheral/update/(:num)', 'AssetController::updatePeripheral/$1');
+$routes->get('/assets/peripheral/delete/(:num)', 'AssetController::deletePeripheral/$1');
+
+// Peripheral routes
+$routes->get('/peripherals', 'PeripheralController::index');
+$routes->get('/peripherals/create', 'PeripheralController::create');
+$routes->post('/peripherals/store', 'PeripheralController::store');
+$routes->get('/peripherals/edit/(:num)', 'PeripheralController::edit/$1');
+$routes->post('/peripherals/update/(:num)', 'PeripheralController::update/$1');
+$routes->get('/peripherals/delete/(:num)', 'PeripheralController::delete/$1');
+$routes->get('/peripherals/details/(:num)', 'PeripheralController::details/$1');
+$routes->get('/peripherals/search', 'PeripheralController::search');
+
+// Settings routes
+$routes->get('/settings', 'SettingsController::index');
+
+$routes->get('/settings/locations', 'LocationController::index');
+$routes->get('/settings/locations/create', 'LocationController::create');
+$routes->post('/settings/locations/store', 'LocationController::store');
+$routes->get('/settings/locations/edit/(:num)', 'LocationController::edit/$1');
+$routes->post('/settings/locations/update/(:num)', 'LocationController::update/$1');
+$routes->get('/settings/locations/delete/(:num)', 'LocationController::delete/$1');
+
+$routes->get('/settings/workstations', 'WorkstationController::index');
+$routes->get('/settings/workstations/create', 'WorkstationController::create');
+$routes->post('/settings/workstations/store', 'WorkstationController::store');
+$routes->get('/settings/workstations/edit/(:num)', 'WorkstationController::edit/$1');
+$routes->post('/settings/workstations/update/(:num)', 'WorkstationController::update/$1');
+$routes->get('/settings/workstations/delete/(:num)', 'WorkstationController::delete/$1');
+
+$routes->get('/settings/peripheral-types', 'PeripheralTypeController::index');
+$routes->get('/settings/peripheral-types/create', 'PeripheralTypeController::create');
+$routes->post('/settings/peripheral-types/store', 'PeripheralTypeController::store');
+$routes->get('/settings/peripheral-types/edit/(:num)', 'PeripheralTypeController::edit/$1');
+$routes->post('/settings/peripheral-types/update/(:num)', 'PeripheralTypeController::update/$1');
+$routes->get('/settings/peripheral-types/delete/(:num)', 'PeripheralTypeController::delete/$1');
+
+$routes->get('/settings/departments', 'DepartmentController::index');
+$routes->get('/settings/departments/create', 'DepartmentController::create');
+$routes->post('/settings/departments/store', 'DepartmentController::store');
+$routes->get('/settings/departments/edit/(:num)', 'DepartmentController::edit/$1');
+$routes->post('/settings/departments/update/(:num)', 'DepartmentController::update/$1');
+$routes->get('/settings/departments/delete/(:num)', 'DepartmentController::delete/$1');
+
+$routes->get('/settings/assigned-users', 'AssignableUserController::index');
+$routes->get('/settings/assigned-users/create', 'AssignableUserController::create');
+$routes->post('/settings/assigned-users/store', 'AssignableUserController::store');
+$routes->get('/settings/assigned-users/edit/(:num)', 'AssignableUserController::edit/$1');
+$routes->post('/settings/assigned-users/update/(:num)', 'AssignableUserController::update/$1');
+$routes->get('/settings/assigned-users/delete/(:num)', 'AssignableUserController::delete/$1');
+

@@ -16,6 +16,9 @@
     <a href="<?= site_url('dashboard') ?>">Dashboard</a>
     <?php if (session()->get('usertype') === 'superadmin'): ?>
         <a href="<?= site_url('users') ?>">Manage Users</a>
+        <a href="<?= site_url('assets') ?>">Manage Assets</a>
+        <a href="<?= site_url('peripherals') ?>">Manage Peripherals</a>
+        <a href="<?= site_url('settings') ?>">Settings</a>
     <?php endif; ?>
 </div>
 

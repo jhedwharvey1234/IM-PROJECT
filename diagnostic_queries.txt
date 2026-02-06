@@ -1,0 +1,21 @@
+﻿=== DIAGNOSTIC QUERIES - Run these in phpMyAdmin one by one ===
+
+-- 1. Check peripherals.asset_id column type
+SHOW COLUMNS FROM peripherals LIKE 'asset_id';
+
+-- 2. Check table engines (must both be InnoDB)
+SELECT TABLE_NAME, ENGINE FROM information_schema.TABLES 
+WHERE TABLE_SCHEMA = 'im' AND TABLE_NAME IN ('assets', 'peripherals');
+
+-- 3. Check for NULL or invalid asset_id values
+SELECT COUNT(*) as orphan_count FROM peripherals 
+WHERE asset_id IS NULL OR asset_id NOT IN (SELECT id FROM assets);
+
+-- 4. Check existing foreign keys on peripherals table
+SELECT CONSTRAINT_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+FROM information_schema.KEY_COLUMN_USAGE
+WHERE TABLE_SCHEMA = 'im' AND TABLE_NAME = 'peripherals' AND REFERENCED_TABLE_NAME IS NOT NULL;
+
+-- 5. Check if there's an index on asset_id
+SHOW INDEX FROM peripherals WHERE Column_name = 'asset_id';
+
