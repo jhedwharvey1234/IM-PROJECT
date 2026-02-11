@@ -37,20 +37,15 @@
         <div class="detail-card">
             <h4 class="mb-4">Asset Information</h4>
             <p><strong>ID:</strong> <?= $asset['id'] ?></p>
-            <p><strong>Tracking Number:</strong> <?= $asset['tracking_number'] ?? '-' ?></p>
+            <p><strong>Asset Tag:</strong> <?= $asset['asset_tag'] ?? '-' ?></p>
             <p><strong>Sender:</strong> <?= $asset['sender'] ?></p>
             <p><strong>Recipient:</strong> <?= $asset['recipient'] ?></p>
         </div>
 
-        <form action="<?= site_url('assets/peripheral/update/' . $peripheral['id']) ?>" method="post">
+        <form action="<?= site_url('assets/peripheral/update/' . $peripheral['id']) ?>" method="post" enctype="multipart/form-data">
             <?= csrf_field() ?>
             
             <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="asset_tag" class="form-label">Asset Tag <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="asset_tag" name="asset_tag" required value="<?= old('asset_tag', $peripheral['asset_tag']) ?>">
-                </div>
-
                 <div class="col-md-4">
                     <label for="peripheral_type_id" class="form-label">Peripheral Type <span class="text-danger">*</span></label>
                     <select class="form-select" id="peripheral_type_id" name="peripheral_type_id" required>
@@ -72,13 +67,18 @@
                 </div>
 
                 <div class="col-md-4">
+                    <label for="model_number" class="form-label">Model Number</label>
+                    <input type="text" class="form-control" id="model_number" name="model_number" value="<?= old('model_number', $peripheral['model_number'] ?? '') ?>">
+                </div>
+
+                <div class="col-md-4">
                     <label for="serial_number" class="form-label">Serial Number</label>
                     <input type="text" class="form-control" id="serial_number" name="serial_number" value="<?= old('serial_number', $peripheral['serial_number']) ?>">
                 </div>
 
                 <div class="col-md-4">
-                    <label for="department_id" class="form-label">Department <span class="text-danger">*</span></label>
-                    <select class="form-select" id="department_id" name="department_id" required>
+                    <label for="department_id" class="form-label">Department</label>
+                    <select class="form-select" id="department_id" name="department_id">
                         <option value="">Select Department</option>
                         <?php foreach ($departments as $id => $name): ?>
                             <option value="<?= $id ?>" <?= old('department_id', $peripheral['department_id']) == $id ? 'selected' : '' ?>><?= $name ?></option>
@@ -87,8 +87,8 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label for="location_id" class="form-label">Location <span class="text-danger">*</span></label>
-                    <select class="form-select" id="location_id" name="location_id" required>
+                    <label for="location_id" class="form-label">Location</label>
+                    <select class="form-select" id="location_id" name="location_id">
                         <option value="">Select Location</option>
                         <?php foreach ($locations as $id => $name): ?>
                             <option value="<?= $id ?>" <?= old('location_id', $peripheral['location_id']) == $id ? 'selected' : '' ?>><?= $name ?></option>
@@ -152,6 +152,26 @@
                     <input type="date" class="form-control" id="purchase_date" name="purchase_date" value="<?= old('purchase_date', $peripheral['purchase_date']) ?>">
                 </div>
 
+                <div class="col-md-3">
+                    <label for="purchase_cost" class="form-label">Purchase Cost</label>
+                    <input type="number" step="0.01" class="form-control" id="purchase_cost" name="purchase_cost" value="<?= old('purchase_cost', $peripheral['purchase_cost'] ?? '') ?>">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="order_number" class="form-label">Order Number</label>
+                    <input type="text" class="form-control" id="order_number" name="order_number" value="<?= old('order_number', $peripheral['order_number'] ?? '') ?>">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="supplier" class="form-label">Supplier</label>
+                    <input type="text" class="form-control" id="supplier" name="supplier" value="<?= old('supplier', $peripheral['supplier'] ?? '') ?>">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="qty" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" id="qty" name="qty" value="<?= old('qty', $peripheral['qty'] ?? 1) ?>">
+                </div>
+
                 <div class="col-md-6">
                     <label for="vendor" class="form-label">Vendor</label>
                     <input type="text" class="form-control" id="vendor" name="vendor" value="<?= old('vendor', $peripheral['vendor']) ?>">
@@ -162,9 +182,30 @@
                     <input type="date" class="form-control" id="warranty_expiry" name="warranty_expiry" value="<?= old('warranty_expiry', $peripheral['warranty_expiry']) ?>">
                 </div>
 
-                <div class="col-12">
-                    <label for="notes" class="form-label">Notes</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="3"><?= old('notes', $peripheral['notes']) ?></textarea>
+                <div class="col-md-6">
+                    <label for="device_image" class="form-label">Device Image</label>
+                    <input type="file" class="form-control" id="device_image" name="device_image" accept="image/*">
+                    <?php if (!empty($peripheral['device_image'])): ?>
+                        <small class="text-muted">Current: <?= esc($peripheral['device_image']) ?></small>
+                    <?php endif; ?>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="requestable" name="requestable" value="1" <?= old('requestable', $peripheral['requestable'] ?? 0) ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="requestable">
+                            Requestable
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="byod" name="byod" value="1" <?= old('byod', $peripheral['byod'] ?? 0) ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="byod">
+                            BYOD
+                        </label>
+                    </div>
                 </div>
 
                 <div class="col-12">

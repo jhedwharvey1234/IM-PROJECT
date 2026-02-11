@@ -284,8 +284,8 @@
                     </div>
                     <div class="col">
                         <div class="field">
-                            <div class="field-label">Tracking #</div>
-                            <div class="field-value"><?= $asset['tracking_number'] ?? '-' ?></div>
+                                <div class="field-label">Asset Tag</div>
+                                <div class="field-value"><?= $asset['asset_tag'] ?? '-' ?></div>
                         </div>
                     </div>
                     <div class="col">
@@ -346,30 +346,50 @@
             </div>
             
             <div class="section">
-                <div class="section-title">Timeline</div>
+                <div class="section-title">Purchase Information</div>
                 <div class="row">
                     <div class="col">
                         <div class="field">
-                            <div class="field-label">Date Sent</div>
-                            <div class="field-value"><?= date('M d, Y H:i', strtotime($asset['date_sent'])) ?></div>
+                            <div class="field-label">Purchase Date</div>
+                            <div class="field-value"><?= !empty($asset['purchase_date']) ? date('M d, Y', strtotime($asset['purchase_date'])) : '-' ?></div>
                         </div>
                     </div>
                     <div class="col">
                         <div class="field">
-                            <div class="field-label">In Transit</div>
-                            <div class="field-value"><?= !empty($asset['date_in_transit']) ? date('M d H:i', strtotime($asset['date_in_transit'])) : '-' ?></div>
+                            <div class="field-label">Purchase Cost</div>
+                            <div class="field-value"><?= !empty($asset['purchase_cost']) ? '$' . number_format($asset['purchase_cost'], 2) : '-' ?></div>
                         </div>
                     </div>
                     <div class="col">
                         <div class="field">
-                            <div class="field-label">Received</div>
-                            <div class="field-value"><?= !empty($asset['date_received']) ? date('M d H:i', strtotime($asset['date_received'])) : '-' ?></div>
+                            <div class="field-label">Order Number</div>
+                            <div class="field-value"><?= !empty($asset['order_number']) ? $asset['order_number'] : '-' ?></div>
                         </div>
                     </div>
                     <div class="col">
                         <div class="field">
-                            <div class="field-label">Rejected</div>
-                            <div class="field-value"><?= !empty($asset['date_rejected']) ? date('M d H:i', strtotime($asset['date_rejected'])) : '-' ?></div>
+                            <div class="field-label">Supplier</div>
+                            <div class="field-value"><?= !empty($asset['supplier']) ? $asset['supplier'] : '-' ?></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="field">
+                            <div class="field-label">Date Updated</div>
+                            <div class="field-value"><?= !empty($asset['date_updated']) ? date('M d, Y h:i A', strtotime($asset['date_updated'])) : '-' ?></div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="field">
+                            <div class="field-label">Requestable</div>
+                            <div class="field-value"><?= !empty($asset['requestable']) ? 'Yes' : 'No' ?></div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="field">
+                            <div class="field-label">BYOD</div>
+                            <div class="field-value"><?= !empty($asset['byod']) ? 'Yes' : 'No' ?></div>
                         </div>
                     </div>
                 </div>

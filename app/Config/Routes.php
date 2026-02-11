@@ -17,10 +17,12 @@ $routes->get('/dashboard', 'Dashboard::index');
 $routes->get('/users', 'UserController::index');
 $routes->get('/users/create', 'UserController::create');
 $routes->post('/users/store', 'UserController::store');
+$routes->get('/users/details/(:segment)', 'UserController::details/$1');
 $routes->get('/users/edit/(:num)', 'UserController::edit/$1');
 $routes->post('/users/update/(:num)', 'UserController::update/$1');
 $routes->get('/users/delete/(:num)', 'UserController::delete/$1');
 $routes->get('/users/search', 'UserController::search');
+$routes->post('/users/toggleSync/(:num)', 'UserController::toggleSync/$1');
 
 $routes->get('/assets', 'AssetController::index');
 $routes->get('/assets/create', 'AssetController::create');
@@ -28,9 +30,12 @@ $routes->post('/assets/store', 'AssetController::store');
 $routes->get('/assets/edit/(:num)', 'AssetController::edit/$1');
 $routes->post('/assets/update/(:num)', 'AssetController::update/$1');
 $routes->get('/assets/delete/(:num)', 'AssetController::delete/$1');
+$routes->post('/assets/batch-delete', 'AssetController::batchDelete');
 $routes->get('/assets/details/(:num)', 'AssetController::details/$1');
 $routes->get('/assets/export-pdf/(:num)', 'AssetController::exportPdf/$1');
 $routes->get('/assets/search', 'AssetController::search');
+$routes->post('/assets/note/add', 'AssetController::addNote');
+$routes->get('/assets/note/delete/(:num)', 'AssetController::deleteNote/$1');
 
 $routes->get('/assets/item/edit/(:num)', 'AssetController::editItem/$1');
 $routes->post('/assets/item/update/(:num)', 'AssetController::updateItem/$1');
@@ -52,9 +57,23 @@ $routes->post('/peripherals/update/(:num)', 'PeripheralController::update/$1');
 $routes->get('/peripherals/delete/(:num)', 'PeripheralController::delete/$1');
 $routes->get('/peripherals/details/(:num)', 'PeripheralController::details/$1');
 $routes->get('/peripherals/search', 'PeripheralController::search');
+$routes->get('/peripherals/getAssetDetails/(:num)', 'PeripheralController::getAssetDetails/$1');
+
+// Units routes
+$routes->get('/units', 'UnitController::index');
+$routes->get('/units/create', 'UnitController::create');
+$routes->post('/units/store', 'UnitController::store');
+$routes->get('/units/view/(:num)', 'UnitController::view/$1');
+$routes->get('/units/edit/(:num)', 'UnitController::edit/$1');
+$routes->post('/units/update/(:num)', 'UnitController::update/$1');
+$routes->get('/units/delete/(:num)', 'UnitController::delete/$1');
 
 // Settings routes
 $routes->get('/settings', 'SettingsController::index');
+
+$routes->get('/settings/categories', 'SettingsController::categories');
+$routes->post('/settings/save-category', 'SettingsController::saveCategory');
+$routes->get('/settings/delete-category/(:num)', 'SettingsController::deleteCategory/$1');
 
 $routes->get('/settings/locations', 'LocationController::index');
 $routes->get('/settings/locations/create', 'LocationController::create');
@@ -90,4 +109,14 @@ $routes->post('/settings/assigned-users/store', 'AssignableUserController::store
 $routes->get('/settings/assigned-users/edit/(:num)', 'AssignableUserController::edit/$1');
 $routes->post('/settings/assigned-users/update/(:num)', 'AssignableUserController::update/$1');
 $routes->get('/settings/assigned-users/delete/(:num)', 'AssignableUserController::delete/$1');
+
+// Applications Management routes
+$routes->get('/applications', 'ApplicationController::index');
+$routes->get('/applications/create', 'ApplicationController::create');
+$routes->post('/applications/store', 'ApplicationController::store');
+$routes->get('/applications/edit/(:num)', 'ApplicationController::edit/$1');
+$routes->post('/applications/update/(:num)', 'ApplicationController::update/$1');
+$routes->get('/applications/delete/(:num)', 'ApplicationController::delete/$1');
+$routes->get('/applications/details/(:num)', 'ApplicationController::details/$1');
+$routes->get('/applications/search', 'ApplicationController::search');
 

@@ -1,0 +1,830 @@
+ERROR - 2026-02-11 13:06:05 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL) in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('UPDATE `assets`...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('UPDATE `assets`...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('UPDATE `assets`...')
+#3 C:\xampp\htdocs\IM\system\Database\BaseBuilder.php(2521): CodeIgniter\Database\BaseConnection->query('UPDATE `assets`...', Array, false)
+#4 C:\xampp\htdocs\IM\system\Model.php(461): CodeIgniter\Database\BaseBuilder->update()
+#5 C:\xampp\htdocs\IM\system\BaseModel.php(1010): CodeIgniter\Model->doUpdate(Array, Array)
+#6 C:\xampp\htdocs\IM\system\Model.php(860): CodeIgniter\BaseModel->update(Array, Array)
+#7 C:\xampp\htdocs\IM\app\Controllers\AssetController.php(256): CodeIgniter\Model->update('11', Array)
+#8 C:\xampp\htdocs\IM\system\CodeIgniter.php(933): App\Controllers\AssetController->update('11')
+#9 C:\xampp\htdocs\IM\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+#10 C:\xampp\htdocs\IM\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 C:\xampp\htdocs\IM\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#12 C:\xampp\htdocs\IM\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 C:\xampp\htdocs\IM\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2026-02-11 13:06:06 --> CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+[Method: POST, Route: assets/update/11]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2521): CodeIgniter\Database\BaseConnection->query('UPDATE `assets` SET `asset_tag` = :asset_tag:, `box_number` = :box_number:, `serial_number` = :serial_number:, `model` = :model:, `model_number` = :model_number:, `manufacturer` = :manufacturer:, `category` = :category:, `qty` = :qty:, `description` = :description:, `status` = :status:, `purchase_cost` = :purchase_cost:, `order_number` = :order_number:, `supplier` = :supplier:, `requestable` = :requestable:, `byod` = :byod:, `department_id` = :department_id:, `location_id` = :location_id:, `workstation_id` = :workstation_id:, `assigned_to_user_id` = :assigned_to_user_id:, `purchase_date` = :purchase_date:, `updated_at` = :updated_at:
+WHERE `assets`.`id` IN :assets.id:', [...], false)
+ 2 SYSTEMPATH\Model.php(461): CodeIgniter\Database\BaseBuilder->update()
+ 3 SYSTEMPATH\BaseModel.php(1010): CodeIgniter\Model->doUpdate([...], [...])
+ 4 SYSTEMPATH\Model.php(860): CodeIgniter\BaseModel->update([...], [...])
+ 5 APPPATH\Controllers\AssetController.php(256): CodeIgniter\Model->update('11', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AssetController->update('11')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 13:06:06 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'5\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:05\'
+WHERE `assets`.`id` IN (\'11\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'5\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:05\'
+WHERE `assets`.`id` IN (\'11\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2521): CodeIgniter\Database\BaseConnection->query('UPDATE `assets` SET `asset_tag` = :asset_tag:, `box_number` = :box_number:, `serial_number` = :serial_number:, `model` = :model:, `model_number` = :model_number:, `manufacturer` = :manufacturer:, `category` = :category:, `qty` = :qty:, `description` = :description:, `status` = :status:, `purchase_cost` = :purchase_cost:, `order_number` = :order_number:, `supplier` = :supplier:, `requestable` = :requestable:, `byod` = :byod:, `department_id` = :department_id:, `location_id` = :location_id:, `workstation_id` = :workstation_id:, `assigned_to_user_id` = :assigned_to_user_id:, `purchase_date` = :purchase_date:, `updated_at` = :updated_at:
+WHERE `assets`.`id` IN :assets.id:', [...], false)
+ 4 SYSTEMPATH\Model.php(461): CodeIgniter\Database\BaseBuilder->update()
+ 5 SYSTEMPATH\BaseModel.php(1010): CodeIgniter\Model->doUpdate([...], [...])
+ 6 SYSTEMPATH\Model.php(860): CodeIgniter\BaseModel->update([...], [...])
+ 7 APPPATH\Controllers\AssetController.php(256): CodeIgniter\Model->update('11', [...])
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AssetController->update('11')
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 13:06:06 --> [Caused by] mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'5\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:05\'
+WHERE `assets`.`id` IN (\'11\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'5\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:05\'
+WHERE `assets`.`id` IN (\'11\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'5\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:05\'
+WHERE `assets`.`id` IN (\'11\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2521): CodeIgniter\Database\BaseConnection->query('UPDATE `assets` SET `asset_tag` = :asset_tag:, `box_number` = :box_number:, `serial_number` = :serial_number:, `model` = :model:, `model_number` = :model_number:, `manufacturer` = :manufacturer:, `category` = :category:, `qty` = :qty:, `description` = :description:, `status` = :status:, `purchase_cost` = :purchase_cost:, `order_number` = :order_number:, `supplier` = :supplier:, `requestable` = :requestable:, `byod` = :byod:, `department_id` = :department_id:, `location_id` = :location_id:, `workstation_id` = :workstation_id:, `assigned_to_user_id` = :assigned_to_user_id:, `purchase_date` = :purchase_date:, `updated_at` = :updated_at:
+WHERE `assets`.`id` IN :assets.id:', [...], false)
+ 5 SYSTEMPATH\Model.php(461): CodeIgniter\Database\BaseBuilder->update()
+ 6 SYSTEMPATH\BaseModel.php(1010): CodeIgniter\Model->doUpdate([...], [...])
+ 7 SYSTEMPATH\Model.php(860): CodeIgniter\BaseModel->update([...], [...])
+ 8 APPPATH\Controllers\AssetController.php(256): CodeIgniter\Model->update('11', [...])
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AssetController->update('11')
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-02-11 13:06:44 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL) in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('UPDATE `assets`...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('UPDATE `assets`...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('UPDATE `assets`...')
+#3 C:\xampp\htdocs\IM\system\Database\BaseBuilder.php(2521): CodeIgniter\Database\BaseConnection->query('UPDATE `assets`...', Array, false)
+#4 C:\xampp\htdocs\IM\system\Model.php(461): CodeIgniter\Database\BaseBuilder->update()
+#5 C:\xampp\htdocs\IM\system\BaseModel.php(1010): CodeIgniter\Model->doUpdate(Array, Array)
+#6 C:\xampp\htdocs\IM\system\Model.php(860): CodeIgniter\BaseModel->update(Array, Array)
+#7 C:\xampp\htdocs\IM\app\Controllers\AssetController.php(256): CodeIgniter\Model->update('11', Array)
+#8 C:\xampp\htdocs\IM\system\CodeIgniter.php(933): App\Controllers\AssetController->update('11')
+#9 C:\xampp\htdocs\IM\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+#10 C:\xampp\htdocs\IM\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 C:\xampp\htdocs\IM\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#12 C:\xampp\htdocs\IM\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 C:\xampp\htdocs\IM\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2026-02-11 13:06:44 --> CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+[Method: POST, Route: assets/update/11]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2521): CodeIgniter\Database\BaseConnection->query('UPDATE `assets` SET `asset_tag` = :asset_tag:, `box_number` = :box_number:, `serial_number` = :serial_number:, `model` = :model:, `model_number` = :model_number:, `manufacturer` = :manufacturer:, `category` = :category:, `qty` = :qty:, `description` = :description:, `status` = :status:, `purchase_cost` = :purchase_cost:, `order_number` = :order_number:, `supplier` = :supplier:, `requestable` = :requestable:, `byod` = :byod:, `department_id` = :department_id:, `location_id` = :location_id:, `workstation_id` = :workstation_id:, `assigned_to_user_id` = :assigned_to_user_id:, `purchase_date` = :purchase_date:, `updated_at` = :updated_at:
+WHERE `assets`.`id` IN :assets.id:', [...], false)
+ 2 SYSTEMPATH\Model.php(461): CodeIgniter\Database\BaseBuilder->update()
+ 3 SYSTEMPATH\BaseModel.php(1010): CodeIgniter\Model->doUpdate([...], [...])
+ 4 SYSTEMPATH\Model.php(860): CodeIgniter\BaseModel->update([...], [...])
+ 5 APPPATH\Controllers\AssetController.php(256): CodeIgniter\Model->update('11', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AssetController->update('11')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 13:06:44 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'4\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:44\'
+WHERE `assets`.`id` IN (\'11\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'4\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:44\'
+WHERE `assets`.`id` IN (\'11\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2521): CodeIgniter\Database\BaseConnection->query('UPDATE `assets` SET `asset_tag` = :asset_tag:, `box_number` = :box_number:, `serial_number` = :serial_number:, `model` = :model:, `model_number` = :model_number:, `manufacturer` = :manufacturer:, `category` = :category:, `qty` = :qty:, `description` = :description:, `status` = :status:, `purchase_cost` = :purchase_cost:, `order_number` = :order_number:, `supplier` = :supplier:, `requestable` = :requestable:, `byod` = :byod:, `department_id` = :department_id:, `location_id` = :location_id:, `workstation_id` = :workstation_id:, `assigned_to_user_id` = :assigned_to_user_id:, `purchase_date` = :purchase_date:, `updated_at` = :updated_at:
+WHERE `assets`.`id` IN :assets.id:', [...], false)
+ 4 SYSTEMPATH\Model.php(461): CodeIgniter\Database\BaseBuilder->update()
+ 5 SYSTEMPATH\BaseModel.php(1010): CodeIgniter\Model->doUpdate([...], [...])
+ 6 SYSTEMPATH\Model.php(860): CodeIgniter\BaseModel->update([...], [...])
+ 7 APPPATH\Controllers\AssetController.php(256): CodeIgniter\Model->update('11', [...])
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AssetController->update('11')
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 13:06:44 --> [Caused by] mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'4\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:44\'
+WHERE `assets`.`id` IN (\'11\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'4\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:44\'
+WHERE `assets`.`id` IN (\'11\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('UPDATE `assets` SET `asset_tag` = \'LBC-PC-000123\', `box_number` = NULL, `serial_number` = \'1PC05JQ7P\', `model` = \'lenovo 2021 01\', `model_number` = \'1234567890\', `manufacturer` = \'lenovo\', `category` = \'2\', `qty` = \'1\', `description` = NULL, `status` = \'pending\', `purchase_cost` = \'6000.00\', `order_number` = \'PO-2021-0001\', `supplier` = \'MOA_LENOVO\', `requestable` = 1, `byod` = 0, `department_id` = \'9\', `location_id` = \'6\', `workstation_id` = \'1\', `assigned_to_user_id` = \'4\', `purchase_date` = \'2021-01-01\', `updated_at` = \'2026-02-11 13:06:44\'
+WHERE `assets`.`id` IN (\'11\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2521): CodeIgniter\Database\BaseConnection->query('UPDATE `assets` SET `asset_tag` = :asset_tag:, `box_number` = :box_number:, `serial_number` = :serial_number:, `model` = :model:, `model_number` = :model_number:, `manufacturer` = :manufacturer:, `category` = :category:, `qty` = :qty:, `description` = :description:, `status` = :status:, `purchase_cost` = :purchase_cost:, `order_number` = :order_number:, `supplier` = :supplier:, `requestable` = :requestable:, `byod` = :byod:, `department_id` = :department_id:, `location_id` = :location_id:, `workstation_id` = :workstation_id:, `assigned_to_user_id` = :assigned_to_user_id:, `purchase_date` = :purchase_date:, `updated_at` = :updated_at:
+WHERE `assets`.`id` IN :assets.id:', [...], false)
+ 5 SYSTEMPATH\Model.php(461): CodeIgniter\Database\BaseBuilder->update()
+ 6 SYSTEMPATH\BaseModel.php(1010): CodeIgniter\Model->doUpdate([...], [...])
+ 7 SYSTEMPATH\Model.php(860): CodeIgniter\BaseModel->update([...], [...])
+ 8 APPPATH\Controllers\AssetController.php(256): CodeIgniter\Model->update('11', [...])
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AssetController->update('11')
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-02-11 13:11:54 --> mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL) in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `as...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `as...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `as...')
+#3 C:\xampp\htdocs\IM\system\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `as...', Array, false)
+#4 C:\xampp\htdocs\IM\system\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+#5 C:\xampp\htdocs\IM\system\BaseModel.php(838): CodeIgniter\Model->doInsert(Array)
+#6 C:\xampp\htdocs\IM\system\Model.php(797): CodeIgniter\BaseModel->insert(Array, true)
+#7 C:\xampp\htdocs\IM\app\Controllers\AssetController.php(105): CodeIgniter\Model->insert(Array)
+#8 C:\xampp\htdocs\IM\system\CodeIgniter.php(933): App\Controllers\AssetController->store()
+#9 C:\xampp\htdocs\IM\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+#10 C:\xampp\htdocs\IM\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 C:\xampp\htdocs\IM\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#12 C:\xampp\htdocs\IM\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 C:\xampp\htdocs\IM\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2026-02-11 13:11:54 --> CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+[Method: POST, Route: assets/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `assets` (`asset_tag`, `box_number`, `serial_number`, `model`, `model_number`, `manufacturer`, `category`, `qty`, `description`, `status`, `date_updated`, `purchase_cost`, `order_number`, `supplier`, `requestable`, `byod`, `department_id`, `location_id`, `workstation_id`, `assigned_to_user_id`, `purchase_date`, `barcode`, `device_image`, `created_at`, `updated_at`) VALUES (:asset_tag:, :box_number:, :serial_number:, :model:, :model_number:, :manufacturer:, :category:, :qty:, :description:, :status:, :date_updated:, :purchase_cost:, :order_number:, :supplier:, :requestable:, :byod:, :department_id:, :location_id:, :workstation_id:, :assigned_to_user_id:, :purchase_date:, :barcode:, :device_image:, :created_at:, :updated_at:)', [...], false)
+ 2 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(838): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(797): CodeIgniter\BaseModel->insert([...], true)
+ 5 APPPATH\Controllers\AssetController.php(105): CodeIgniter\Model->insert([...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AssetController->store()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 13:11:54 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `assets` (`asset_tag`, `box_number`, `serial_number`, `model`, `model_number`, `manufacturer`, `category`, `qty`, `description`, `status`, `date_updated`, `purchase_cost`, `order_number`, `supplier`, `requestable`, `byod`, `department_id`, `location_id`, `workstation_id`, `assigned_to_user_id`, `purchase_date`, `barcode`, `device_image`, `created_at`, `updated_at`) VALUES (\'LBC-PC-000123\', NULL, \'1PC05JQ7P\', \'lenovo 2021 01\', \'1234567890\', \'lenovo\', \'7\', \'1\', NULL, \'pending\', \'2026-02-11 13:11:53\', \'6000.00\', \'PO-2021-0001\', \'MOA_LENOVO\', 0, 0, \'9\', \'6\', \'1\', \'4\', \'2021-01-01\', \'1770786713_b36b42792391603c136e.png\', \'1770786713_a28acfec9d1fdbc228fc.jpg\', \'2026-02-11 13:11:53\', \'2026-02-11 13:11:53\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `assets` (`asset_tag`, `box_number`, `serial_number`, `model`, `model_number`, `manufacturer`, `category`, `qty`, `description`, `status`, `date_updated`, `purchase_cost`, `order_number`, `supplier`, `requestable`, `byod`, `department_id`, `location_id`, `workstation_id`, `assigned_to_user_id`, `purchase_date`, `barcode`, `device_image`, `created_at`, `updated_at`) VALUES (\'LBC-PC-000123\', NULL, \'1PC05JQ7P\', \'lenovo 2021 01\', \'1234567890\', \'lenovo\', \'7\', \'1\', NULL, \'pending\', \'2026-02-11 13:11:53\', \'6000.00\', \'PO-2021-0001\', \'MOA_LENOVO\', 0, 0, \'9\', \'6\', \'1\', \'4\', \'2021-01-01\', \'1770786713_b36b42792391603c136e.png\', \'1770786713_a28acfec9d1fdbc228fc.jpg\', \'2026-02-11 13:11:53\', \'2026-02-11 13:11:53\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `assets` (`asset_tag`, `box_number`, `serial_number`, `model`, `model_number`, `manufacturer`, `category`, `qty`, `description`, `status`, `date_updated`, `purchase_cost`, `order_number`, `supplier`, `requestable`, `byod`, `department_id`, `location_id`, `workstation_id`, `assigned_to_user_id`, `purchase_date`, `barcode`, `device_image`, `created_at`, `updated_at`) VALUES (:asset_tag:, :box_number:, :serial_number:, :model:, :model_number:, :manufacturer:, :category:, :qty:, :description:, :status:, :date_updated:, :purchase_cost:, :order_number:, :supplier:, :requestable:, :byod:, :department_id:, :location_id:, :workstation_id:, :assigned_to_user_id:, :purchase_date:, :barcode:, :device_image:, :created_at:, :updated_at:)', [...], false)
+ 4 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(838): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(797): CodeIgniter\BaseModel->insert([...], true)
+ 7 APPPATH\Controllers\AssetController.php(105): CodeIgniter\Model->insert([...])
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AssetController->store()
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 13:11:54 --> [Caused by] mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`im`.`assets`, CONSTRAINT `fk_assets_assigned_user` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL)
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('INSERT INTO `assets` (`asset_tag`, `box_number`, `serial_number`, `model`, `model_number`, `manufacturer`, `category`, `qty`, `description`, `status`, `date_updated`, `purchase_cost`, `order_number`, `supplier`, `requestable`, `byod`, `department_id`, `location_id`, `workstation_id`, `assigned_to_user_id`, `purchase_date`, `barcode`, `device_image`, `created_at`, `updated_at`) VALUES (\'LBC-PC-000123\', NULL, \'1PC05JQ7P\', \'lenovo 2021 01\', \'1234567890\', \'lenovo\', \'7\', \'1\', NULL, \'pending\', \'2026-02-11 13:11:53\', \'6000.00\', \'PO-2021-0001\', \'MOA_LENOVO\', 0, 0, \'9\', \'6\', \'1\', \'4\', \'2021-01-01\', \'1770786713_b36b42792391603c136e.png\', \'1770786713_a28acfec9d1fdbc228fc.jpg\', \'2026-02-11 13:11:53\', \'2026-02-11 13:11:53\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `assets` (`asset_tag`, `box_number`, `serial_number`, `model`, `model_number`, `manufacturer`, `category`, `qty`, `description`, `status`, `date_updated`, `purchase_cost`, `order_number`, `supplier`, `requestable`, `byod`, `department_id`, `location_id`, `workstation_id`, `assigned_to_user_id`, `purchase_date`, `barcode`, `device_image`, `created_at`, `updated_at`) VALUES (\'LBC-PC-000123\', NULL, \'1PC05JQ7P\', \'lenovo 2021 01\', \'1234567890\', \'lenovo\', \'7\', \'1\', NULL, \'pending\', \'2026-02-11 13:11:53\', \'6000.00\', \'PO-2021-0001\', \'MOA_LENOVO\', 0, 0, \'9\', \'6\', \'1\', \'4\', \'2021-01-01\', \'1770786713_b36b42792391603c136e.png\', \'1770786713_a28acfec9d1fdbc228fc.jpg\', \'2026-02-11 13:11:53\', \'2026-02-11 13:11:53\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `assets` (`asset_tag`, `box_number`, `serial_number`, `model`, `model_number`, `manufacturer`, `category`, `qty`, `description`, `status`, `date_updated`, `purchase_cost`, `order_number`, `supplier`, `requestable`, `byod`, `department_id`, `location_id`, `workstation_id`, `assigned_to_user_id`, `purchase_date`, `barcode`, `device_image`, `created_at`, `updated_at`) VALUES (\'LBC-PC-000123\', NULL, \'1PC05JQ7P\', \'lenovo 2021 01\', \'1234567890\', \'lenovo\', \'7\', \'1\', NULL, \'pending\', \'2026-02-11 13:11:53\', \'6000.00\', \'PO-2021-0001\', \'MOA_LENOVO\', 0, 0, \'9\', \'6\', \'1\', \'4\', \'2021-01-01\', \'1770786713_b36b42792391603c136e.png\', \'1770786713_a28acfec9d1fdbc228fc.jpg\', \'2026-02-11 13:11:53\', \'2026-02-11 13:11:53\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `assets` (`asset_tag`, `box_number`, `serial_number`, `model`, `model_number`, `manufacturer`, `category`, `qty`, `description`, `status`, `date_updated`, `purchase_cost`, `order_number`, `supplier`, `requestable`, `byod`, `department_id`, `location_id`, `workstation_id`, `assigned_to_user_id`, `purchase_date`, `barcode`, `device_image`, `created_at`, `updated_at`) VALUES (:asset_tag:, :box_number:, :serial_number:, :model:, :model_number:, :manufacturer:, :category:, :qty:, :description:, :status:, :date_updated:, :purchase_cost:, :order_number:, :supplier:, :requestable:, :byod:, :department_id:, :location_id:, :workstation_id:, :assigned_to_user_id:, :purchase_date:, :barcode:, :device_image:, :created_at:, :updated_at:)', [...], false)
+ 5 SYSTEMPATH\Model.php(394): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(838): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(797): CodeIgniter\BaseModel->insert([...], true)
+ 8 APPPATH\Controllers\AssetController.php(105): CodeIgniter\Model->insert([...])
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\AssetController->store()
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\AssetController))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ERROR - 2026-02-11 13:27:28 --> mysqli_sql_exception: Table 'users' already exists in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('CREATE TABLE `u...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('CREATE TABLE `u...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('CREATE TABLE `u...')
+#3 C:\xampp\htdocs\IM\system\Database\Forge.php(570): CodeIgniter\Database\BaseConnection->query('CREATE TABLE `u...')
+#4 C:\xampp\htdocs\IM\app\Database\Migrations\2026-01-19-201010_CreateUserTable.php(48): CodeIgniter\Database\Forge->createTable('users')
+#5 C:\xampp\htdocs\IM\system\Database\MigrationRunner.php(874): App\Database\Migrations\CreateUserTable->up()
+#6 C:\xampp\htdocs\IM\system\Database\MigrationRunner.php(180): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+#7 C:\xampp\htdocs\IM\system\Commands\Database\Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 C:\xampp\htdocs\IM\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 C:\xampp\htdocs\IM\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 C:\xampp\htdocs\IM\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xampp\htdocs\IM\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xampp\htdocs\IM\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+ERROR - 2026-02-11 13:28:44 --> mysqli_sql_exception: Table 'users' already exists in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('CREATE TABLE `u...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('CREATE TABLE `u...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('CREATE TABLE `u...')
+#3 C:\xampp\htdocs\IM\system\Database\Forge.php(570): CodeIgniter\Database\BaseConnection->query('CREATE TABLE `u...')
+#4 C:\xampp\htdocs\IM\app\Database\Migrations\2026-01-19-201010_CreateUserTable.php(48): CodeIgniter\Database\Forge->createTable('users')
+#5 C:\xampp\htdocs\IM\system\Database\MigrationRunner.php(874): App\Database\Migrations\CreateUserTable->up()
+#6 C:\xampp\htdocs\IM\system\Database\MigrationRunner.php(180): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+#7 C:\xampp\htdocs\IM\system\Commands\Database\Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 C:\xampp\htdocs\IM\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 C:\xampp\htdocs\IM\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 C:\xampp\htdocs\IM\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xampp\htdocs\IM\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xampp\htdocs\IM\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+CRITICAL - 2026-02-11 15:31:17 --> TypeError: Cannot access offset of type string on string
+[Method: GET, Route: units/edit/1]
+in APPPATH\Views\units\edit.php on line 75.
+ 1 SYSTEMPATH\View\View.php(226): include()
+ 2 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 3 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('units/edit', [], true)
+ 4 APPPATH\Controllers\UnitController.php(123): view('units/edit', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UnitController->edit('1')
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UnitController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 15:50:20 --> ParseError: syntax error, unexpected token "\"
+[Method: GET, Route: units]
+in APPPATH\Controllers\UnitController.php on line 257.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(295): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs\\IM\\app\\Controllers\\UnitController.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(271): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers\\UnitController')
+ 3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers\\UnitController')
+ 4 SYSTEMPATH\CodeIgniter.php(885): class_exists('\\App\\Controllers\\UnitController', true)
+ 5 SYSTEMPATH\CodeIgniter.php(494): CodeIgniter\CodeIgniter->startController()
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 15:50:26 --> ParseError: syntax error, unexpected token "\"
+[Method: GET, Route: units]
+in APPPATH\Controllers\UnitController.php on line 257.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(295): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs\\IM\\app\\Controllers\\UnitController.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(271): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers\\UnitController')
+ 3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers\\UnitController')
+ 4 SYSTEMPATH\CodeIgniter.php(885): class_exists('\\App\\Controllers\\UnitController', true)
+ 5 SYSTEMPATH\CodeIgniter.php(494): CodeIgniter\CodeIgniter->startController()
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 15:52:10 --> ParseError: syntax error, unexpected token "\"
+[Method: GET, Route: units]
+in APPPATH\Controllers\UnitController.php on line 257.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(295): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs\\IM\\app\\Controllers\\UnitController.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(271): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers\\UnitController')
+ 3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers\\UnitController')
+ 4 SYSTEMPATH\CodeIgniter.php(885): class_exists('\\App\\Controllers\\UnitController', true)
+ 5 SYSTEMPATH\CodeIgniter.php(494): CodeIgniter\CodeIgniter->startController()
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 15:53:11 --> ParseError: syntax error, unexpected token "\"
+[Method: GET, Route: units]
+in APPPATH\Controllers\UnitController.php on line 257.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(295): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs\\IM\\app\\Controllers\\UnitController.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(271): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers\\UnitController')
+ 3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers\\UnitController')
+ 4 SYSTEMPATH\CodeIgniter.php(885): class_exists('\\App\\Controllers\\UnitController', true)
+ 5 SYSTEMPATH\CodeIgniter.php(494): CodeIgniter\CodeIgniter->startController()
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 15:53:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-02-11 15:54:00 --> ParseError: syntax error, unexpected token "\"
+[Method: GET, Route: units]
+in APPPATH\Controllers\UnitController.php on line 257.
+ 1 SYSTEMPATH\Autoloader\Autoloader.php(295): CodeIgniter\Autoloader\Autoloader->includeFile('C:\\xampp\\htdocs\\IM\\app\\Controllers\\UnitController.php')
+ 2 SYSTEMPATH\Autoloader\Autoloader.php(271): CodeIgniter\Autoloader\Autoloader->loadInNamespace('App\\Controllers\\UnitController')
+ 3 [internal function]: CodeIgniter\Autoloader\Autoloader->loadClass('App\\Controllers\\UnitController')
+ 4 SYSTEMPATH\CodeIgniter.php(885): class_exists('\\App\\Controllers\\UnitController', true)
+ 5 SYSTEMPATH\CodeIgniter.php(494): CodeIgniter\CodeIgniter->startController()
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 15:54:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:54:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:55:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:55:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-02-11 15:55:03 --> mysqli_sql_exception: Unknown column 'pt.peripheral_type_name' in 'field list' in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `p`.*, `...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `...')
+#3 C:\xampp\htdocs\IM\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `...', Array, false)
+#4 C:\xampp\htdocs\IM\app\Controllers\UnitController.php(564): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\IM\app\Controllers\UnitController.php(262): App\Controllers\UnitController->getUnitPeripheralsWithDetails('1')
+#6 C:\xampp\htdocs\IM\system\CodeIgniter.php(933): App\Controllers\UnitController->view('1')
+#7 C:\xampp\htdocs\IM\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UnitController))
+#8 C:\xampp\htdocs\IM\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\xampp\htdocs\IM\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\xampp\htdocs\IM\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\xampp\htdocs\IM\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 {main}
+CRITICAL - 2026-02-11 15:55:03 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'pt.peripheral_type_name' in 'field list'
+[Method: GET, Route: units/view/1]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `pt`.`peripheral_type_name`, `up`.`created_at` as `linked_at`
+FROM `unit_peripherals` `up`
+LEFT JOIN `peripherals` `p` ON `p`.`id` = `up`.`peripheral_id`
+LEFT JOIN `peripheral_types` `pt` ON `pt`.`id` = `p`.`peripheral_type_id`
+WHERE `up`.`unit_id` = :up.unit_id:', [...], false)
+ 2 APPPATH\Controllers\UnitController.php(564): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\UnitController.php(262): App\Controllers\UnitController->getUnitPeripheralsWithDetails('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UnitController->view('1')
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UnitController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 15:55:03 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'pt.peripheral_type_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `pt`.`peripheral_type_name`, `up`.`created_at` as `linked_at`
+FROM `unit_peripherals` `up`
+LEFT JOIN `peripherals` `p` ON `p`.`id` = `up`.`peripheral_id`
+LEFT JOIN `peripheral_types` `pt` ON `pt`.`id` = `p`.`peripheral_type_id`
+WHERE `up`.`unit_id` = \'1\'')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `pt`.`peripheral_type_name`, `up`.`created_at` as `linked_at`
+FROM `unit_peripherals` `up`
+LEFT JOIN `peripherals` `p` ON `p`.`id` = `up`.`peripheral_id`
+LEFT JOIN `peripheral_types` `pt` ON `pt`.`id` = `p`.`peripheral_type_id`
+WHERE `up`.`unit_id` = \'1\'')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `pt`.`peripheral_type_name`, `up`.`created_at` as `linked_at`
+FROM `unit_peripherals` `up`
+LEFT JOIN `peripherals` `p` ON `p`.`id` = `up`.`peripheral_id`
+LEFT JOIN `peripheral_types` `pt` ON `pt`.`id` = `p`.`peripheral_type_id`
+WHERE `up`.`unit_id` = :up.unit_id:', [...], false)
+ 4 APPPATH\Controllers\UnitController.php(564): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\UnitController.php(262): App\Controllers\UnitController->getUnitPeripheralsWithDetails('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UnitController->view('1')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UnitController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 15:55:03 --> [Caused by] mysqli_sql_exception: Unknown column 'pt.peripheral_type_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `p`.*, `pt`.`peripheral_type_name`, `up`.`created_at` as `linked_at`
+FROM `unit_peripherals` `up`
+LEFT JOIN `peripherals` `p` ON `p`.`id` = `up`.`peripheral_id`
+LEFT JOIN `peripheral_types` `pt` ON `pt`.`id` = `p`.`peripheral_type_id`
+WHERE `up`.`unit_id` = \'1\'', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `p`.*, `pt`.`peripheral_type_name`, `up`.`created_at` as `linked_at`
+FROM `unit_peripherals` `up`
+LEFT JOIN `peripherals` `p` ON `p`.`id` = `up`.`peripheral_id`
+LEFT JOIN `peripheral_types` `pt` ON `pt`.`id` = `p`.`peripheral_type_id`
+WHERE `up`.`unit_id` = \'1\'')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `p`.*, `pt`.`peripheral_type_name`, `up`.`created_at` as `linked_at`
+FROM `unit_peripherals` `up`
+LEFT JOIN `peripherals` `p` ON `p`.`id` = `up`.`peripheral_id`
+LEFT JOIN `peripheral_types` `pt` ON `pt`.`id` = `p`.`peripheral_type_id`
+WHERE `up`.`unit_id` = \'1\'')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `p`.*, `pt`.`peripheral_type_name`, `up`.`created_at` as `linked_at`
+FROM `unit_peripherals` `up`
+LEFT JOIN `peripherals` `p` ON `p`.`id` = `up`.`peripheral_id`
+LEFT JOIN `peripheral_types` `pt` ON `pt`.`id` = `p`.`peripheral_type_id`
+WHERE `up`.`unit_id` = :up.unit_id:', [...], false)
+ 5 APPPATH\Controllers\UnitController.php(564): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\UnitController.php(262): App\Controllers\UnitController->getUnitPeripheralsWithDetails('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\UnitController->view('1')
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\UnitController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 15:55:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:55:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:55:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:55:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:55:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:55:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:56:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:56:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 15:56:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-02-11 17:24:23 --> mysqli_sql_exception: Table 'users' already exists in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('CREATE TABLE `u...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('CREATE TABLE `u...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('CREATE TABLE `u...')
+#3 C:\xampp\htdocs\IM\system\Database\Forge.php(570): CodeIgniter\Database\BaseConnection->query('CREATE TABLE `u...')
+#4 C:\xampp\htdocs\IM\app\Database\Migrations\2026-01-19-201010_CreateUserTable.php(48): CodeIgniter\Database\Forge->createTable('users')
+#5 C:\xampp\htdocs\IM\system\Database\MigrationRunner.php(874): App\Database\Migrations\CreateUserTable->up()
+#6 C:\xampp\htdocs\IM\system\Database\MigrationRunner.php(180): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+#7 C:\xampp\htdocs\IM\system\Commands\Database\Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 C:\xampp\htdocs\IM\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 C:\xampp\htdocs\IM\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 C:\xampp\htdocs\IM\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xampp\htdocs\IM\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xampp\htdocs\IM\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+ERROR - 2026-02-11 17:24:31 --> mysqli_sql_exception: Table 'users' already exists in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('CREATE TABLE `u...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('CREATE TABLE `u...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('CREATE TABLE `u...')
+#3 C:\xampp\htdocs\IM\system\Database\Forge.php(570): CodeIgniter\Database\BaseConnection->query('CREATE TABLE `u...')
+#4 C:\xampp\htdocs\IM\app\Database\Migrations\2026-01-19-201010_CreateUserTable.php(48): CodeIgniter\Database\Forge->createTable('users')
+#5 C:\xampp\htdocs\IM\system\Database\MigrationRunner.php(874): App\Database\Migrations\CreateUserTable->up()
+#6 C:\xampp\htdocs\IM\system\Database\MigrationRunner.php(180): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+#7 C:\xampp\htdocs\IM\system\Commands\Database\Migrate.php(85): CodeIgniter\Database\MigrationRunner->latest(NULL)
+#8 C:\xampp\htdocs\IM\system\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run(Array)
+#9 C:\xampp\htdocs\IM\system\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', Array)
+#10 C:\xampp\htdocs\IM\system\Boot.php(388): CodeIgniter\CLI\Console->run()
+#11 C:\xampp\htdocs\IM\system\Boot.php(133): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+#12 C:\xampp\htdocs\IM\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+#13 {main}
+DEBUG - 2026-02-11 17:27:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:27:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-02-11 17:27:48 --> mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 6 in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `applica...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `applica...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `applica...')
+#3 C:\xampp\htdocs\IM\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `applica...', Array, false)
+#4 C:\xampp\htdocs\IM\system\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\xampp\htdocs\IM\system\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+#6 C:\xampp\htdocs\IM\app\Models\Application.php(82): CodeIgniter\BaseModel->findAll()
+#7 C:\xampp\htdocs\IM\app\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+#8 C:\xampp\htdocs\IM\system\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+#9 C:\xampp\htdocs\IM\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+#10 C:\xampp\htdocs\IM\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 C:\xampp\htdocs\IM\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#12 C:\xampp\htdocs\IM\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 C:\xampp\htdocs\IM\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 {main}
+CRITICAL - 2026-02-11 17:27:48 --> CodeIgniter\Database\Exceptions\DatabaseException: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 6
+[Method: GET, Route: applications]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `applications`.*, `departments`.`department_name`, `application_status`.`status_name`
+FROM `applications`
+LEFT JOIN `departments` ON `departments`.`id` = `applications`.`department_id`
+LEFT JOIN `application_status` ON `application_status`.`id` = `applications`.`status_id`
+ORDER BY `applications`.`created_at` DESC
+ LIMIT -10, 10', [], false)
+ 2 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 4 APPPATH\Models\Application.php(82): CodeIgniter\BaseModel->findAll()
+ 5 APPPATH\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 17:27:48 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 6
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `applications`.*, `departments`.`department_name`, `application_status`.`status_name`
+FROM `applications`
+LEFT JOIN `departments` ON `departments`.`id` = `applications`.`department_id`
+LEFT JOIN `application_status` ON `application_status`.`id` = `applications`.`status_id`
+ORDER BY `applications`.`created_at` DESC
+ LIMIT -10, 10')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `applications`.*, `departments`.`department_name`, `application_status`.`status_name`
+FROM `applications`
+LEFT JOIN `departments` ON `departments`.`id` = `applications`.`department_id`
+LEFT JOIN `application_status` ON `application_status`.`id` = `applications`.`status_id`
+ORDER BY `applications`.`created_at` DESC
+ LIMIT -10, 10')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `applications`.*, `departments`.`department_name`, `application_status`.`status_name`
+FROM `applications`
+LEFT JOIN `departments` ON `departments`.`id` = `applications`.`department_id`
+LEFT JOIN `application_status` ON `application_status`.`id` = `applications`.`status_id`
+ORDER BY `applications`.`created_at` DESC
+ LIMIT -10, 10', [], false)
+ 4 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 6 APPPATH\Models\Application.php(82): CodeIgniter\BaseModel->findAll()
+ 7 APPPATH\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 17:27:48 --> [Caused by] mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 6
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `applications`.*, `departments`.`department_name`, `application_status`.`status_name`
+FROM `applications`
+LEFT JOIN `departments` ON `departments`.`id` = `applications`.`department_id`
+LEFT JOIN `application_status` ON `application_status`.`id` = `applications`.`status_id`
+ORDER BY `applications`.`created_at` DESC
+ LIMIT -10, 10', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `applications`.*, `departments`.`department_name`, `application_status`.`status_name`
+FROM `applications`
+LEFT JOIN `departments` ON `departments`.`id` = `applications`.`department_id`
+LEFT JOIN `application_status` ON `application_status`.`id` = `applications`.`status_id`
+ORDER BY `applications`.`created_at` DESC
+ LIMIT -10, 10')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `applications`.*, `departments`.`department_name`, `application_status`.`status_name`
+FROM `applications`
+LEFT JOIN `departments` ON `departments`.`id` = `applications`.`department_id`
+LEFT JOIN `application_status` ON `application_status`.`id` = `applications`.`status_id`
+ORDER BY `applications`.`created_at` DESC
+ LIMIT -10, 10')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `applications`.*, `departments`.`department_name`, `application_status`.`status_name`
+FROM `applications`
+LEFT JOIN `departments` ON `departments`.`id` = `applications`.`department_id`
+LEFT JOIN `application_status` ON `application_status`.`id` = `applications`.`status_id`
+ORDER BY `applications`.`created_at` DESC
+ LIMIT -10, 10', [], false)
+ 5 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 7 APPPATH\Models\Application.php(82): CodeIgniter\BaseModel->findAll()
+ 8 APPPATH\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 17:28:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:29:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:29:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:29:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:29:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-02-11 17:29:58 --> mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 5 in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT a.*, d.d...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT a.*, d.d...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT a.*, d.d...')
+#3 C:\xampp\htdocs\IM\app\Models\Application.php(93): CodeIgniter\Database\BaseConnection->query('SELECT a.*, d.d...')
+#4 C:\xampp\htdocs\IM\app\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+#5 C:\xampp\htdocs\IM\system\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+#6 C:\xampp\htdocs\IM\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+#7 C:\xampp\htdocs\IM\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\IM\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\IM\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\IM\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+CRITICAL - 2026-02-11 17:29:58 --> CodeIgniter\Database\Exceptions\DatabaseException: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 5
+[Method: GET, Route: applications]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 APPPATH\Models\Application.php(93): CodeIgniter\Database\BaseConnection->query('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 2 APPPATH\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 17:29:58 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 5
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 3 APPPATH\Models\Application.php(93): CodeIgniter\Database\BaseConnection->query('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 4 APPPATH\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 17:29:58 --> [Caused by] mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 5
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 4 APPPATH\Models\Application.php(93): CodeIgniter\Database\BaseConnection->query('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 5 APPPATH\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 17:30:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:30:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-02-11 17:30:02 --> mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 5 in C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\xampp\htdocs\IM\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT a.*, d.d...', 0)
+#1 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT a.*, d.d...')
+#2 C:\xampp\htdocs\IM\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT a.*, d.d...')
+#3 C:\xampp\htdocs\IM\app\Models\Application.php(93): CodeIgniter\Database\BaseConnection->query('SELECT a.*, d.d...')
+#4 C:\xampp\htdocs\IM\app\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+#5 C:\xampp\htdocs\IM\system\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+#6 C:\xampp\htdocs\IM\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+#7 C:\xampp\htdocs\IM\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\xampp\htdocs\IM\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\xampp\htdocs\IM\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\xampp\htdocs\IM\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 {main}
+CRITICAL - 2026-02-11 17:30:02 --> CodeIgniter\Database\Exceptions\DatabaseException: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 5
+[Method: GET, Route: applications]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 APPPATH\Models\Application.php(93): CodeIgniter\Database\BaseConnection->query('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 2 APPPATH\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 17:30:02 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 5
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 3 APPPATH\Models\Application.php(93): CodeIgniter\Database\BaseConnection->query('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 4 APPPATH\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+CRITICAL - 2026-02-11 17:30:02 --> [Caused by] mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '-10, 10' at line 5
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 4 APPPATH\Models\Application.php(93): CodeIgniter\Database\BaseConnection->query('SELECT a.*, d.department_name, s.status_name 
+                FROM applications a 
+                LEFT JOIN departments d ON d.id = a.department_id 
+                LEFT JOIN application_status s ON s.id = a.status_id 
+                ORDER BY a.created_at DESC LIMIT -10, 10')
+ 5 APPPATH\Controllers\ApplicationController.php(45): App\Models\Application->getApplications(10, -10)
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 17:31:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:31:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:31:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:31:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:31:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-02-11 17:31:58 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "layout.php"
+[Method: GET, Route: applications]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('layout.php')
+ 2 SYSTEMPATH\View\View.php(242): CodeIgniter\View\View->render('layout', [], true)
+ 3 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('applications/index', [], true)
+ 4 APPPATH\Controllers\ApplicationController.php(52): view('applications/index', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 17:31:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-02-11 17:31:59 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "layout.php"
+[Method: GET, Route: applications]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('layout.php')
+ 2 SYSTEMPATH\View\View.php(242): CodeIgniter\View\View->render('layout', [], true)
+ 3 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('applications/index', [], true)
+ 4 APPPATH\Controllers\ApplicationController.php(52): view('applications/index', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 17:31:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-02-11 17:31:59 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "layout.php"
+[Method: GET, Route: applications]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('layout.php')
+ 2 SYSTEMPATH\View\View.php(242): CodeIgniter\View\View->render('layout', [], true)
+ 3 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('applications/index', [], true)
+ 4 APPPATH\Controllers\ApplicationController.php(52): view('applications/index', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 17:31:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-02-11 17:31:59 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "layout.php"
+[Method: GET, Route: applications]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('layout.php')
+ 2 SYSTEMPATH\View\View.php(242): CodeIgniter\View\View->render('layout', [], true)
+ 3 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('applications/index', [], true)
+ 4 APPPATH\Controllers\ApplicationController.php(52): view('applications/index', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 17:32:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-02-11 17:32:00 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "layout.php"
+[Method: GET, Route: applications]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('layout.php')
+ 2 SYSTEMPATH\View\View.php(242): CodeIgniter\View\View->render('layout', [], true)
+ 3 SYSTEMPATH\Common.php(1199): CodeIgniter\View\View->render('applications/index', [], true)
+ 4 APPPATH\Controllers\ApplicationController.php(52): view('applications/index', [...])
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 17:32:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:38:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:38:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:38:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:38:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:38:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:38:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:39:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:39:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:39:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:39:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:39:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:40:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-02-11 17:40:18 --> TypeError: CodeIgniter\Database\BaseBuilder::setBind(): Argument #1 ($key) must be of type string, int given, called in C:\xampp\htdocs\IM\system\Database\BaseBuilder.php on line 1575
+[Method: POST, Route: applications/store]
+in SYSTEMPATH\Database\BaseBuilder.php on line 3528.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1575): CodeIgniter\Database\BaseBuilder->setBind(0, '2026-02-11 17:40:18', true)
+ 2 SYSTEMPATH\Model.php(365): CodeIgniter\Database\BaseBuilder->set([...], '2026-02-11 17:40:18', true)
+ 3 SYSTEMPATH\BaseModel.php(838): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(797): CodeIgniter\BaseModel->insert([...], true)
+ 5 APPPATH\Controllers\ApplicationController.php(113): CodeIgniter\Model->insert([...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\ApplicationController->store()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\ApplicationController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+DEBUG - 2026-02-11 17:41:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:41:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:41:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:41:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:41:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:41:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:42:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:42:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:42:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:42:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:42:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:42:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:42:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:42:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-02-11 17:42:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.

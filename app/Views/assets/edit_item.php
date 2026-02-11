@@ -37,7 +37,7 @@
         <div class="detail-card">
             <h4 class="mb-4">Asset Information</h4>
             <p><strong>ID:</strong> <?= $asset['id'] ?></p>
-            <p><strong>Tracking Number:</strong> <?= $asset['tracking_number'] ?? '-' ?></p>
+            <p><strong>Asset Tag:</strong> <?= $asset['asset_tag'] ?? '-' ?></p>
             <p><strong>Sender:</strong> <?= $asset['sender'] ?></p>
             <p><strong>Recipient:</strong> <?= $asset['recipient'] ?></p>
         </div>

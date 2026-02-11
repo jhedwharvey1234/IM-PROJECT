@@ -48,8 +48,7 @@ class PeripheralController extends BaseController
 
         if ($search !== '') {
             $query = $query->groupStart()
-                ->like('asset_tag', $search, 'both', null, true)
-                ->orLike('serial_number', $search, 'both', null, true)
+                ->like('serial_number', $search, 'both', null, true)
                 ->orLike('brand', $search, 'both', null, true)
                 ->orLike('model', $search, 'both', null, true)
                 ->groupEnd();
@@ -119,6 +118,8 @@ class PeripheralController extends BaseController
         $data['peripheral_types'] = $this->getPeripheralTypes();
         $data['departments'] = $this->getDepartments();
         $data['assignable_users'] = $this->getAssignableUsers();
+        $data['assets'] = $this->getAssets();
+        $data['units'] = $this->getUnitsForPeripherals();
         return view('peripherals/create', $data);
     }
 
@@ -135,25 +136,38 @@ class PeripheralController extends BaseController
         $peripheralModel = new Peripheral();
 
         $data = [
-            'asset_tag'           => $this->request->getPost('asset_tag'),
+            'asset_id'            => $this->request->getPost('asset_id') ?: null,
+            'unit_id'             => $this->request->getPost('unit_id') ?: null,
             'peripheral_type_id'  => $this->request->getPost('peripheral_type_id'),
             'brand'               => $this->request->getPost('brand') ?: null,
             'model'               => $this->request->getPost('model') ?: null,
+            'model_number'        => $this->request->getPost('model_number') ?: null,
             'serial_number'       => $this->request->getPost('serial_number') ?: null,
-            'department_id'       => $this->request->getPost('department_id'),
-            'location_id'         => $this->request->getPost('location_id'),
+            'department_id'       => $this->request->getPost('department_id') ?: null,
+            'location_id'         => $this->request->getPost('location_id') ?: null,
             'assigned_to_user_id' => $this->request->getPost('assigned_to_user_id') ?: null,
             'workstation_id'      => $this->request->getPost('workstation_id') ?: null,
             'status'              => $this->request->getPost('status') ?? 'available',
             'condition_status'    => $this->request->getPost('condition_status') ?? 'good',
             'criticality'         => $this->request->getPost('criticality') ?? 'medium',
             'purchase_date'       => $this->request->getPost('purchase_date') ?: null,
+            'purchase_cost'       => $this->request->getPost('purchase_cost') ?: null,
+            'order_number'        => $this->request->getPost('order_number') ?: null,
+            'supplier'            => $this->request->getPost('supplier') ?: null,
+            'qty'                 => $this->request->getPost('qty') ?: 1,
+            'requestable'         => $this->request->getPost('requestable') ? 1 : 0,
+            'byod'                => $this->request->getPost('byod') ? 1 : 0,
             'warranty_expiry'     => $this->request->getPost('warranty_expiry') ?: null,
             'vendor'              => $this->request->getPost('vendor') ?: null,
-            'last_maintenance_date' => $this->request->getPost('last_maintenance_date') ?: null,
-            'next_maintenance_due'  => $this->request->getPost('next_maintenance_due') ?: null,
-            'notes'               => $this->request->getPost('notes') ?: null,
         ];
+
+        // Handle device image upload
+        $deviceImage = $this->request->getFile('device_image');
+        if ($deviceImage && $deviceImage->isValid() && !$deviceImage->hasMoved()) {
+            $newName = $deviceImage->getRandomName();
+            $deviceImage->move(FCPATH . 'uploads/devices', $newName);
+            $data['device_image'] = $newName;
+        }
 
         if ($peripheralModel->insert($data)) {
             return redirect()->to('/peripherals')->with('success', 'Peripheral created successfully');
@@ -186,6 +200,8 @@ class PeripheralController extends BaseController
         $data['peripheral_types'] = $this->getPeripheralTypes();
         $data['departments'] = $this->getDepartments();
         $data['assignable_users'] = $this->getAssignableUsers();
+        $data['assets'] = $this->getAssets();
+        $data['units'] = $this->getUnitsForPeripherals();
         return view('peripherals/edit', $data);
     }
 
@@ -202,28 +218,40 @@ class PeripheralController extends BaseController
         $peripheralModel = new Peripheral();
 
         $data = [
-            'asset_tag'           => $this->request->getPost('asset_tag'),
+            'asset_id'            => $this->request->getPost('asset_id') ?: null,
+            'unit_id'             => $this->request->getPost('unit_id') ?: null,
             'peripheral_type_id'  => $this->request->getPost('peripheral_type_id'),
             'brand'               => $this->request->getPost('brand') ?: null,
             'model'               => $this->request->getPost('model') ?: null,
+            'model_number'        => $this->request->getPost('model_number') ?: null,
             'serial_number'       => $this->request->getPost('serial_number') ?: null,
-            'department_id'       => $this->request->getPost('department_id'),
-            'location_id'         => $this->request->getPost('location_id'),
+            'department_id'       => $this->request->getPost('department_id') ?: null,
+            'location_id'         => $this->request->getPost('location_id') ?: null,
             'assigned_to_user_id' => $this->request->getPost('assigned_to_user_id') ?: null,
             'workstation_id'      => $this->request->getPost('workstation_id') ?: null,
             'status'              => $this->request->getPost('status'),
             'condition_status'    => $this->request->getPost('condition_status'),
             'criticality'         => $this->request->getPost('criticality'),
             'purchase_date'       => $this->request->getPost('purchase_date') ?: null,
+            'purchase_cost'       => $this->request->getPost('purchase_cost') ?: null,
+            'order_number'        => $this->request->getPost('order_number') ?: null,
+            'supplier'            => $this->request->getPost('supplier') ?: null,
+            'qty'                 => $this->request->getPost('qty') ?: 1,
+            'requestable'         => $this->request->getPost('requestable') ? 1 : 0,
+            'byod'                => $this->request->getPost('byod') ? 1 : 0,
             'warranty_expiry'     => $this->request->getPost('warranty_expiry') ?: null,
             'vendor'              => $this->request->getPost('vendor') ?: null,
-            'last_maintenance_date' => $this->request->getPost('last_maintenance_date') ?: null,
-            'next_maintenance_due'  => $this->request->getPost('next_maintenance_due') ?: null,
-            'notes'               => $this->request->getPost('notes') ?: null,
         ];
 
+        // Handle device image upload
+        $deviceImage = $this->request->getFile('device_image');
+        if ($deviceImage && $deviceImage->isValid() && !$deviceImage->hasMoved()) {
+            $newName = $deviceImage->getRandomName();
+            $deviceImage->move(FCPATH . 'uploads/devices', $newName);
+            $data['device_image'] = $newName;
+        }
+
         // Set validation rules for update
-        $peripheralModel->setValidationRule('asset_tag', 'required|is_unique[peripherals.asset_tag,id,' . $id . ']');
         $peripheralModel->setValidationRule('serial_number', 'permit_empty|is_unique[peripherals.serial_number,id,' . $id . ']');
 
         if ($peripheralModel->update($id, $data)) {
@@ -280,6 +308,22 @@ class PeripheralController extends BaseController
         $data['title'] = 'Peripheral Details';
 
         return view('peripherals/details', $data);
+    }
+
+    public function getAssetDetails($id)
+    {
+        if (!session()->get('user_id')) {
+            return $this->response->setJSON(['error' => 'Unauthorized'])->setStatusCode(401);
+        }
+
+        $db = \Config\Database::connect();
+        $asset = $db->query("SELECT department_id, location_id, workstation_id, assigned_to_user_id FROM assets WHERE id = ?", [$id])->getRowArray();
+
+        if (!$asset) {
+            return $this->response->setJSON(['error' => 'Asset not found'])->setStatusCode(404);
+        }
+
+        return $this->response->setJSON($asset);
     }
 
     private function getLocations()
@@ -346,11 +390,24 @@ class PeripheralController extends BaseController
     private function getAssets()
     {
         $db = \Config\Database::connect();
-        $result = $db->query("SELECT id, tracking_number, recipient FROM assets ORDER BY id DESC")->getResultArray();
+        $result = $db->query("SELECT id, asset_tag, recipient FROM assets ORDER BY id DESC")->getResultArray();
         $assets = [];
         foreach ($result as $row) {
-            $assets[$row['id']] = $row['tracking_number'] . ' - ' . $row['recipient'];
+            $assets[$row['id']] = ($row['asset_tag'] ?: 'No Asset Tag') . ' - ' . $row['recipient'];
         }
         return $assets;
+    }
+
+    private function getUnitsForPeripherals()
+    {
+        $db = \Config\Database::connect();
+        $result = $db->query("SELECT id, unit_name, unit_type FROM units ORDER BY unit_name")->getResultArray();
+        $units = [];
+        foreach ($result as $row) {
+            if (in_array($row['unit_type'], ['peripheral', 'both'], true)) {
+                $units[$row['id']] = $row['unit_name'];
+            }
+        }
+        return $units;
     }
 }

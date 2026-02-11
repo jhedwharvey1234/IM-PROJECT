@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\AssignableUser;
+use App\Models\User;
 
 class AssignableUserController extends BaseController
 {
@@ -16,8 +17,25 @@ class AssignableUserController extends BaseController
             return redirect()->to('dashboard')->with('error', 'Unauthorized access');
         }
 
-        $userModel = new AssignableUser();
-        $data['assignable_users'] = $userModel->orderBy('full_name', 'ASC')->findAll();
+        $assignableUserModel = new AssignableUser();
+        $userModel = new User();
+        
+        $assignableUsers = $assignableUserModel->orderBy('full_name', 'ASC')->findAll();
+        $systemUsers = $userModel->findAll();
+        
+        // Create a map of system users by username
+        $systemUserMap = [];
+        foreach ($systemUsers as $user) {
+            $systemUserMap[$user['username']] = $user;
+        }
+        
+        // Add system user indicator to assignable users
+        foreach ($assignableUsers as &$assignableUser) {
+            $assignableUser['is_system_user'] = isset($systemUserMap[$assignableUser['full_name']]);
+            $assignableUser['system_user'] = $systemUserMap[$assignableUser['full_name']] ?? null;
+        }
+        
+        $data['assignable_users'] = $assignableUsers;
         $data['title'] = 'Assignable Users';
 
         return view('settings/assigned_users/index', $data);
@@ -117,11 +135,14 @@ class AssignableUserController extends BaseController
         }
 
         $userModel = new AssignableUser();
+        $from = $this->request->getGet('from'); // Check if called from users management
 
         if ($userModel->delete($id)) {
-            return redirect()->to('/settings/assigned-users')->with('success', 'Assignable user deleted successfully');
+            $redirectUrl = ($from === 'users') ? '/users' : '/settings/assigned-users';
+            return redirect()->to($redirectUrl)->with('success', 'User deleted successfully');
         }
 
-        return redirect()->to('/settings/assigned-users')->with('error', 'Failed to delete assignable user');
+        $redirectUrl = ($from === 'users') ? '/users' : '/settings/assigned-users';
+        return redirect()->to($redirectUrl)->with('error', 'Failed to delete user');
     }
 }
