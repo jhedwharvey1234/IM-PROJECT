@@ -22,6 +22,33 @@ class Application extends Model
         'status_id',
         'date_created',
         'last_updated',
+        // Category 1: Basic Information
+        'app_category',
+        'app_type',
+        'business_purpose',
+        // Category 7: Security & Compliance
+        'data_classification',
+        'personal_data_flag',
+        'authentication_type',
+        'encryption_enabled',
+        'last_security_review',
+        // Category 8: Lifecycle Management
+        'lifecycle_stage',
+        'eol_date',
+        'replacement_system',
+        'upgrade_roadmap',
+        'last_major_upgrade',
+        // Category 9: Operational Metrics
+        'availability_sla',
+        'business_impact',
+        'peak_users',
+        'monitoring_tool',
+        // Category 10: Licensing & Cost
+        'annual_cost',
+        'license_type',
+        'license_expiry',
+        'vendor_contract_ref',
+        'cloud_subscription_details',
     ];
     protected $useTimestamps = false;
 
@@ -29,6 +56,9 @@ class Application extends Model
         'app_name' => 'required|max_length[150]',
         'app_code' => 'required|max_length[30]|is_unique[applications.app_code,id,{id}]',
         'description' => 'permit_empty|string',
+        'app_category' => 'permit_empty|max_length[100]',
+        'app_type' => 'permit_empty|max_length[100]',
+        'business_purpose' => 'permit_empty|string',
         'department_id' => 'permit_empty|integer',
         'owner_name' => 'permit_empty|max_length[100]',
         'business_criticality' => 'permit_empty|in_list[High,Medium,Low]',
@@ -36,6 +66,25 @@ class Application extends Model
         'production_url' => 'permit_empty|max_length[255]',
         'version' => 'permit_empty|max_length[20]',
         'status_id' => 'permit_empty|integer',
+        'data_classification' => 'permit_empty|in_list[Public,Internal,Confidential,Sensitive]',
+        'personal_data_flag' => 'permit_empty|in_list[0,1]',
+        'authentication_type' => 'permit_empty|max_length[100]',
+        'encryption_enabled' => 'permit_empty|in_list[0,1]',
+        'last_security_review' => 'permit_empty|valid_date[Y-m-d]',
+        'lifecycle_stage' => 'permit_empty|in_list[Development,Active,Maintenance,Sunset]',
+        'eol_date' => 'permit_empty|valid_date[Y-m-d]',
+        'replacement_system' => 'permit_empty|max_length[255]',
+        'upgrade_roadmap' => 'permit_empty|string',
+        'last_major_upgrade' => 'permit_empty|valid_date[Y-m-d]',
+        'availability_sla' => 'permit_empty|max_length[50]',
+        'business_impact' => 'permit_empty|string',
+        'peak_users' => 'permit_empty|integer',
+        'monitoring_tool' => 'permit_empty|max_length[100]',
+        'annual_cost' => 'permit_empty|decimal',
+        'license_type' => 'permit_empty|max_length[100]',
+        'license_expiry' => 'permit_empty|valid_date[Y-m-d]',
+        'vendor_contract_ref' => 'permit_empty|max_length[255]',
+        'cloud_subscription_details' => 'permit_empty|string',
     ];
 
     protected $validationMessages = [

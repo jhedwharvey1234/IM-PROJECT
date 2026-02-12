@@ -75,6 +75,31 @@ $routes->get('/settings/categories', 'SettingsController::categories');
 $routes->post('/settings/save-category', 'SettingsController::saveCategory');
 $routes->get('/settings/delete-category/(:num)', 'SettingsController::deleteCategory/$1');
 
+$routes->get('/settings/technologies', 'SettingsController::technologies');
+$routes->post('/settings/technologies/store', 'SettingsController::storeTechnology');
+$routes->post('/settings/technologies/update/(:num)', 'SettingsController::updateTechnology/$1');
+$routes->get('/settings/technologies/delete/(:num)', 'SettingsController::deleteTechnology/$1');
+
+$routes->get('/settings/application-status', 'SettingsController::applicationStatus');
+$routes->post('/settings/application-status/store', 'SettingsController::storeApplicationStatus');
+$routes->post('/settings/application-status/update/(:num)', 'SettingsController::updateApplicationStatus/$1');
+$routes->get('/settings/application-status/delete/(:num)', 'SettingsController::deleteApplicationStatus/$1');
+
+$routes->get('/settings/servers', 'SettingsController::servers');
+$routes->post('/settings/servers/store', 'SettingsController::storeServer');
+$routes->post('/settings/servers/update/(:num)', 'SettingsController::updateServer/$1');
+$routes->get('/settings/servers/delete/(:num)', 'SettingsController::deleteServer/$1');
+
+$routes->get('/settings/environments', 'SettingsController::environments');
+$routes->post('/settings/environments/store', 'SettingsController::storeEnvironment');
+$routes->post('/settings/environments/update/(:num)', 'SettingsController::updateEnvironment/$1');
+$routes->get('/settings/environments/delete/(:num)', 'SettingsController::deleteEnvironment/$1');
+
+$routes->get('/settings/application-contacts', 'SettingsController::applicationContacts');
+$routes->post('/settings/application-contacts/store', 'SettingsController::storeApplicationContact');
+$routes->post('/settings/application-contacts/update/(:num)', 'SettingsController::updateApplicationContact/$1');
+$routes->get('/settings/application-contacts/delete/(:num)', 'SettingsController::deleteApplicationContact/$1');
+
 $routes->get('/settings/locations', 'LocationController::index');
 $routes->get('/settings/locations/create', 'LocationController::create');
 $routes->post('/settings/locations/store', 'LocationController::store');

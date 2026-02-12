@@ -10,8 +10,8 @@ class Server extends Model
     protected $primaryKey = 'id';
     protected $returnType = 'array';
     protected $allowedFields = ['server_name', 'server_type', 'ip_address', 'location', 'status'];
-    protected $useTimestamps = true;
-    protected $createdField = 'created_at';
+    protected $useTimestamps = false;  // Disabled to prevent array key issues
+    // protected $createdField = 'created_at';  // Using database default instead
     protected $updatedField = false;
 
     protected $validationRules = [

@@ -36,7 +36,7 @@
 
         <div class="mb-4">
             <h3><i class="bi bi-gear"></i> Settings</h3>
-            <p class="text-muted mb-0">Manage lookup data used across peripherals.</p>
+            <p class="text-muted mb-0">Manage lookup data used across the system.</p>
         </div>
 
         <div class="settings-grid">
@@ -64,6 +64,31 @@
                 <h5><i class="bi bi-tag"></i> Asset Categories</h5>
                 <p class="text-muted">Asset classification categories.</p>
                 <a href="<?= site_url('settings/categories') ?>">Manage Categories</a>
+            </div>
+            <div class="settings-card">
+                <h5><i class="bi bi-code-square"></i> Technologies</h5>
+                <p class="text-muted">Application technology stack.</p>
+                <a href="<?= site_url('settings/technologies') ?>">Manage Technologies</a>
+            </div>
+            <div class="settings-card">
+                <h5><i class="bi bi-flag"></i> Application Statuses</h5>
+                <p class="text-muted">Application lifecycle statuses.</p>
+                <a href="<?= site_url('settings/application-status') ?>">Manage Statuses</a>
+            </div>
+            <div class="settings-card">
+                <h5><i class="bi bi-server"></i> Servers</h5>
+                <p class="text-muted">Application server infrastructure.</p>
+                <a href="<?= site_url('settings/servers') ?>">Manage Servers</a>
+            </div>
+            <div class="settings-card">
+                <h5><i class="bi bi-layers"></i> Environments</h5>
+                <p class="text-muted">Deployment environments.</p>
+                <a href="<?= site_url('settings/environments') ?>">Manage Environments</a>
+            </div>
+            <div class="settings-card">
+                <h5><i class="bi bi-person-lines-fill"></i> Application Contacts</h5>
+                <p class="text-muted">Application owners and contacts.</p>
+                <a href="<?= site_url('settings/application-contacts') ?>">Manage Contacts</a>
             </div>
         </div>
 

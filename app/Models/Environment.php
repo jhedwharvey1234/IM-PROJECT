@@ -10,12 +10,12 @@ class Environment extends Model
     protected $primaryKey = 'id';
     protected $returnType = 'array';
     protected $allowedFields = ['application_id', 'environment_type', 'server_id', 'url', 'version', 'status'];
-    protected $useTimestamps = true;
-    protected $createdField = 'created_at';
+    protected $useTimestamps = false;  // Disabled to prevent array key issues - database handles it
+    // protected $createdField = 'created_at';  // Using database default instead
     protected $updatedField = false;
 
     protected $validationRules = [
-        'application_id' => 'required|integer',
+        'application_id' => 'permit_empty|integer',  // Changed to permit_empty since it might not always be provided
         'environment_type' => 'permit_empty|max_length[50]',
         'server_id' => 'permit_empty|integer',
         'url' => 'permit_empty|max_length[255]',
@@ -32,3 +32,4 @@ class Environment extends Model
         return $db->query($sql, [$applicationId])->getResultArray();
     }
 }
+
