@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <link rel="stylesheet" href="<?= base_url('public/css/auth.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('public/css/buttons.css') ?>">
+    <link rel="stylesheet" href="/IM/public/css/auth.css">
+    <link rel="stylesheet" href="/IM/public/css/buttons.css">
 </head>
 <body>
     <main class="auth-wrap">
@@ -23,7 +23,8 @@
                 </div>
             <?php endif; ?>
 
-            <form action="<?= site_url('auth/store') ?>" method="post" novalidate>
+            <form action="/IM/auth/store" method="post" novalidate>
+                <?= csrf_field() ?>
                 <div class="form-group">
                     <label for="username" class="visually-hidden">Username</label>
                     <input id="username" class="form-control" type="text" name="username" placeholder="Username" required autocomplete="username">

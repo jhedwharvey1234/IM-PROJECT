@@ -144,4 +144,24 @@ $routes->post('/applications/update/(:num)', 'ApplicationController::update/$1')
 $routes->get('/applications/delete/(:num)', 'ApplicationController::delete/$1');
 $routes->get('/applications/details/(:num)', 'ApplicationController::details/$1');
 $routes->get('/applications/search', 'ApplicationController::search');
+$routes->post('/applications/related-data/store/(:num)', 'ApplicationController::storeRelatedData/$1');
+$routes->post('/applications/related-data/update/(:num)/(:num)', 'ApplicationController::updateRelatedData/$1/$2');
+$routes->get('/applications/related-data/delete/(:num)/(:num)', 'ApplicationController::deleteRelatedData/$1/$2');
+
+// Document Management routes
+$routes->get('/documents', 'DocumentController::index');
+$routes->get('/documents/create', 'DocumentController::create');
+$routes->post('/documents/store', 'DocumentController::store');
+$routes->get('/documents/edit/(:num)', 'DocumentController::edit/$1');
+$routes->post('/documents/update/(:num)', 'DocumentController::update/$1');
+$routes->get('/documents/delete/(:num)', 'DocumentController::delete/$1');
+$routes->post('/documents/batch-delete', 'DocumentController::batchDelete');
+$routes->get('/documents/details/(:num)', 'DocumentController::details/$1');
+$routes->post('/documents/note/store/(:num)', 'DocumentController::addNote/$1');
+$routes->get('/documents/note/delete/(:num)/(:num)', 'DocumentController::deleteNote/$1/$2');
+$routes->post('/documents/file/upload/(:num)', 'DocumentController::uploadFile/$1');
+$routes->get('/documents/file/delete/(:num)/(:num)', 'DocumentController::deleteFile/$1/$2');
+$routes->post('/documents/alert/store/(:num)', 'DocumentController::addAlert/$1');
+$routes->get('/documents/alert/delete/(:num)/(:num)', 'DocumentController::deleteAlert/$1/$2');
+$routes->get('/documents/alerts', 'DocumentController::alerts');
 

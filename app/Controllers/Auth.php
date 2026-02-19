@@ -24,7 +24,7 @@ class Auth extends Controller
         ];
 
         if ($userModel->insert($data)) {
-            return redirect()->to('/login')->with('success', 'Registration successful. Please login.');
+            return redirect()->to(site_url('login'))->with('success', 'Registration successful. Please login.');
         } else {
             return redirect()->back()->withInput()->with('errors', $userModel->errors());
         }
@@ -47,7 +47,7 @@ class Auth extends Controller
             session()->set('user_id', $user['id']);
             session()->set('username', $user['username']);
             session()->set('usertype', $user['usertype']);
-            return redirect()->to('/dashboard');
+            return redirect()->to(site_url('dashboard'));
         } else {
             return redirect()->back()->with('error', 'Invalid credentials');
         }
@@ -56,6 +56,6 @@ class Auth extends Controller
     public function logout()
     {
         session()->destroy();
-        return redirect()->to('/login');
+        return redirect()->to(site_url('login'));
     }
 }

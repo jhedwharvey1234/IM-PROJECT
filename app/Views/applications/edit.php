@@ -146,6 +146,11 @@
                                value="<?= old('production_url', $application['production_url']) ?>" maxlength="255" placeholder="https://...">
                     </div>
                     <div class="col-md-6">
+                        <label for="archive_date" class="form-label">Archive Date</label>
+                        <input type="date" class="form-control" id="archive_date" name="archive_date"
+                               value="<?= old('archive_date', $application['archive_date'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-6">
                         <label for="version" class="form-label">Current Version</label>
                         <input type="text" class="form-control" id="version" name="version" 
                                value="<?= old('version', $application['version']) ?>" maxlength="20" placeholder="e.g., 1.0.0">
@@ -347,6 +352,30 @@
                         <input type="text" class="form-control" id="compliance_requirements" name="compliance_requirements" 
                                value="<?= old('compliance_requirements', $compliance['compliance_requirements'] ?? '') ?>" placeholder="e.g., PCI, GDPR, HIPAA">
                     </div>
+                    <div class="col-md-6">
+                        <label for="vulnerability_scan_status" class="form-label">Vulnerability Scan Status</label>
+                        <select class="form-select" id="vulnerability_scan_status" name="vulnerability_scan_status">
+                            <option value="">Select Status</option>
+                            <option value="Pending" <?= old('vulnerability_scan_status', $compliance['vulnerability_scan_status'] ?? '') === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                            <option value="Completed" <?= old('vulnerability_scan_status', $compliance['vulnerability_scan_status'] ?? '') === 'Completed' ? 'selected' : '' ?>>Completed</option>
+                            <option value="Failed" <?= old('vulnerability_scan_status', $compliance['vulnerability_scan_status'] ?? '') === 'Failed' ? 'selected' : '' ?>>Failed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="last_vulnerability_scan" class="form-label">Last Vulnerability Scan Date</label>
+                        <input type="date" class="form-control" id="last_vulnerability_scan" name="last_vulnerability_scan" 
+                               value="<?= old('last_vulnerability_scan', $compliance['last_vulnerability_scan'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="encryption_method" class="form-label">Encryption Method</label>
+                        <input type="text" class="form-control" id="encryption_method" name="encryption_method" 
+                               value="<?= old('encryption_method', $compliance['encryption_method'] ?? '') ?>" maxlength="100" placeholder="e.g., AES-256">
+                    </div>
+                    <div class="col-12">
+                        <label for="security_certifications" class="form-label">Security Certifications</label>
+                        <input type="text" class="form-control" id="security_certifications" name="security_certifications" 
+                               value="<?= old('security_certifications', $compliance['security_certifications'] ?? '') ?>" maxlength="255" placeholder="e.g., ISO 27001, SOC2">
+                    </div>
                 </div>
             </div>
 
@@ -385,6 +414,16 @@
                         <label for="last_major_upgrade" class="form-label">Last Major Upgrade Date</label>
                         <input type="date" class="form-control" id="last_major_upgrade" name="last_major_upgrade" 
                                value="<?= old('last_major_upgrade', $application['last_major_upgrade']) ?>">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="retirement_date" class="form-label">Retirement Date</label>
+                        <input type="date" class="form-control" id="retirement_date" name="retirement_date" 
+                               value="<?= old('retirement_date', $application['retirement_date'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="sunset_notification_date" class="form-label">Sunset Notification Date</label>
+                        <input type="date" class="form-control" id="sunset_notification_date" name="sunset_notification_date" 
+                               value="<?= old('sunset_notification_date', $application['sunset_notification_date'] ?? '') ?>">
                     </div>
                     <div class="col-md-12">
                         <label for="replacement_system" class="form-label">Replacement System</label>
@@ -437,6 +476,26 @@
                             <option value="Low" <?= old('business_criticality', $application['business_criticality']) === 'Low' ? 'selected' : '' ?>>Low</option>
                         </select>
                     </div>
+                    <div class="col-md-6">
+                        <label for="last_incident" class="form-label">Last Incident Date</label>
+                        <input type="date" class="form-control" id="last_incident" name="last_incident" 
+                               value="<?= old('last_incident', $metrics['last_incident'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="mttr_target" class="form-label">MTTR Target (minutes)</label>
+                        <input type="number" class="form-control" id="mttr_target" name="mttr_target" 
+                               value="<?= old('mttr_target', $metrics['mttr_target'] ?? '') ?>" min="0">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="rto_target" class="form-label">RTO Target (minutes)</label>
+                        <input type="number" class="form-control" id="rto_target" name="rto_target" 
+                               value="<?= old('rto_target', $metrics['rto_target'] ?? '') ?>" min="0">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="rpo_target" class="form-label">RPO Target (minutes)</label>
+                        <input type="number" class="form-control" id="rpo_target" name="rpo_target" 
+                               value="<?= old('rpo_target', $metrics['rpo_target'] ?? '') ?>" min="0">
+                    </div>
                 </div>
             </div>
 
@@ -476,6 +535,16 @@
                         <label for="cost_center" class="form-label">Cost Center</label>
                         <input type="text" class="form-control" id="cost_center" name="cost_center" 
                                value="<?= old('cost_center', $licensing['cost_center'] ?? '') ?>" maxlength="50">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="purchase_date" class="form-label">Purchase Date</label>
+                        <input type="date" class="form-control" id="purchase_date" name="purchase_date" 
+                               value="<?= old('purchase_date', $licensing['purchase_date'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="renewal_date" class="form-label">Renewal Date</label>
+                        <input type="date" class="form-control" id="renewal_date" name="renewal_date" 
+                               value="<?= old('renewal_date', $licensing['renewal_date'] ?? '') ?>">
                     </div>
                     <div class="col-12">
                         <label for="cloud_subscription_details" class="form-label">Cloud Subscription Details</label>

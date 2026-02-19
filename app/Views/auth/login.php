@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="<?= base_url('public/css/auth.css') ?>">
-    <link rel="stylesheet" href="<?= base_url('public/css/buttons.css') ?>">
+    <link rel="stylesheet" href="/IM/public/css/auth.css">
+    <link rel="stylesheet" href="/IM/public/css/buttons.css">
 </head>
 <body>
     <main class="auth-wrap">
@@ -22,7 +22,8 @@
                 <div class="flash-success" role="status"><?= session()->getFlashdata('success') ?></div>
             <?php endif; ?>
 
-            <form action="<?= site_url('auth/authenticate') ?>" method="post" novalidate>
+            <form action="/IM/auth/authenticate" method="post" novalidate>
+                <?= csrf_field() ?>
                 <div class="form-group">
                     <label for="email" class="visually-hidden">Email</label>
                     <input id="email" class="form-control" type="email" name="email" placeholder="Email" required autocomplete="username">

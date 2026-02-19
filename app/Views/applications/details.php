@@ -608,6 +608,96 @@
 
                     <!-- TAB 8: RELATED DATA -->
                     <div class="tab-pane fade" id="tab-related" role="tabpanel">
+                        <div class="detail-card">
+                            <h3><i class="bi bi-link-45deg"></i> Integration Links</h3>
+                            <div class="detail-row">
+                                <span class="detail-label"><i class="bi bi-globe"></i> Production URL</span>
+                                <span class="detail-value"><?= !empty($application['production_url']) ? '<a href="' . esc($application['production_url']) . '" target="_blank" class="url-link"><i class="bi bi-box-arrow-up-right"></i> ' . esc($application['production_url']) . '</a>' : 'N/A' ?></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label"><i class="bi bi-github"></i> Repository URL</span>
+                                <span class="detail-value"><?= !empty($application['repository_url']) ? '<a href="' . esc($application['repository_url']) . '" target="_blank" class="url-link"><i class="bi bi-box-arrow-up-right"></i> ' . esc($application['repository_url']) . '</a>' : 'N/A' ?></span>
+                            </div>
+                        </div>
+
+                        <div class="detail-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3 class="mb-0"><i class="bi bi-folder2-open"></i> Related Data</h3>
+                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRelatedDataModal">
+                                    <i class="bi bi-plus-circle"></i> Add Related Data
+                                </button>
+                            </div>
+
+                            <?php if (!empty($relatedData)): ?>
+                                <?php foreach ($relatedData as $item): ?>
+                                    <div class="record-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="record-item-title"><?= esc($item['title']) ?></div>
+                                                <div class="record-item-meta">
+                                                    Relation: <span class="badge bg-info"><?= esc($item['relation'] ?? 'N/A') ?></span>
+                                                    <?php if (!empty($item['link'])): ?>
+                                                        | Link: <a href="<?= esc($item['link']) ?>" target="_blank"><?= esc($item['link']) ?></a>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editRelatedDataModal<?= $item['id'] ?>">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <a href="<?= site_url('applications/related-data/delete/' . $application['id'] . '/' . $item['id']) ?>"
+                                                   class="btn btn-sm btn-danger"
+                                                   onclick="return confirm('Are you sure you want to delete this related data?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <?php if (!empty($item['description'])): ?>
+                                            <div class="mt-2"><?= nl2br(esc($item['description'])) ?></div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <div class="modal fade" id="editRelatedDataModal<?= $item['id'] ?>" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form action="<?= site_url('applications/related-data/update/' . $application['id'] . '/' . $item['id']) ?>" method="post">
+                                                    <?= csrf_field() ?>
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Edit Related Data</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Title <span class="text-danger">*</span></label>
+                                                            <input type="text" class="form-control" name="title" value="<?= esc($item['title']) ?>" required maxlength="150">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Link (Optional)</label>
+                                                            <input type="url" class="form-control" name="link" value="<?= esc($item['link'] ?? '') ?>" maxlength="255" placeholder="https://...">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Relation</label>
+                                                            <input type="text" class="form-control" name="relation" value="<?= esc($item['relation'] ?? '') ?>" maxlength="100" placeholder="e.g., API, Document, Dependency">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Description</label>
+                                                            <textarea class="form-control" name="description" rows="3" placeholder="Description..."><?= esc($item['description'] ?? '') ?></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="alert alert-info mb-0"><i class="bi bi-info-circle"></i> No related data records yet.</div>
+                            <?php endif; ?>
+                        </div>
+
                         <!-- Batch Jobs -->
                         <?php if (!empty($batchJobs)): ?>
                         <div class="detail-card">
@@ -646,6 +736,42 @@
                             </div>
                         </div>
                         <?php endif; ?>
+
+                        <div class="modal fade" id="addRelatedDataModal" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form action="<?= site_url('applications/related-data/store/' . $application['id']) ?>" method="post">
+                                        <?= csrf_field() ?>
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Add Related Data</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Title <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" name="title" required maxlength="150">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Link (Optional)</label>
+                                                <input type="url" class="form-control" name="link" maxlength="255" placeholder="https://...">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Relation</label>
+                                                <input type="text" class="form-control" name="relation" maxlength="100" placeholder="e.g., API, Document, Dependency">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Description</label>
+                                                <textarea class="form-control" name="description" rows="3" placeholder="Description..."></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Add Related Data</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -18,6 +18,7 @@ use App\Models\BatchJobs;
 use App\Models\LicensingInfo;
 use App\Models\OperationalMetrics;
 use App\Models\TechnologyDetails;
+use App\Models\ApplicationRelatedData;
 
 class ApplicationController extends BaseController
 {
@@ -27,6 +28,7 @@ class ApplicationController extends BaseController
     protected $technologyModel;
     protected $appTechModel;
     protected $logModel;
+    protected $relatedDataModel;
 
     public function __construct()
     {
@@ -46,6 +48,7 @@ class ApplicationController extends BaseController
         $this->licensingModel = new LicensingInfo();
         $this->metricsModel = new OperationalMetrics();
         $this->techModel = new TechnologyDetails();
+        $this->relatedDataModel = new ApplicationRelatedData();
     }
 
     public function index()
@@ -112,11 +115,14 @@ class ApplicationController extends BaseController
             'business_criticality' => $this->request->getPost('business_criticality'),
             'lifecycle_stage' => $this->request->getPost('lifecycle_stage'),
             'eol_date' => $this->request->getPost('eol_date') ?: null,
+            'retirement_date' => $this->request->getPost('retirement_date') ?: null,
+            'sunset_notification_date' => $this->request->getPost('sunset_notification_date') ?: null,
             'replacement_system' => $this->request->getPost('replacement_system'),
             'upgrade_roadmap' => $this->request->getPost('upgrade_roadmap'),
             'last_major_upgrade' => $this->request->getPost('last_major_upgrade') ?: null,
             'repository_url' => $this->request->getPost('repository_url'),
             'production_url' => $this->request->getPost('production_url'),
+            'archive_date' => $this->request->getPost('archive_date') ?: null,
             'version' => $this->request->getPost('version'),
             'status_id' => $this->request->getPost('status_id') ?: null,
             'data_classification' => $this->request->getPost('data_classification'),
@@ -173,6 +179,7 @@ class ApplicationController extends BaseController
                 'memory_gb' => $this->request->getPost('memory_gb') ?: null,
                 'storage_gb' => $this->request->getPost('storage_gb') ?: null,
                 'database_server' => $this->request->getPost('database_server'),
+                'database_type' => $this->request->getPost('database_type'),
                 'storage_location' => $this->request->getPost('storage_location'),
                 'backup_location' => $this->request->getPost('backup_location'),
             ];
@@ -188,6 +195,7 @@ class ApplicationController extends BaseController
                 'encryption_enabled' => $this->request->getPost('encryption_enabled') ? 1 : 0,
                 'encryption_method' => $this->request->getPost('encryption_method'),
                 'vulnerability_scan_status' => $this->request->getPost('vulnerability_scan_status'),
+                'last_vulnerability_scan' => $this->request->getPost('last_vulnerability_scan') ?: null,
                 'last_security_review' => $this->request->getPost('last_security_review') ?: null,
                 'security_certifications' => $this->request->getPost('security_certifications'),
             ];
@@ -217,6 +225,7 @@ class ApplicationController extends BaseController
                 'peak_users' => $this->request->getPost('peak_users') ?: null,
                 'peak_transactions' => $this->request->getPost('peak_transactions') ?: null,
                 'monitoring_tool' => $this->request->getPost('monitoring_tool'),
+                'last_incident' => $this->request->getPost('last_incident') ?: null,
                 'mttr_target' => $this->request->getPost('mttr_target') ?: null,
                 'rto_target' => $this->request->getPost('rto_target') ?: null,
                 'rpo_target' => $this->request->getPost('rpo_target') ?: null,
@@ -272,6 +281,7 @@ class ApplicationController extends BaseController
         $data['dependencies'] = $this->dependenciesModel->getDependenciesByApplication($id);
         $data['vendors'] = $this->vendorsModel->getVendorsByApplication($id);
         $data['batchJobs'] = $this->batchModel->getJobsByApplication($id);
+        $data['relatedData'] = $this->relatedDataModel->getByApplication($id);
         
         $data['title'] = 'Edit Application';
 
@@ -305,11 +315,14 @@ class ApplicationController extends BaseController
             'business_criticality' => $this->request->getPost('business_criticality'),
             'lifecycle_stage' => $this->request->getPost('lifecycle_stage'),
             'eol_date' => $this->request->getPost('eol_date') ?: null,
+            'retirement_date' => $this->request->getPost('retirement_date') ?: null,
+            'sunset_notification_date' => $this->request->getPost('sunset_notification_date') ?: null,
             'replacement_system' => $this->request->getPost('replacement_system'),
             'upgrade_roadmap' => $this->request->getPost('upgrade_roadmap'),
             'last_major_upgrade' => $this->request->getPost('last_major_upgrade') ?: null,
             'repository_url' => $this->request->getPost('repository_url'),
             'production_url' => $this->request->getPost('production_url'),
+            'archive_date' => $this->request->getPost('archive_date') ?: null,
             'version' => $this->request->getPost('version'),
             'status_id' => $this->request->getPost('status_id') ?: null,
             'data_classification' => $this->request->getPost('data_classification'),
@@ -368,6 +381,7 @@ class ApplicationController extends BaseController
                 'memory_gb' => $this->request->getPost('memory_gb') ?: null,
                 'storage_gb' => $this->request->getPost('storage_gb') ?: null,
                 'database_server' => $this->request->getPost('database_server'),
+                'database_type' => $this->request->getPost('database_type'),
                 'storage_location' => $this->request->getPost('storage_location'),
                 'backup_location' => $this->request->getPost('backup_location'),
             ];
@@ -388,6 +402,7 @@ class ApplicationController extends BaseController
                 'encryption_enabled' => $this->request->getPost('encryption_enabled') ? 1 : 0,
                 'encryption_method' => $this->request->getPost('encryption_method'),
                 'vulnerability_scan_status' => $this->request->getPost('vulnerability_scan_status'),
+                'last_vulnerability_scan' => $this->request->getPost('last_vulnerability_scan') ?: null,
                 'last_security_review' => $this->request->getPost('last_security_review') ?: null,
                 'security_certifications' => $this->request->getPost('security_certifications'),
             ];
@@ -427,6 +442,7 @@ class ApplicationController extends BaseController
                 'peak_users' => $this->request->getPost('peak_users') ?: null,
                 'peak_transactions' => $this->request->getPost('peak_transactions') ?: null,
                 'monitoring_tool' => $this->request->getPost('monitoring_tool'),
+                'last_incident' => $this->request->getPost('last_incident') ?: null,
                 'mttr_target' => $this->request->getPost('mttr_target') ?: null,
                 'rto_target' => $this->request->getPost('rto_target') ?: null,
                 'rpo_target' => $this->request->getPost('rpo_target') ?: null,
@@ -516,6 +532,7 @@ class ApplicationController extends BaseController
         $data['dependencies'] = $this->dependenciesModel->getDependenciesByApplication($id);
         $data['vendors'] = $this->vendorsModel->getVendorsByApplication($id);
         $data['batchJobs'] = $this->batchModel->getJobsByApplication($id);
+        $data['relatedData'] = $this->relatedDataModel->getByApplication($id);
         $data['logs'] = $this->logModel->getLogsByApplication($id);
         $data['title'] = 'Application Details';
 
@@ -543,5 +560,90 @@ class ApplicationController extends BaseController
         $data['title'] = 'Search Applications';
 
         return view('applications/search', $data);
+    }
+
+    public function storeRelatedData($applicationId)
+    {
+        if (!session()->get('user_id')) {
+            return redirect()->to('login');
+        }
+
+        if (session()->get('usertype') !== 'superadmin') {
+            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        $application = $this->applicationModel->find($applicationId);
+        if (!$application) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException("Application $applicationId not found");
+        }
+
+        $data = [
+            'application_id' => $applicationId,
+            'title' => trim((string) $this->request->getPost('title')),
+            'link' => $this->request->getPost('link') ? trim((string) $this->request->getPost('link')) : null,
+            'description' => $this->request->getPost('description'),
+            'relation' => $this->request->getPost('relation'),
+        ];
+
+        if ($this->relatedDataModel->insert($data)) {
+            return redirect()->to('/applications/details/' . $applicationId)->with('success', 'Related data added successfully');
+        }
+
+        return redirect()->to('/applications/details/' . $applicationId)
+            ->withInput()
+            ->with('error', implode(', ', $this->relatedDataModel->errors()));
+    }
+
+    public function updateRelatedData($applicationId, $id)
+    {
+        if (!session()->get('user_id')) {
+            return redirect()->to('login');
+        }
+
+        if (session()->get('usertype') !== 'superadmin') {
+            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        $item = $this->relatedDataModel->find($id);
+        if (!$item || (int) $item['application_id'] !== (int) $applicationId) {
+            return redirect()->to('/applications/details/' . $applicationId)->with('error', 'Related data not found');
+        }
+
+        $data = [
+            'title' => trim((string) $this->request->getPost('title')),
+            'link' => $this->request->getPost('link') ? trim((string) $this->request->getPost('link')) : null,
+            'description' => $this->request->getPost('description'),
+            'relation' => $this->request->getPost('relation'),
+        ];
+
+        if ($this->relatedDataModel->update($id, $data)) {
+            return redirect()->to('/applications/details/' . $applicationId)->with('success', 'Related data updated successfully');
+        }
+
+        return redirect()->to('/applications/details/' . $applicationId)
+            ->withInput()
+            ->with('error', implode(', ', $this->relatedDataModel->errors()));
+    }
+
+    public function deleteRelatedData($applicationId, $id)
+    {
+        if (!session()->get('user_id')) {
+            return redirect()->to('login');
+        }
+
+        if (session()->get('usertype') !== 'superadmin') {
+            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        $item = $this->relatedDataModel->find($id);
+        if (!$item || (int) $item['application_id'] !== (int) $applicationId) {
+            return redirect()->to('/applications/details/' . $applicationId)->with('error', 'Related data not found');
+        }
+
+        if ($this->relatedDataModel->delete($id)) {
+            return redirect()->to('/applications/details/' . $applicationId)->with('success', 'Related data deleted successfully');
+        }
+
+        return redirect()->to('/applications/details/' . $applicationId)->with('error', 'Failed to delete related data');
     }
 }

@@ -7,8 +7,11 @@
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS app_category VARCHAR(100) COMMENT 'Core System, Support, Reporting, Customer-facing, etc.';
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS app_type VARCHAR(100) COMMENT 'Web, Mobile, Desktop, API, Batch, SaaS';
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS business_purpose TEXT COMMENT 'Business Purpose';
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS archive_date DATE COMMENT 'Application archive date';
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS lifecycle_stage VARCHAR(50) COMMENT 'Development, Active, Maintenance, Sunset';
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS eol_date DATE COMMENT 'End-of-Life Date';
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS retirement_date DATE COMMENT 'Planned date to fully retire the application';
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS sunset_notification_date DATE COMMENT 'Date to notify stakeholders before retirement';
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS replacement_system VARCHAR(255) COMMENT 'Replacement System Name/ID';
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS upgrade_roadmap TEXT COMMENT 'Planned upgrades and timeline';
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS last_major_upgrade DATE COMMENT 'Last Major Upgrade Date';
@@ -152,6 +155,21 @@ CREATE TABLE IF NOT EXISTS batch_jobs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+);
+
+-- 11. Create application_related_data table for links/documents/related references
+CREATE TABLE IF NOT EXISTS application_related_data (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    application_id INT NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    link VARCHAR(255),
+    description TEXT,
+    relation VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
+    INDEX (application_id, relation)
 );
 
 -- 9. Create licensing_info table

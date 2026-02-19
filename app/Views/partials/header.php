@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?= base_url('css/buttons.css') ?>">
+<link rel="stylesheet" href="/IM/public/css/buttons.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" style = "height: 50px;">
@@ -21,31 +21,178 @@
         <span class="link-text">Dashboard</span>
     </a>
     <?php if (session()->get('usertype') === 'superadmin'): ?>
-        <a href="<?= site_url('users') ?>" class="sidebar-link" data-tooltip="Manage Users">
-            <i class="bi bi-people"></i>
-            <span class="link-text">Manage Users</span>
-        </a>
-        <a href="<?= site_url('units') ?>" class="sidebar-link" data-tooltip="Manage Units">
-            <i class="bi bi-building"></i>
-            <span class="link-text">Manage Units</span>
-        </a>
-        <a href="<?= site_url('assets') ?>" class="sidebar-link" data-tooltip="Manage Assets">
-            <i class="bi bi-laptop"></i>
-            <span class="link-text">Manage Assets</span>
-        </a>
-        <a href="<?= site_url('peripherals') ?>" class="sidebar-link" data-tooltip="Manage Peripherals">
-            <i class="bi bi-mouse"></i>
-            <span class="link-text">Manage Peripherals</span>
-        </a>
-        <a href="<?= site_url('applications') ?>" class="sidebar-link" data-tooltip="Application Management">
-            <i class="bi bi-window-stack"></i>
-            <span class="link-text">Application Management</span>
-        </a>
+        <!-- Manage Users -->
+        <div class="sidebar-item">
+            <a href="<?= site_url('users') ?>" class="sidebar-link" data-tooltip="Manage Users">
+                <i class="bi bi-people"></i>
+                <span class="link-text">Manage Users</span>
+                <i class="bi bi-chevron-down dropdown-icon"></i>
+            </a>
+            <div class="sidebar-submenu">
+                <a href="<?= site_url('users/create') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Create User</span>
+                </a>
+                 <a href="<?= site_url('users') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-gear"></i>
+                    <span>Manage Users</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Manage Units -->
+        <div class="sidebar-item">
+            <a href="<?= site_url('units') ?>" class="sidebar-link" data-tooltip="Manage Units">
+                <i class="bi bi-building"></i>
+                <span class="link-text">Manage Units</span>
+                <i class="bi bi-chevron-down dropdown-icon"></i>
+            </a>
+            <div class="sidebar-submenu">
+                <a href="<?= site_url('units/create') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Create Unit</span>
+                </a>
+                <a href="<?= site_url('units') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-gear"></i>
+                    <span>Manage Units</span>       
+                </a>
+            </div>
+        </div>
+
+        <!-- Manage Assets -->
+        <div class="sidebar-item">
+            <a href="<?= site_url('assets') ?>" class="sidebar-link" data-tooltip="Manage Assets">
+                <i class="bi bi-laptop"></i>
+                <span class="link-text">Manage Assets</span>
+                <i class="bi bi-chevron-down dropdown-icon"></i>
+            </a>
+            <div class="sidebar-submenu">
+                <a href="<?= site_url('assets/create') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Create Asset</span>
+                </a>
+                <a href="<?= site_url('assets') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-gear"></i>
+                    <span>Manage Assets</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Manage Peripherals -->
+        <div class="sidebar-item">
+            <a href="<?= site_url('peripherals') ?>" class="sidebar-link" data-tooltip="Manage Peripherals">
+                <i class="bi bi-mouse"></i>
+                <span class="link-text">Manage Peripherals</span>
+                <i class="bi bi-chevron-down dropdown-icon"></i>
+            </a>
+            <div class="sidebar-submenu">
+                <a href="<?= site_url('peripherals/create') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Create Peripheral</span>
+                </a>
+                <a href="<?= site_url('peripherals') ?>" class="sidebar-submenu-link"       >
+                    <i class="bi bi-gear"></i>
+                    <span>Manage Peripherals</span> 
+                </a>
+            </div>      
+        </div>
+
+        <!-- Application Management -->
+        <div class="sidebar-item">
+            <a href="<?= site_url('applications') ?>" class="sidebar-link" data-tooltip="Application Management">
+                <i class="bi bi-window-stack"></i>
+                <span class="link-text">Application Management</span>
+                <i class="bi bi-chevron-down dropdown-icon"></i>
+            </a>
+            <div class="sidebar-submenu">
+                <a href="<?= site_url('applications/create') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Create Application</span>
+                </a>
+                <a href="<?= site_url('applications') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-gear"></i>
+                    <span>Manage Applications</span>    
+                </a>
+            </div>  
+        </div>
+
+        <!-- Document Management -->
+        <div class="sidebar-item">
+            <a href="<?= site_url('documents') ?>" class="sidebar-link" data-tooltip="Document Management">
+                <i class="bi bi-folder2-open"></i>
+                <span class="link-text">Document Management</span>
+                <i class="bi bi-chevron-down dropdown-icon"></i>
+            </a>
+            <div class="sidebar-submenu">
+                <a href="<?= site_url('documents/create') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Create Document</span>
+                </a>
+                <a href="<?= site_url('documents/alerts') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-calendar-event"></i>
+                    <span>Document Alerts</span>
+                </a>
+                <a href="<?= site_url('documents') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-gear"></i>
+                    <span>Manage Documents</span>       
+                </a>
+            </div>
+        </div>
         
-        <a href="<?= site_url('settings') ?>" class="sidebar-link" data-tooltip="Settings">
-            <i class="bi bi-gear"></i>
-            <span class="link-text">Settings</span>
-        </a>
+        <!-- Settings -->
+        <div class="sidebar-item">
+            <a href="<?= site_url('settings') ?>" class="sidebar-link" data-tooltip="Settings">
+                <i class="bi bi-gear"></i>
+                <span class="link-text">Settings</span>
+                <i class="bi bi-chevron-down dropdown-icon"></i>
+            </a>
+            <div class="sidebar-submenu" style = "max-height: 200px; overflow-y: auto;">
+                <a href="<?= site_url('settings/locations') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-geo-alt"></i>
+                    <span>Locations</span>
+                </a>
+                <a href="<?= site_url('settings/workstations') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-pc-display"></i>
+                    <span>Workstations</span>
+                </a>
+                <a href="<?= site_url('settings/peripheral-types') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-usb-symbol"></i>
+                    <span>Peripheral Types</span>
+                </a>
+                <a href="<?= site_url('settings/departments') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>Departments</span>
+                </a>
+                <a href="<?= site_url('settings/categories') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-tags"></i>
+                    <span>Asset Categories</span>
+                </a>
+                <a href="<?= site_url('settings/technologies') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-cpu"></i>
+                    <span>Technologies</span>
+                </a>
+                <a href="<?= site_url('settings/statuses') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-activity"></i>
+                    <span>Application Statuses</span>
+                </a>
+                <a href="<?= site_url('settings/servers') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-server"></i>
+                    <span>Servers</span>
+                </a>
+                <a href="<?= site_url('settings/environments') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-cloud"></i>
+                    <span>Environments</span>
+                </a>
+                <a href="<?= site_url('settings/contacts') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-person-badge"></i>
+                    <span>Application Contacts</span>
+                </a>
+                <a href="<?= site_url('settings') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-gear"></i>
+                    <span>All Settings</span>
+                </a>
+            </div>
+        </div>
     <?php endif; ?>
 </div>
 
@@ -88,8 +235,8 @@
         height: 100%;
         top: 30px;
         left: 0;
-        overflow-x: hidden;
         overflow-y: auto;
+        overflow-x: visible;
         transition: width var(--sidebar-transition-duration) var(--sidebar-transition-easing);
         will-change: width;
         z-index: 1000;
@@ -150,6 +297,10 @@
         white-space: nowrap;
     }
 
+    .sidebar-item {
+        position: relative;
+    }
+
     .sidebar-link i {
         font-size: 1.2rem;
         min-width: 20px;
@@ -162,10 +313,62 @@
     .sidebar-link .link-text {
         opacity: 1;
         transition: opacity var(--sidebar-transition-duration) var(--sidebar-transition-easing);
+        flex: 1;
+    }
+
+    .sidebar-link .dropdown-icon {
+        font-size: 0.8rem;
+        margin-left: auto;
+        margin-right: 0;
+        transition: transform 0.3s ease;
+        opacity: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .sidebar-link:hover {
         background-color: #e9ecef;
+    }
+
+    .sidebar-link:hover .dropdown-icon {
+        opacity: 1;
+    }
+
+    /* Submenu styling */
+    .sidebar-submenu {
+        display: none;
+        flex-direction: column;
+        background-color: #e9ecef;
+        border-left: 3px solid #0d6efd;
+    }
+
+    .sidebar-submenu-link {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px 10px 50px;
+        text-decoration: none;
+        color: #555;
+        border-bottom: 1px solid #ddd;
+        transition: background-color 0.2s ease;
+        font-size: 0.9rem;
+    }
+
+    .sidebar-submenu-link i {
+        font-size: 1rem;
+        margin-right: 10px;
+        min-width: 16px;
+    }
+
+    .sidebar-submenu-link:hover {
+        background-color: #d0d5dd;
+        color: #0d6efd;
+    }
+
+    /* Show submenu in expanded state (default) */
+    body:not(.sidebar-collapsed) .sidebar-item:hover .sidebar-submenu,
+    body:not(.sidebar-collapsed) .sidebar-item.active .sidebar-submenu {
+        display: flex;
     }
 
     /* Tooltip for collapsed state */
@@ -186,6 +389,64 @@
         margin-left: 10px;
         transition: opacity 0.2s ease;
         z-index: 1001;
+    }
+
+    /* Collapsed state styling */
+    body.sidebar-collapsed .link-text {
+        display: none;
+    }
+
+    body.sidebar-collapsed .sidebar-link {
+        justify-content: center;
+        padding: 12px;
+        position: relative;
+    }
+
+    body.sidebar-collapsed .sidebar-submenu {
+        position: fixed;
+        min-width: 200px;
+        background-color: #fff;
+        border-left: 4px solid #0d6efd;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        z-index: 2000;
+        border-radius: 2px;
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+
+    body.sidebar-collapsed .dropdown-icon {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    body.sidebar-collapsed .sidebar-link:hover::after {
+        opacity: 1;
+    }
+
+    body.sidebar-collapsed .sidebar-submenu-link {
+        padding: 10px 20px;
+        border-bottom: 1px solid #eee;
+        color: #333;
+    }
+
+    body.sidebar-collapsed .sidebar-submenu-link:last-child {
+        border-bottom: none;
+    }
+
+    body.sidebar-collapsed .sidebar-submenu-link:hover {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+    }
+
+    body.sidebar-collapsed .sidebar-submenu-link:hover {
+        background-color: #f0f0f0;
     }
 
     /* Main content shifts when sidebar visible */
@@ -270,6 +531,140 @@
                 localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
             } catch (e) {}
             toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            
+            // Reset all submenus when toggling state
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+                const submenu = item.querySelector('.sidebar-submenu');
+                const icon = item.querySelector('.dropdown-icon');
+                
+                if (submenu) {
+                    // Reset inline styles
+                    submenu.style.position = '';
+                    submenu.style.left = '';
+                    submenu.style.top = '';
+                    submenu.style.display = '';
+                    submenu.style.visibility = '';
+                    submenu.style.opacity = '';
+                    submenu.style.pointerEvents = '';
+                    // Clear any pending timeouts for this submenu
+                    if (submenu._hideTimeout) {
+                        clearTimeout(submenu._hideTimeout);
+                        submenu._hideTimeout = null;
+                    }
+                }
+                
+                if (icon) {
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+
+        // Handle submenu toggle
+
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            const link = item.querySelector('.sidebar-link');
+            const submenu = item.querySelector('.sidebar-submenu');
+            const icon = link.querySelector('.dropdown-icon');
+
+            if (submenu) {
+                // Store timeout directly on submenu element to avoid conflicts
+                submenu._hideTimeout = null;
+
+                link.addEventListener('click', function (e) {
+                    // Only prevent default if not collapsed
+                    if (!document.body.classList.contains('sidebar-collapsed')) {
+                        e.preventDefault();
+                    }
+
+                    // Toggle active state only when expanded
+                    if (!document.body.classList.contains('sidebar-collapsed')) {
+                        item.classList.toggle('active');
+                        
+                        // Rotate icon
+                        if (icon) {
+                            const isActive = item.classList.contains('active');
+                            icon.style.transform = isActive ? 'rotate(180deg)' : 'rotate(0deg)';
+                        }
+                    }
+                });
+
+                // Show submenu on hover with proper positioning in collapsed state
+                item.addEventListener('mouseenter', function () {
+                    // Only handle in collapsed state
+                    if (!document.body.classList.contains('sidebar-collapsed')) {
+                        return;
+                    }
+
+                    if (submenu) {
+                        // Clear any pending hide for THIS submenu
+                        if (submenu._hideTimeout) {
+                            clearTimeout(submenu._hideTimeout);
+                            submenu._hideTimeout = null;
+                        }
+                        
+                        // Get position of the sidebar item for fixed positioning
+                        const rect = item.getBoundingClientRect();
+                        
+                        // Position submenu to the right of the sidebar with fixed positioning
+                        submenu.style.position = 'fixed';
+                        submenu.style.left = (rect.right + 10) + 'px';
+                        submenu.style.top = rect.top + 'px';
+                        submenu.style.display = 'flex';
+                        submenu.style.visibility = 'visible';
+                        submenu.style.opacity = '1';
+                        submenu.style.pointerEvents = 'auto';
+                    }
+                });
+
+                item.addEventListener('mouseleave', function () {
+                    // Only handle in collapsed state
+                    if (!document.body.classList.contains('sidebar-collapsed')) {
+                        return;
+                    }
+
+                    if (submenu) {
+                        // Add delay before hiding to allow cursor to reach submenu
+                        submenu._hideTimeout = setTimeout(() => {
+                            submenu.style.visibility = 'hidden';
+                            submenu.style.opacity = '0';
+                            submenu.style.pointerEvents = 'none';
+                            submenu._hideTimeout = null;
+                        }, 100);
+                    }
+                });
+                
+                // Keep submenu visible while hovering over it (only in collapsed state)
+                submenu.addEventListener('mouseenter', function () {
+                    if (!document.body.classList.contains('sidebar-collapsed')) {
+                        return;
+                    }
+
+                    // Clear any pending hide for THIS submenu
+                    if (submenu._hideTimeout) {
+                        clearTimeout(submenu._hideTimeout);
+                        submenu._hideTimeout = null;
+                    }
+                    
+                    submenu.style.visibility = 'visible';
+                    submenu.style.opacity = '1';
+                    submenu.style.pointerEvents = 'auto';
+                });
+                
+                submenu.addEventListener('mouseleave', function () {
+                    if (!document.body.classList.contains('sidebar-collapsed')) {
+                        return;
+                    }
+
+                    // Add delay before hiding
+                    submenu._hideTimeout = setTimeout(() => {
+                        submenu.style.visibility = 'hidden';
+                        submenu.style.opacity = '0';
+                        submenu.style.pointerEvents = 'none';
+                        submenu._hideTimeout = null;
+                    }, 100);
+                });
+            }
         });
     });
 </script>
