@@ -6,7 +6,15 @@
         <div class="d-flex align-items-center">
             <a class="navbar-brand" href="#"><?= isset($title) ? esc($title) : '' ?></a>
         </div>
-        <div class="d-flex">
+        <div class="d-flex align-items-center">
+            <?php if (session()->get('usertype') === 'superadmin'): ?>
+                <a href="<?= site_url('notifications') ?>" class="btn btn-header notification-btn me-2" title="Notifications">
+                    <i class="bi bi-bell"></i>
+                    <?php if (!empty($headerUnreadNotifications)): ?>
+                        <span class="notification-badge"><?= (int) $headerUnreadNotifications ?></span>
+                    <?php endif; ?>
+                </a>
+            <?php endif; ?>
             <a href="<?= site_url('auth/logout') ?>" class="btn btn-header">Logout</a>
         </div>
     </div>
@@ -138,6 +146,34 @@
                 </a>
             </div>
         </div>
+
+        <!-- DCF Management -->
+        <div class="sidebar-item">
+            <a href="<?= site_url('dcf') ?>" class="sidebar-link" data-tooltip="DCF Management">
+                <i class="bi bi-file-earmark-text"></i>
+                <span class="link-text">DCF Management</span>
+                <i class="bi bi-chevron-down dropdown-icon"></i>
+            </a>
+            <div class="sidebar-submenu">
+                <a href="<?= site_url('dcf/create') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Create DCF</span>
+                </a>
+                <a href="<?= site_url('dcf') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-gear"></i>
+                    <span>Manage DCF</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <a href="<?= site_url('notifications') ?>" class="sidebar-link" data-tooltip="Notifications">
+            <i class="bi bi-bell"></i>
+            <span class="link-text">Notification</span>
+            <?php if (!empty($headerUnreadNotifications)): ?>
+                <span class="badge bg-danger ms-auto"><?= (int) $headerUnreadNotifications ?></span>
+            <?php endif; ?>
+        </a>
         
         <!-- Settings -->
         <div class="sidebar-item">
@@ -166,6 +202,14 @@
                 <a href="<?= site_url('settings/categories') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-tags"></i>
                     <span>Asset Categories</span>
+                </a>
+                <a href="<?= site_url('settings/document-categories') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-folder"></i>
+                    <span>Document Categories</span>
+                </a>
+                <a href="<?= site_url('settings/document-types') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <span>Document Types</span>
                 </a>
                 <a href="<?= site_url('settings/technologies') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-cpu"></i>
@@ -224,6 +268,32 @@
     .btn-header:focus {
         outline: none;
         box-shadow: 0 0 0 0.2rem rgba(248, 249, 250, 0.5);
+    }
+
+    .notification-btn {
+        position: relative;
+        line-height: 1;
+    }
+
+    .notification-btn i {
+        font-size: 1.1rem;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #dc3545;
+        color: #fff;
+        font-size: 0.7rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        line-height: 1;
     }
 
     /* Base sidebar styles */

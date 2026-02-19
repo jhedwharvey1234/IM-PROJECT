@@ -135,6 +135,16 @@ $routes->get('/settings/assigned-users/edit/(:num)', 'AssignableUserController::
 $routes->post('/settings/assigned-users/update/(:num)', 'AssignableUserController::update/$1');
 $routes->get('/settings/assigned-users/delete/(:num)', 'AssignableUserController::delete/$1');
 
+$routes->get('/settings/document-categories', 'SettingsController::documentCategories');
+$routes->post('/settings/document-categories/store', 'SettingsController::storeDocumentCategory');
+$routes->post('/settings/document-categories/update/(:num)', 'SettingsController::updateDocumentCategory/$1');
+$routes->get('/settings/document-categories/delete/(:num)', 'SettingsController::deleteDocumentCategory/$1');
+
+$routes->get('/settings/document-types', 'SettingsController::documentTypes');
+$routes->post('/settings/document-types/store', 'SettingsController::storeDocumentType');
+$routes->post('/settings/document-types/update/(:num)', 'SettingsController::updateDocumentType/$1');
+$routes->get('/settings/document-types/delete/(:num)', 'SettingsController::deleteDocumentType/$1');
+
 // Applications Management routes
 $routes->get('/applications', 'ApplicationController::index');
 $routes->get('/applications/create', 'ApplicationController::create');
@@ -164,4 +174,15 @@ $routes->get('/documents/file/delete/(:num)/(:num)', 'DocumentController::delete
 $routes->post('/documents/alert/store/(:num)', 'DocumentController::addAlert/$1');
 $routes->get('/documents/alert/delete/(:num)/(:num)', 'DocumentController::deleteAlert/$1/$2');
 $routes->get('/documents/alerts', 'DocumentController::alerts');
+
+// Notifications routes
+$routes->get('/notifications', 'NotificationController::index');
+
+// DCF Management routes
+$routes->get('/dcf', 'DcfController::index');
+$routes->get('/dcf/create', 'DcfController::create');
+$routes->post('/dcf/store', 'DcfController::store');
+$routes->get('/dcf/edit/(:num)', 'DcfController::edit/$1');
+$routes->post('/dcf/update/(:num)', 'DcfController::update/$1');
+$routes->get('/dcf/delete/(:num)', 'DcfController::delete/$1');
 

@@ -71,7 +71,10 @@
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="doc_id" checked> ID</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="title" checked> Title</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="subject" checked> Subject</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="document_category_name" checked> Category</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="document_type_name" checked> Type</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="description" checked> Description</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="details" checked> Details</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="created_by_name" checked> Created By</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="created_at" checked> Created</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="updated_at"> Updated</label></li>
@@ -136,6 +139,32 @@
                 </select>
             </div>
 
+            <div style="width: 190px;">
+                <select id="documents_category" class="form-select form-select-sm" style="height: 32px;">
+                    <option value="">All Categories</option>
+                    <?php
+                    $categories = array_values(array_unique(array_filter(array_map(static fn($doc) => trim((string) ($doc['document_category_name'] ?? '')), $documents ?? []))));
+                    sort($categories);
+                    foreach ($categories as $category):
+                    ?>
+                        <option value="<?= esc($category) ?>"><?= esc($category) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div style="width: 170px;">
+                <select id="documents_type" class="form-select form-select-sm" style="height: 32px;">
+                    <option value="">All Types</option>
+                    <?php
+                    $types = array_values(array_unique(array_filter(array_map(static fn($doc) => trim((string) ($doc['document_type_name'] ?? '')), $documents ?? []))));
+                    sort($types);
+                    foreach ($types as $type):
+                    ?>
+                        <option value="<?= esc($type) ?>"><?= esc($type) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
             <button class="btn btn-outline-secondary btn-sm" id="clearFiltersBtn" title="Clear filters" data-bs-toggle="tooltip" style="height: 32px; width: 32px; padding: 0;">
                 <i class="bi bi-x-lg"></i>
             </button>
@@ -161,6 +190,18 @@
                             <div class="col-md-6">
                                 <label class="form-label">Description</label>
                                 <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_description" placeholder="Description">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_category" placeholder="Category">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Type</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_type" placeholder="Type">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Details</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_details" placeholder="Details">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Created By</label>
@@ -209,7 +250,10 @@
                     <th data-column="doc_id">ID</th>
                     <th data-column="title">Title</th>
                     <th data-column="subject">Subject</th>
+                    <th data-column="document_category_name">Category</th>
+                    <th data-column="document_type_name">Type</th>
                     <th data-column="description">Description</th>
+                    <th data-column="details">Details</th>
                     <th data-column="created_by_name">Created By</th>
                     <th data-column="created_at">Created</th>
                     <th data-column="updated_at" style="display: none;">Updated</th>
@@ -226,7 +270,16 @@
                             <td data-column="doc_id"><span class="badge bg-secondary">#<?= esc($document['id']) ?></span></td>
                             <td data-column="title"><?= esc($document['title']) ?></td>
                             <td data-column="subject"><?= esc($document['subject'] ?? 'N/A') ?></td>
-                            <td data-column="description"><?= esc($document['description'] ?? 'N/A') ?></td>
+                            <td data-column="document_category_name"><?= esc($document['document_category_name'] ?? 'N/A') ?></td>
+                            <td data-column="document_type_name"><?= esc($document['document_type_name'] ?? 'N/A') ?></td>
+                            <?php
+                                $descriptionFull = trim((string) ($document['description'] ?? ''));
+                                $descriptionDisplay = $descriptionFull !== '' ? (mb_strlen($descriptionFull) > 30 ? mb_substr($descriptionFull, 0, 30) . '...' : $descriptionFull) : 'N/A';
+                                $detailsFull = trim((string) strip_tags((string) ($document['details'] ?? '')));
+                                $detailsDisplay = $detailsFull !== '' ? (mb_strlen($detailsFull) > 30 ? mb_substr($detailsFull, 0, 30) . '...' : $detailsFull) : 'N/A';
+                            ?>
+                            <td data-column="description" data-full="<?= esc($descriptionFull !== '' ? $descriptionFull : 'N/A', 'attr') ?>" title="<?= esc($descriptionFull !== '' ? $descriptionFull : 'N/A', 'attr') ?>"><?= esc($descriptionDisplay) ?></td>
+                            <td data-column="details" data-full="<?= esc($detailsFull !== '' ? $detailsFull : 'N/A', 'attr') ?>" title="<?= esc($detailsFull !== '' ? $detailsFull : 'N/A', 'attr') ?>"><?= esc($detailsDisplay) ?></td>
                             <td data-column="created_by_name"><?= esc($document['created_by_name'] ?? 'N/A') ?></td>
                             <td data-column="created_at"><?= !empty($document['created_at']) ? esc(date('M d, Y h:i A', strtotime($document['created_at']))) : 'N/A' ?></td>
                             <td data-column="updated_at" style="display: none;"><?= !empty($document['updated_at']) ? esc(date('M d, Y h:i A', strtotime($document['updated_at']))) : 'N/A' ?></td>
@@ -239,7 +292,7 @@
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">No documents found.</td>
+                        <td colspan="12" class="text-center text-muted py-4">No documents found.</td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -281,6 +334,8 @@
         const searchInput = document.getElementById('documents_search');
         const subjectFilter = document.getElementById('documents_subject');
         const creatorFilter = document.getElementById('documents_creator');
+        const categoryFilter = document.getElementById('documents_category');
+        const typeFilter = document.getElementById('documents_type');
         const clearFiltersBtn = document.getElementById('clearFiltersBtn');
         const tableBody = document.getElementById('documentsTable');
         const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
@@ -336,14 +391,21 @@
             const searchValue = searchInput.value.trim().toLowerCase();
             const selectedSubject = subjectFilter.value.trim().toLowerCase();
             const selectedCreator = creatorFilter.value.trim().toLowerCase();
+            const selectedCategory = categoryFilter.value.trim().toLowerCase();
+            const selectedType = typeFilter.value.trim().toLowerCase();
 
             const visibleCells = Array.from(cells).filter(cell => cell.style.display !== 'none');
             const visibleText = visibleCells.map(cell => cell.textContent.toLowerCase()).join(' ');
 
             const subject = (row.querySelector('td[data-column="subject"]')?.textContent || '').trim().toLowerCase();
             const creator = (row.querySelector('td[data-column="created_by_name"]')?.textContent || '').trim().toLowerCase();
-            const description = (row.querySelector('td[data-column="description"]')?.textContent || '').trim().toLowerCase();
+            const descriptionCell = row.querySelector('td[data-column="description"]');
+            const detailsCell = row.querySelector('td[data-column="details"]');
+            const description = ((descriptionCell?.dataset.full || descriptionCell?.textContent) || '').trim().toLowerCase();
+            const details = ((detailsCell?.dataset.full || detailsCell?.textContent) || '').trim().toLowerCase();
             const title = (row.querySelector('td[data-column="title"]')?.textContent || '').trim().toLowerCase();
+            const category = (row.querySelector('td[data-column="document_category_name"]')?.textContent || '').trim().toLowerCase();
+            const type = (row.querySelector('td[data-column="document_type_name"]')?.textContent || '').trim().toLowerCase();
             const createdAt = (row.querySelector('td[data-column="created_at"]')?.textContent || '').trim().toLowerCase();
 
             if (searchValue && !visibleText.includes(searchValue)) {
@@ -358,6 +420,14 @@
                 return false;
             }
 
+            if (selectedCategory && category !== selectedCategory) {
+                return false;
+            }
+
+            if (selectedType && type !== selectedType) {
+                return false;
+            }
+
             if (advancedFilters.title && !title.includes(advancedFilters.title)) {
                 return false;
             }
@@ -367,6 +437,18 @@
             }
 
             if (advancedFilters.description && !description.includes(advancedFilters.description)) {
+                return false;
+            }
+
+            if (advancedFilters.details && !details.includes(advancedFilters.details)) {
+                return false;
+            }
+
+            if (advancedFilters.category && !category.includes(advancedFilters.category)) {
+                return false;
+            }
+
+            if (advancedFilters.type && !type.includes(advancedFilters.type)) {
                 return false;
             }
 
@@ -412,7 +494,7 @@
             if (!totalFiltered) {
                 const noResultsRow = document.createElement('tr');
                 noResultsRow.className = 'no-results-row';
-                noResultsRow.innerHTML = '<td colspan="9" class="text-center text-muted py-4">No documents found.</td>';
+                noResultsRow.innerHTML = '<td colspan="12" class="text-center text-muted py-4">No documents found.</td>';
                 tableBody.appendChild(noResultsRow);
             }
 
@@ -464,7 +546,10 @@
                 id: row.querySelector('td[data-column="doc_id"]')?.textContent.trim().replace('#', '') || '',
                 title: row.querySelector('td[data-column="title"]')?.textContent.trim() || '',
                 subject: row.querySelector('td[data-column="subject"]')?.textContent.trim() || '',
-                description: row.querySelector('td[data-column="description"]')?.textContent.trim() || '',
+                category: row.querySelector('td[data-column="document_category_name"]')?.textContent.trim() || '',
+                type: row.querySelector('td[data-column="document_type_name"]')?.textContent.trim() || '',
+                description: row.querySelector('td[data-column="description"]')?.dataset.full || row.querySelector('td[data-column="description"]')?.textContent.trim() || '',
+                details: row.querySelector('td[data-column="details"]')?.dataset.full || row.querySelector('td[data-column="details"]')?.textContent.trim() || '',
                 createdBy: row.querySelector('td[data-column="created_by_name"]')?.textContent.trim() || '',
                 createdAt: row.querySelector('td[data-column="created_at"]')?.textContent.trim() || '',
                 updatedAt: row.querySelector('td[data-column="updated_at"]')?.textContent.trim() || '',
@@ -490,12 +575,12 @@
                 return;
             }
 
-            const headers = ['ID', 'Title', 'Subject', 'Description', 'Created By', 'Created', 'Updated'];
+            const headers = ['ID', 'Title', 'Subject', 'Category', 'Type', 'Description', 'Details', 'Created By', 'Created', 'Updated'];
             const csvRows = [headers.join(',')];
 
             rows.forEach(row => {
                 const data = extractRowData(row);
-                const values = [data.id, data.title, data.subject, data.description, data.createdBy, data.createdAt, data.updatedAt]
+                const values = [data.id, data.title, data.subject, data.category, data.type, data.description, data.details, data.createdBy, data.createdAt, data.updatedAt]
                     .map(value => `"${String(value).replace(/"/g, '""')}"`);
                 csvRows.push(values.join(','));
             });
@@ -510,10 +595,10 @@
                 return;
             }
 
-            let html = '<table><tr><th>ID</th><th>Title</th><th>Subject</th><th>Description</th><th>Created By</th><th>Created</th><th>Updated</th></tr>';
+            let html = '<table><tr><th>ID</th><th>Title</th><th>Subject</th><th>Category</th><th>Type</th><th>Description</th><th>Details</th><th>Created By</th><th>Created</th><th>Updated</th></tr>';
             rows.forEach(row => {
                 const data = extractRowData(row);
-                html += `<tr><td>${data.id}</td><td>${data.title}</td><td>${data.subject}</td><td>${data.description}</td><td>${data.createdBy}</td><td>${data.createdAt}</td><td>${data.updatedAt}</td></tr>`;
+                html += `<tr><td>${data.id}</td><td>${data.title}</td><td>${data.subject}</td><td>${data.category}</td><td>${data.type}</td><td>${data.description}</td><td>${data.details}</td><td>${data.createdBy}</td><td>${data.createdAt}</td><td>${data.updatedAt}</td></tr>`;
             });
             html += '</table>';
 
@@ -589,6 +674,9 @@
                 title: document.getElementById('advSearch_title').value.trim().toLowerCase(),
                 subject: document.getElementById('advSearch_subject').value.trim().toLowerCase(),
                 description: document.getElementById('advSearch_description').value.trim().toLowerCase(),
+                category: document.getElementById('advSearch_category').value.trim().toLowerCase(),
+                type: document.getElementById('advSearch_type').value.trim().toLowerCase(),
+                details: document.getElementById('advSearch_details').value.trim().toLowerCase(),
                 creator: document.getElementById('advSearch_creator').value.trim().toLowerCase(),
                 created: document.getElementById('advSearch_created').value.trim().toLowerCase(),
             };
@@ -622,10 +710,22 @@
             applyFiltersAndPagination();
         });
 
+        categoryFilter.addEventListener('change', function () {
+            currentPage = 1;
+            applyFiltersAndPagination();
+        });
+
+        typeFilter.addEventListener('change', function () {
+            currentPage = 1;
+            applyFiltersAndPagination();
+        });
+
         clearFiltersBtn.addEventListener('click', function () {
             searchInput.value = '';
             subjectFilter.value = '';
             creatorFilter.value = '';
+            categoryFilter.value = '';
+            typeFilter.value = '';
             document.querySelectorAll('.advSearchField').forEach(field => {
                 field.value = '';
             });

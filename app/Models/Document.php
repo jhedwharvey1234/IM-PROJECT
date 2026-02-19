@@ -12,7 +12,10 @@ class Document extends Model
     protected $allowedFields = [
         'title',
         'subject',
+        'document_category_id',
+        'document_type_id',
         'description',
+        'details',
         'created_by',
     ];
 
@@ -25,6 +28,7 @@ class Document extends Model
         'title' => 'required|max_length[200]',
         'subject' => 'permit_empty|max_length[200]',
         'description' => 'permit_empty|string',
+        'details' => 'permit_empty|string',
     ];
 
     protected $validationMessages = [
@@ -39,8 +43,10 @@ class Document extends Model
         $offset = max(0, (int) $offset);
 
         $builder = $this->db->table('documents d')
-            ->select('d.*, u.username as created_by_name')
+            ->select('d.*, u.username as created_by_name, dc.name as document_category_name, dt.name as document_type_name')
             ->join('users u', 'u.id = d.created_by', 'left')
+            ->join('document_categories dc', 'dc.id = d.document_category_id', 'left')
+            ->join('document_types dt', 'dt.id = d.document_type_id', 'left')
             ->orderBy('d.created_at', 'DESC');
 
         if ($limit && $limit > 0) {
@@ -58,8 +64,10 @@ class Document extends Model
     public function getWithMeta($id)
     {
         return $this->db->table('documents d')
-            ->select('d.*, u.username as created_by_name')
+            ->select('d.*, u.username as created_by_name, dc.name as document_category_name, dt.name as document_type_name')
             ->join('users u', 'u.id = d.created_by', 'left')
+            ->join('document_categories dc', 'dc.id = d.document_category_id', 'left')
+            ->join('document_types dt', 'dt.id = d.document_type_id', 'left')
             ->where('d.id', $id)
             ->get()
             ->getRowArray();
@@ -70,12 +78,17 @@ class Document extends Model
         $searchTerm = '%' . $keyword . '%';
 
         return $this->db->table('documents d')
-            ->select('d.*, u.username as created_by_name')
+            ->select('d.*, u.username as created_by_name, dc.name as document_category_name, dt.name as document_type_name')
             ->join('users u', 'u.id = d.created_by', 'left')
+            ->join('document_categories dc', 'dc.id = d.document_category_id', 'left')
+            ->join('document_types dt', 'dt.id = d.document_type_id', 'left')
             ->groupStart()
             ->like('d.title', $keyword)
             ->orLike('d.subject', $keyword)
+            ->orLike('dc.name', $keyword)
+            ->orLike('dt.name', $keyword)
             ->orLike('d.description', $keyword)
+            ->orLike('d.details', $keyword)
             ->orLike('u.username', $keyword)
             ->groupEnd()
             ->orderBy('d.created_at', 'DESC')

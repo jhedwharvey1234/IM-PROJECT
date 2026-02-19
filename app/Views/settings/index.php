@@ -66,6 +66,16 @@
                 <a href="<?= site_url('settings/categories') ?>">Manage Categories</a>
             </div>
             <div class="settings-card">
+                <h5><i class="bi bi-folder"></i> Document Categories</h5>
+                <p class="text-muted">Category list for documents.</p>
+                <a href="<?= site_url('settings/document-categories') ?>">Manage Document Categories</a>
+            </div>
+            <div class="settings-card">
+                <h5><i class="bi bi-file-earmark-text"></i> Document Types</h5>
+                <p class="text-muted">Type list for documents.</p>
+                <a href="<?= site_url('settings/document-types') ?>">Manage Document Types</a>
+            </div>
+            <div class="settings-card">
                 <h5><i class="bi bi-code-square"></i> Technologies</h5>
                 <p class="text-muted">Application technology stack.</p>
                 <a href="<?= site_url('settings/technologies') ?>">Manage Technologies</a>

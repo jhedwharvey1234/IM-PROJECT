@@ -6,6 +6,8 @@ use App\Models\Document;
 use App\Models\DocumentNote;
 use App\Models\DocumentFile;
 use App\Models\DocumentAlert;
+use App\Models\DocumentCategory;
+use App\Models\DocumentType;
 
 class DocumentController extends BaseController
 {
@@ -13,6 +15,8 @@ class DocumentController extends BaseController
     protected $documentNoteModel;
     protected $documentFileModel;
     protected $documentAlertModel;
+    protected $documentCategoryModel;
+    protected $documentTypeModel;
 
     public function __construct()
     {
@@ -20,6 +24,8 @@ class DocumentController extends BaseController
         $this->documentNoteModel = new DocumentNote();
         $this->documentFileModel = new DocumentFile();
         $this->documentAlertModel = new DocumentAlert();
+        $this->documentCategoryModel = new DocumentCategory();
+        $this->documentTypeModel = new DocumentType();
     }
 
     public function index()
@@ -49,6 +55,14 @@ class DocumentController extends BaseController
         }
 
         $data['title'] = 'Create Document';
+        $data['documentCategories'] = $this->documentCategoryModel->where('is_active', 1)->orderBy('name', 'ASC')->findAll();
+        $data['documentTypes'] = $this->documentTypeModel
+            ->select('document_types.*, document_categories.name as category_name')
+            ->join('document_categories', 'document_categories.id = document_types.document_category_id', 'left')
+            ->where('document_types.is_active', 1)
+            ->orderBy('document_categories.name', 'ASC')
+            ->orderBy('document_types.name', 'ASC')
+            ->findAll();
         return view('documents/create', $data);
     }
 
@@ -61,9 +75,16 @@ class DocumentController extends BaseController
         $data = [
             'title' => trim((string) $this->request->getPost('title')),
             'subject' => trim((string) $this->request->getPost('subject')),
+            'document_category_id' => $this->toNullableInt($this->request->getPost('document_category_id')),
+            'document_type_id' => $this->toNullableInt($this->request->getPost('document_type_id')),
             'description' => $this->request->getPost('description'),
+            'details' => $this->sanitizeRichText((string) $this->request->getPost('details')),
             'created_by' => session()->get('user_id') ?: null,
         ];
+
+        if ($validationError = $this->validateCategoryTypeSelection($data['document_category_id'], $data['document_type_id'])) {
+            return redirect()->back()->withInput()->with('errors', ['document_type_id' => $validationError]);
+        }
 
         if ($this->documentModel->insert($data)) {
             return redirect()->to('/documents')->with('success', 'Document created successfully');
@@ -85,6 +106,14 @@ class DocumentController extends BaseController
 
         $data['document'] = $document;
         $data['title'] = 'Edit Document';
+        $data['documentCategories'] = $this->documentCategoryModel->where('is_active', 1)->orderBy('name', 'ASC')->findAll();
+        $data['documentTypes'] = $this->documentTypeModel
+            ->select('document_types.*, document_categories.name as category_name')
+            ->join('document_categories', 'document_categories.id = document_types.document_category_id', 'left')
+            ->where('document_types.is_active', 1)
+            ->orderBy('document_categories.name', 'ASC')
+            ->orderBy('document_types.name', 'ASC')
+            ->findAll();
 
         return view('documents/edit', $data);
     }
@@ -103,8 +132,15 @@ class DocumentController extends BaseController
         $data = [
             'title' => trim((string) $this->request->getPost('title')),
             'subject' => trim((string) $this->request->getPost('subject')),
+            'document_category_id' => $this->toNullableInt($this->request->getPost('document_category_id')),
+            'document_type_id' => $this->toNullableInt($this->request->getPost('document_type_id')),
             'description' => $this->request->getPost('description'),
+            'details' => $this->sanitizeRichText((string) $this->request->getPost('details')),
         ];
+
+        if ($validationError = $this->validateCategoryTypeSelection($data['document_category_id'], $data['document_type_id'])) {
+            return redirect()->back()->withInput()->with('errors', ['document_type_id' => $validationError]);
+        }
 
         if ($this->documentModel->update($id, $data)) {
             return redirect()->to('/documents')->with('success', 'Document updated successfully');
@@ -402,6 +438,44 @@ class DocumentController extends BaseController
 
         if (session()->get('usertype') !== 'superadmin') {
             return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        return null;
+    }
+
+    private function sanitizeRichText(string $html): ?string
+    {
+        $cleanHtml = trim($html);
+        if ($cleanHtml === '') {
+            return null;
+        }
+
+        $cleanHtml = strip_tags($cleanHtml, '<p><br><strong><b><em><i><u><s><ul><ol><li><blockquote><a><h1><h2><h3><h4><h5><h6><span><img><figure><figcaption><div><hr><table><thead><tbody><tfoot><tr><th><td><pre><code><sub><sup>');
+        $cleanHtml = preg_replace('/\s+on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/iu', '', $cleanHtml);
+        $cleanHtml = preg_replace('/\s(href|src)\s*=\s*(["\'])\s*javascript:[^"\']*\2/iu', ' $1="#"', $cleanHtml);
+
+        return $cleanHtml;
+    }
+
+    private function toNullableInt($value): ?int
+    {
+        $parsed = (int) $value;
+        return $parsed > 0 ? $parsed : null;
+    }
+
+    private function validateCategoryTypeSelection(?int $categoryId, ?int $typeId): ?string
+    {
+        if ($typeId === null) {
+            return null;
+        }
+
+        if ($categoryId === null) {
+            return 'Please select a document category before selecting a type.';
+        }
+
+        $type = $this->documentTypeModel->find($typeId);
+        if (!$type || (int) ($type['document_category_id'] ?? 0) !== $categoryId) {
+            return 'Selected document type does not belong to the selected category.';
         }
 
         return null;

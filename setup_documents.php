@@ -10,14 +10,39 @@ try {
     echo "Starting migration for Document Management Tables...\n\n";
 
     $queries = [
+        'document_categories' => "CREATE TABLE IF NOT EXISTS document_categories (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(150) NOT NULL,
+            description TEXT NULL,
+            is_active TINYINT(1) DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uniq_document_categories_name (name)
+        )",
+        'document_types' => "CREATE TABLE IF NOT EXISTS document_types (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            document_category_id INT UNSIGNED NOT NULL,
+            name VARCHAR(150) NOT NULL,
+            description TEXT NULL,
+            is_active TINYINT(1) DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            CONSTRAINT fk_document_types_category FOREIGN KEY (document_category_id) REFERENCES document_categories(id) ON DELETE CASCADE ON UPDATE CASCADE,
+            UNIQUE KEY uniq_document_types_category_name (document_category_id, name)
+        )",
         'documents' => "CREATE TABLE IF NOT EXISTS documents (
             id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             title VARCHAR(200) NOT NULL,
             subject VARCHAR(200) NULL,
+            document_category_id INT UNSIGNED NULL,
+            document_type_id INT UNSIGNED NULL,
             description TEXT NULL,
+            details LONGTEXT NULL,
             created_by INT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            CONSTRAINT fk_documents_category FOREIGN KEY (document_category_id) REFERENCES document_categories(id) ON DELETE SET NULL ON UPDATE CASCADE,
+            CONSTRAINT fk_documents_type FOREIGN KEY (document_type_id) REFERENCES document_types(id) ON DELETE SET NULL ON UPDATE CASCADE,
             CONSTRAINT fk_documents_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
         )",
         'document_notes' => "CREATE TABLE IF NOT EXISTS document_notes (

@@ -9,9 +9,24 @@ use App\Models\Server;
 use App\Models\Environment;
 use App\Models\ApplicationContact;
 use App\Models\Application;
+use App\Models\DocumentCategory;
+use App\Models\DocumentType;
 
 class SettingsController extends BaseController
 {
+    private function ensureSuperadminSettingsAccess()
+    {
+        if (!session()->get('user_id')) {
+            return redirect()->to('login');
+        }
+
+        if (session()->get('usertype') !== 'superadmin') {
+            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        return null;
+    }
+
     public function index()
     {
         if (!session()->get('user_id')) {
@@ -104,6 +119,192 @@ class SettingsController extends BaseController
         } else {
             return redirect()->back()->with('error', 'Failed to delete category');
         }
+    }
+
+    public function documentCategories()
+    {
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
+        }
+
+        $model = new DocumentCategory();
+        $data['documentCategories'] = $model->orderBy('name', 'ASC')->findAll();
+        $data['title'] = 'Document Category Management';
+
+        return view('settings/document_categories/index', $data);
+    }
+
+    public function storeDocumentCategory()
+    {
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
+        }
+
+        $model = new DocumentCategory();
+
+        $name = $this->request->getPost('name');
+        $description = $this->request->getPost('description');
+        $isActive = $this->request->getPost('is_active');
+
+        $data = [
+            'name' => is_string($name) ? trim($name) : '',
+            'description' => is_string($description) ? trim($description) : '',
+            'is_active' => $isActive ? 1 : 0,
+        ];
+
+        if ($model->insert($data)) {
+            return redirect()->to('/settings/document-categories')->with('success', 'Document category added successfully');
+        }
+
+        return redirect()->back()->withInput()->with('errors', $model->errors());
+    }
+
+    public function updateDocumentCategory($id)
+    {
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
+        }
+
+        $model = new DocumentCategory();
+
+        $name = $this->request->getPost('name');
+        $description = $this->request->getPost('description');
+        $isActive = $this->request->getPost('is_active');
+
+        $data = [
+            'id' => $id,
+            'name' => is_string($name) ? trim($name) : '',
+            'description' => is_string($description) ? trim($description) : '',
+            'is_active' => $isActive ? 1 : 0,
+        ];
+
+        if ($model->update($id, $data)) {
+            return redirect()->to('/settings/document-categories')->with('success', 'Document category updated successfully');
+        }
+
+        return redirect()->back()->withInput()->with('errors', $model->errors());
+    }
+
+    public function deleteDocumentCategory($id)
+    {
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
+        }
+
+        $model = new DocumentCategory();
+
+        if ($model->delete($id)) {
+            return redirect()->to('/settings/document-categories')->with('success', 'Document category deleted successfully');
+        }
+
+        return redirect()->back()->with('error', 'Failed to delete document category');
+    }
+
+    public function documentTypes()
+    {
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
+        }
+
+        $model = new DocumentType();
+        $categoryModel = new DocumentCategory();
+
+        $data['documentTypes'] = $model
+            ->select('document_types.*, document_categories.name as category_name')
+            ->join('document_categories', 'document_categories.id = document_types.document_category_id', 'left')
+            ->orderBy('document_categories.name', 'ASC')
+            ->orderBy('document_types.name', 'ASC')
+            ->findAll();
+        $data['documentCategories'] = $categoryModel->where('is_active', 1)->orderBy('name', 'ASC')->findAll();
+        $data['title'] = 'Document Type Management';
+
+        return view('settings/document_types/index', $data);
+    }
+
+    public function storeDocumentType()
+    {
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
+        }
+
+        $model = new DocumentType();
+
+        $categoryId = $this->toPositiveInt($this->request->getPost('document_category_id'));
+        $name = $this->request->getPost('name');
+        $description = $this->request->getPost('description');
+        $isActive = $this->request->getPost('is_active');
+
+        $data = [
+            'document_category_id' => $categoryId,
+            'name' => is_string($name) ? trim($name) : '',
+            'description' => is_string($description) ? trim($description) : '',
+            'is_active' => $isActive ? 1 : 0,
+        ];
+
+        if ($categoryId === null) {
+            return redirect()->back()->withInput()->with('error', 'Document category is required for document type');
+        }
+
+        if ($this->isDuplicateDocumentType($model, $categoryId, $data['name'])) {
+            return redirect()->back()->withInput()->with('error', 'This document type already exists under the selected category');
+        }
+
+        if ($model->insert($data)) {
+            return redirect()->to('/settings/document-types')->with('success', 'Document type added successfully');
+        }
+
+        return redirect()->back()->withInput()->with('errors', $model->errors());
+    }
+
+    public function updateDocumentType($id)
+    {
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
+        }
+
+        $model = new DocumentType();
+
+        $categoryId = $this->toPositiveInt($this->request->getPost('document_category_id'));
+        $name = $this->request->getPost('name');
+        $description = $this->request->getPost('description');
+        $isActive = $this->request->getPost('is_active');
+
+        $data = [
+            'id' => $id,
+            'document_category_id' => $categoryId,
+            'name' => is_string($name) ? trim($name) : '',
+            'description' => is_string($description) ? trim($description) : '',
+            'is_active' => $isActive ? 1 : 0,
+        ];
+
+        if ($categoryId === null) {
+            return redirect()->back()->withInput()->with('error', 'Document category is required for document type');
+        }
+
+        if ($this->isDuplicateDocumentType($model, $categoryId, $data['name'], (int) $id)) {
+            return redirect()->back()->withInput()->with('error', 'This document type already exists under the selected category');
+        }
+
+        if ($model->update($id, $data)) {
+            return redirect()->to('/settings/document-types')->with('success', 'Document type updated successfully');
+        }
+
+        return redirect()->back()->withInput()->with('errors', $model->errors());
+    }
+
+    public function deleteDocumentType($id)
+    {
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
+        }
+
+        $model = new DocumentType();
+
+        if ($model->delete($id)) {
+            return redirect()->to('/settings/document-types')->with('success', 'Document type deleted successfully');
+        }
+
+        return redirect()->back()->with('error', 'Failed to delete document type');
     }
 
     // Technologies Management
@@ -762,5 +963,29 @@ class SettingsController extends BaseController
         } else {
             return redirect()->back()->with('error', 'Failed to delete contact');
         }
+    }
+
+    private function toPositiveInt($value): ?int
+    {
+        $parsed = (int) $value;
+        return $parsed > 0 ? $parsed : null;
+    }
+
+    private function isDuplicateDocumentType(DocumentType $model, int $categoryId, string $name, ?int $ignoreId = null): bool
+    {
+        $trimmedName = trim($name);
+        if ($trimmedName === '') {
+            return false;
+        }
+
+        $builder = $model
+            ->where('document_category_id', $categoryId)
+            ->where('name', $trimmedName);
+
+        if ($ignoreId !== null && $ignoreId > 0) {
+            $builder->where('id !=', $ignoreId);
+        }
+
+        return $builder->first() !== null;
     }
 }

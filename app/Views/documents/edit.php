@@ -59,9 +59,41 @@
                         <label for="subject" class="form-label">Subject</label>
                         <input type="text" class="form-control" id="subject" name="subject" value="<?= old('subject', $document['subject']) ?>" maxlength="200">
                     </div>
+                    <div class="col-md-6">
+                        <label for="document_category_id" class="form-label">Document Category</label>
+                        <select class="form-select" id="document_category_id" name="document_category_id">
+                            <option value="">Select Category</option>
+                            <?php foreach (($documentCategories ?? []) as $category): ?>
+                                <?php $selectedCategoryId = old('document_category_id', $document['document_category_id'] ?? ''); ?>
+                                <option value="<?= (int) $category['id'] ?>" <?= (string) $selectedCategoryId === (string) $category['id'] ? 'selected' : '' ?>>
+                                    <?= esc($category['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="document_type_id" class="form-label">Document Type</label>
+                        <select class="form-select" id="document_type_id" name="document_type_id">
+                            <option value="">Select Type</option>
+                            <?php foreach (($documentTypes ?? []) as $type): ?>
+                                <?php $selectedTypeId = old('document_type_id', $document['document_type_id'] ?? ''); ?>
+                                <option
+                                    value="<?= (int) $type['id'] ?>"
+                                    data-category-id="<?= (int) ($type['document_category_id'] ?? 0) ?>"
+                                    <?= (string) $selectedTypeId === (string) $type['id'] ? 'selected' : '' ?>
+                                >
+                                    <?= esc($type['name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     <div class="col-12">
                         <label for="description" class="form-label">Description</label>
                         <textarea class="form-control" id="description" name="description" rows="6" placeholder="Enter document description..."><?= old('description', $document['description']) ?></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label for="detailsEditor" class="form-label">Details</label>
+                        <textarea class="form-control" id="detailsEditor" name="details" rows="8"><?= esc((string) old('details', $document['details'] ?? '')) ?></textarea>
                     </div>
                 </div>
             </div>
@@ -80,5 +112,73 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.8.0/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        (function () {
+            const categorySelect = document.getElementById('document_category_id');
+            const typeSelect = document.getElementById('document_type_id');
+
+            const filterTypesByCategory = () => {
+                if (!categorySelect || !typeSelect) {
+                    return;
+                }
+
+                const selectedCategoryId = categorySelect.value;
+                const currentType = typeSelect.value;
+                let hasCurrentType = false;
+
+                Array.from(typeSelect.options).forEach((option, index) => {
+                    if (index === 0) {
+                        option.hidden = false;
+                        return;
+                    }
+
+                    const optionCategoryId = option.dataset.categoryId || '';
+                    const isVisible = selectedCategoryId !== '' && optionCategoryId === selectedCategoryId;
+
+                    option.hidden = !isVisible;
+
+                    if (isVisible && option.value === currentType) {
+                        hasCurrentType = true;
+                    }
+                });
+
+                if (selectedCategoryId === '') {
+                    typeSelect.value = '';
+                    typeSelect.disabled = true;
+                } else {
+                    typeSelect.disabled = false;
+                    if (!hasCurrentType) {
+                        typeSelect.value = '';
+                    }
+                }
+            };
+
+            if (categorySelect && typeSelect) {
+                categorySelect.addEventListener('change', filterTypesByCategory);
+                filterTypesByCategory();
+            }
+
+            tinymce.init({
+                selector: '#detailsEditor',
+                height: 420,
+                menubar: 'file edit view insert format tools table help',
+                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table wordcount help',
+                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image table media | removeformat | code fullscreen preview',
+                toolbar_mode: 'wrap',
+                branding: false,
+                promotion: false,
+                automatic_uploads: true,
+                image_title: true,
+                file_picker_types: 'image',
+                images_upload_handler: (blobInfo) => {
+                    return new Promise((resolve) => {
+                        resolve('data:' + blobInfo.blob().type + ';base64,' + blobInfo.base64());
+                    });
+                },
+                content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+            });
+        })();
+    </script>
 </body>
 </html>

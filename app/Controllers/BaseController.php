@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\Notification;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -38,6 +39,19 @@ abstract class BaseController extends Controller
 
         // Caution: Do not edit this line.
         parent::initController($request, $response, $logger);
+
+        $renderer = service('renderer');
+        $renderer->setVar('headerUnreadNotifications', 0);
+
+        if (session()->get('user_id') && session()->get('usertype') === 'superadmin') {
+            try {
+                $notificationModel = new Notification();
+                $notificationModel->syncScheduledAlerts();
+                $renderer->setVar('headerUnreadNotifications', $notificationModel->getUnreadCount());
+            } catch (\Throwable $e) {
+                $renderer->setVar('headerUnreadNotifications', 0);
+            }
+        }
 
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
