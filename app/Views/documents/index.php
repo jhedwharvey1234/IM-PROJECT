@@ -30,9 +30,20 @@
         .pagination-controls button.active { background-color: #0d6efd; color: white; }
         .rows-per-page { display: flex; align-items: center; gap: 8px; }
         .rows-per-page select { padding: 4px 6px; border: 1px solid #dee2e6; border-radius: 3px; font-size: 13px; }
+        .adv-search-results { max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; background: #fff; }
+        .adv-result-item { padding: 10px 12px; border-bottom: 1px solid #f1f3f5; }
+        .adv-result-item:last-child { border-bottom: none; }
+        .adv-result-link { display: block; text-decoration: none; color: inherit; }
+        .adv-result-link:hover { background-color: #f8f9fa; }
+        .adv-result-title { font-weight: 600; color: #212529; margin-bottom: 2px; }
+        .adv-result-subject { font-size: 13px; color: #6c757d; margin-bottom: 4px; }
+        .adv-result-snippet { font-size: 13px; color: #495057; }
+        .adv-result-empty { padding: 14px; color: #6c757d; font-size: 13px; }
+        .adv-highlight { background-color: #fff3cd; color: #856404; padding: 0 2px; border-radius: 2px; }
     </style>
 </head>
 <body>
+    <?php $isReadOnly = !empty($isReadOnly); ?>
     <?= view('partials/header', ['title' => 'Document Management']) ?>
 
     <div class="main-content">
@@ -51,13 +62,17 @@
 
         <div class="d-flex gap-2 align-items-center mb-3 flex-wrap" style="padding: 10px; border-radius: 5px;">
             <div class="d-flex gap-1">
-                <a href="<?= site_url('documents/create') ?>" class="btn btn-success btn-sm" title="Create" aria-label="Create" data-bs-toggle="tooltip">
-                    <i class="bi bi-plus-circle"></i>
-                </a>
+                <?php if (!$isReadOnly): ?>
+                    <a href="<?= site_url('documents/create') ?>" class="btn btn-success btn-sm" title="Create" aria-label="Create" data-bs-toggle="tooltip">
+                        <i class="bi bi-plus-circle"></i>
+                    </a>
+                <?php endif; ?>
 
-                <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip">
-                    <i class="bi bi-trash"></i>
-                </button>
+                <?php if (!$isReadOnly): ?>
+                    <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                <?php endif; ?>
 
                 <button class="btn btn-info btn-sm" id="refreshBtn" title="Refresh" aria-label="Refresh" data-bs-toggle="tooltip">
                     <i class="bi bi-arrow-clockwise"></i>
@@ -192,30 +207,21 @@
                                 <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_description" placeholder="Description">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Category</label>
-                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_category" placeholder="Category">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Type</label>
-                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_type" placeholder="Type">
-                            </div>
-                            <div class="col-md-6">
                                 <label class="form-label">Details</label>
                                 <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_details" placeholder="Details">
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Created By</label>
-                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_creator" placeholder="Created By">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Created Date (YYYY-MM-DD)</label>
-                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_created" placeholder="2026-02-18">
-                            </div>
+                        </div>
+                        <hr class="my-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Search Results</h6>
+                            <small class="text-muted" id="advSearchResultsCount">0 result(s)</small>
+                        </div>
+                        <div id="advSearchResults" class="adv-search-results">
+                            <div class="adv-result-empty">Enter search filters and click Search to preview matching documents.</div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary btn-sm" id="applyAdvancedSearch">Search</button>
                         <button type="button" class="btn btn-warning btn-sm" id="clearAdvancedSearch">Clear</button>
                     </div>
                 </div>
@@ -285,8 +291,10 @@
                             <td data-column="updated_at" style="display: none;"><?= !empty($document['updated_at']) ? esc(date('M d, Y h:i A', strtotime($document['updated_at']))) : 'N/A' ?></td>
                             <td>
                                 <a href="<?= site_url('documents/details/' . $document['id']) ?>" class="action-btn action-btn-details" title="View Details"><i class="bi bi-eye"></i></a>
-                                <a href="<?= site_url('documents/edit/' . $document['id']) ?>" class="action-btn action-btn-edit" title="Edit Document"><i class="bi bi-pencil-square"></i></a>
-                                <a href="<?= site_url('documents/delete/' . $document['id']) ?>" class="action-btn action-btn-delete" onclick="return confirm('Are you sure you want to delete this document?')" title="Delete Document"><i class="bi bi-trash"></i></a>
+                                <?php if (!$isReadOnly): ?>
+                                    <a href="<?= site_url('documents/edit/' . $document['id']) ?>" class="action-btn action-btn-edit" title="Edit Document"><i class="bi bi-pencil-square"></i></a>
+                                    <a href="<?= site_url('documents/delete/' . $document['id']) ?>" class="action-btn action-btn-delete" onclick="return confirm('Are you sure you want to delete this document?')" title="Delete Document"><i class="bi bi-trash"></i></a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -318,7 +326,6 @@
         let currentPage = 1;
         let rowsPerPage = 20;
         let filteredRows = [];
-        let advancedFilters = {};
 
         const selectAllCheckbox = document.getElementById('selectAll');
         const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
@@ -349,12 +356,184 @@
 
         const advancedSearchModalElement = document.getElementById('advancedSearchModal');
         const advancedSearchModal = new bootstrap.Modal(advancedSearchModalElement);
+        const advancedResultsContainer = document.getElementById('advSearchResults');
+        const advancedResultsCount = document.getElementById('advSearchResultsCount');
 
         function getAllRows() {
             return Array.from(tableBody.querySelectorAll('tr')).filter(row => !row.classList.contains('no-results-row'));
         }
 
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function escapeRegExp(value) {
+            return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function getAdvancedSearchFilters() {
+            return {
+                title: document.getElementById('advSearch_title')?.value.trim().toLowerCase() || '',
+                subject: document.getElementById('advSearch_subject')?.value.trim().toLowerCase() || '',
+                description: document.getElementById('advSearch_description')?.value.trim().toLowerCase() || '',
+                details: document.getElementById('advSearch_details')?.value.trim().toLowerCase() || '',
+            };
+        }
+
+        function getAdvancedSearchTerms(filters) {
+            return Object.values(filters)
+                .map(value => String(value || '').trim())
+                .filter(value => value !== '');
+        }
+
+        function rowMatchesAdvancedFilters(row, filters) {
+            const title = (row.querySelector('td[data-column="title"]')?.textContent || '').trim().toLowerCase();
+            const subject = (row.querySelector('td[data-column="subject"]')?.textContent || '').trim().toLowerCase();
+            const descriptionCell = row.querySelector('td[data-column="description"]');
+            const detailsCell = row.querySelector('td[data-column="details"]');
+            const description = ((descriptionCell?.dataset.full || descriptionCell?.textContent) || '').trim().toLowerCase();
+            const details = ((detailsCell?.dataset.full || detailsCell?.textContent) || '').trim().toLowerCase();
+
+            if (filters.title && !title.includes(filters.title)) {
+                return false;
+            }
+
+            if (filters.subject && !subject.includes(filters.subject)) {
+                return false;
+            }
+
+            if (filters.description && !description.includes(filters.description)) {
+                return false;
+            }
+
+            if (filters.details && !details.includes(filters.details)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function highlightText(value, terms) {
+            const plainText = String(value || '');
+            if (!plainText || !terms.length) {
+                return escapeHtml(plainText);
+            }
+
+            const uniqueTerms = Array.from(new Set(terms.map(term => term.toLowerCase())));
+            const pattern = uniqueTerms.map(escapeRegExp).join('|');
+
+            if (!pattern) {
+                return escapeHtml(plainText);
+            }
+
+            const regex = new RegExp(`(${pattern})`, 'gi');
+            return escapeHtml(plainText).replace(regex, '<span class="adv-highlight">$1</span>');
+        }
+
+        function buildSnippet(value, terms, maxLength = 140) {
+            const text = String(value || '').replace(/\s+/g, ' ').trim();
+            if (!text) {
+                return '';
+            }
+
+            if (!terms.length) {
+                return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+            }
+
+            const loweredText = text.toLowerCase();
+            let matchIndex = -1;
+            let matchedTermLength = 0;
+
+            terms.forEach(term => {
+                const cleanTerm = term.toLowerCase();
+                if (!cleanTerm) {
+                    return;
+                }
+                const index = loweredText.indexOf(cleanTerm);
+                if (index !== -1 && (matchIndex === -1 || index < matchIndex)) {
+                    matchIndex = index;
+                    matchedTermLength = cleanTerm.length;
+                }
+            });
+
+            if (matchIndex === -1) {
+                return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+            }
+
+            const context = Math.max(10, Math.floor((maxLength - matchedTermLength) / 2));
+            const start = Math.max(0, matchIndex - context);
+            const end = Math.min(text.length, matchIndex + matchedTermLength + context);
+
+            let snippet = text.slice(start, end);
+            if (start > 0) {
+                snippet = `...${snippet}`;
+            }
+            if (end < text.length) {
+                snippet = `${snippet}...`;
+            }
+
+            return snippet;
+        }
+
+        function renderAdvancedSearchResults() {
+            if (!advancedResultsContainer || !advancedResultsCount) {
+                return;
+            }
+
+            const filters = getAdvancedSearchFilters();
+            const terms = getAdvancedSearchTerms(filters);
+            const matchingRows = getAllRows().filter(row => rowMatchesAdvancedFilters(row, filters));
+
+            advancedResultsCount.textContent = `${matchingRows.length} result(s)`;
+
+            if (!terms.length) {
+                advancedResultsContainer.innerHTML = '<div class="adv-result-empty">Enter search filters to preview matching documents.</div>';
+                return;
+            }
+
+            if (!matchingRows.length) {
+                advancedResultsContainer.innerHTML = '<div class="adv-result-empty">No matching documents found.</div>';
+                return;
+            }
+
+            const html = matchingRows.map(row => {
+                const title = row.querySelector('td[data-column="title"]')?.textContent.trim() || 'Untitled';
+                const subject = row.querySelector('td[data-column="subject"]')?.textContent.trim() || 'N/A';
+                const detailsHref = row.querySelector('a.action-btn-details')?.getAttribute('href') || '#';
+                const descriptionCell = row.querySelector('td[data-column="description"]');
+                const detailsCell = row.querySelector('td[data-column="details"]');
+                const description = ((descriptionCell?.dataset.full || descriptionCell?.textContent) || '').trim();
+                const details = ((detailsCell?.dataset.full || detailsCell?.textContent) || '').trim();
+
+                const descriptionHasTerm = terms.some(term => description.toLowerCase().includes(term.toLowerCase()));
+                const detailsHasTerm = terms.some(term => details.toLowerCase().includes(term.toLowerCase()));
+
+                const preferredText = descriptionHasTerm ? description : (detailsHasTerm ? details : (description && description !== 'N/A' ? description : details));
+                const snippet = buildSnippet(preferredText, terms) || 'No description/details available.';
+
+                return `
+                    <a href="${escapeHtml(detailsHref)}" class="adv-result-link">
+                        <div class="adv-result-item">
+                            <div class="adv-result-title">${highlightText(title, terms)}</div>
+                            <div class="adv-result-subject">Subject: ${highlightText(subject, terms)}</div>
+                            <div class="adv-result-snippet">${highlightText(snippet, terms)}</div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+
+            advancedResultsContainer.innerHTML = html;
+        }
+
         function updateDeleteButtonState() {
+            if (!deleteSelectedBtn) {
+                return;
+            }
             const checkboxes = document.querySelectorAll('.documentCheckbox');
             const selectedCount = Array.from(checkboxes).filter(checkbox => checkbox.checked).length;
             deleteSelectedBtn.disabled = selectedCount === 0;
@@ -399,14 +578,8 @@
 
             const subject = (row.querySelector('td[data-column="subject"]')?.textContent || '').trim().toLowerCase();
             const creator = (row.querySelector('td[data-column="created_by_name"]')?.textContent || '').trim().toLowerCase();
-            const descriptionCell = row.querySelector('td[data-column="description"]');
-            const detailsCell = row.querySelector('td[data-column="details"]');
-            const description = ((descriptionCell?.dataset.full || descriptionCell?.textContent) || '').trim().toLowerCase();
-            const details = ((detailsCell?.dataset.full || detailsCell?.textContent) || '').trim().toLowerCase();
-            const title = (row.querySelector('td[data-column="title"]')?.textContent || '').trim().toLowerCase();
             const category = (row.querySelector('td[data-column="document_category_name"]')?.textContent || '').trim().toLowerCase();
             const type = (row.querySelector('td[data-column="document_type_name"]')?.textContent || '').trim().toLowerCase();
-            const createdAt = (row.querySelector('td[data-column="created_at"]')?.textContent || '').trim().toLowerCase();
 
             if (searchValue && !visibleText.includes(searchValue)) {
                 return false;
@@ -425,38 +598,6 @@
             }
 
             if (selectedType && type !== selectedType) {
-                return false;
-            }
-
-            if (advancedFilters.title && !title.includes(advancedFilters.title)) {
-                return false;
-            }
-
-            if (advancedFilters.subject && !subject.includes(advancedFilters.subject)) {
-                return false;
-            }
-
-            if (advancedFilters.description && !description.includes(advancedFilters.description)) {
-                return false;
-            }
-
-            if (advancedFilters.details && !details.includes(advancedFilters.details)) {
-                return false;
-            }
-
-            if (advancedFilters.category && !category.includes(advancedFilters.category)) {
-                return false;
-            }
-
-            if (advancedFilters.type && !type.includes(advancedFilters.type)) {
-                return false;
-            }
-
-            if (advancedFilters.creator && !creator.includes(advancedFilters.creator)) {
-                return false;
-            }
-
-            if (advancedFilters.created && !createdAt.includes(advancedFilters.created)) {
                 return false;
             }
 
@@ -626,28 +767,30 @@
             updateSelectAllState();
         });
 
-        deleteSelectedBtn.addEventListener('click', function () {
-            const selectedIds = Array.from(document.querySelectorAll('.documentCheckbox:checked')).map(checkbox => checkbox.value);
-            if (!selectedIds.length) {
-                alert('Please select at least one document to delete.');
-                return;
-            }
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('click', function () {
+                const selectedIds = Array.from(document.querySelectorAll('.documentCheckbox:checked')).map(checkbox => checkbox.value);
+                if (!selectedIds.length) {
+                    alert('Please select at least one document to delete.');
+                    return;
+                }
 
-            if (!confirm('Are you sure you want to delete selected document(s)?')) {
-                return;
-            }
+                if (!confirm('Are you sure you want to delete selected document(s)?')) {
+                    return;
+                }
 
-            batchDeleteInputs.innerHTML = '';
-            selectedIds.forEach(id => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'document_ids[]';
-                input.value = id;
-                batchDeleteInputs.appendChild(input);
+                batchDeleteInputs.innerHTML = '';
+                selectedIds.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'document_ids[]';
+                    input.value = id;
+                    batchDeleteInputs.appendChild(input);
+                });
+
+                batchDeleteForm.submit();
             });
-
-            batchDeleteForm.submit();
-        });
+        }
 
         refreshBtn.addEventListener('click', function () {
             window.location.reload();
@@ -667,32 +810,20 @@
 
         advancedSearchBtn.addEventListener('click', function () {
             advancedSearchModal.show();
-        });
-
-        document.getElementById('applyAdvancedSearch').addEventListener('click', function () {
-            advancedFilters = {
-                title: document.getElementById('advSearch_title').value.trim().toLowerCase(),
-                subject: document.getElementById('advSearch_subject').value.trim().toLowerCase(),
-                description: document.getElementById('advSearch_description').value.trim().toLowerCase(),
-                category: document.getElementById('advSearch_category').value.trim().toLowerCase(),
-                type: document.getElementById('advSearch_type').value.trim().toLowerCase(),
-                details: document.getElementById('advSearch_details').value.trim().toLowerCase(),
-                creator: document.getElementById('advSearch_creator').value.trim().toLowerCase(),
-                created: document.getElementById('advSearch_created').value.trim().toLowerCase(),
-            };
-
-            currentPage = 1;
-            applyFiltersAndPagination();
-            advancedSearchModal.hide();
+            renderAdvancedSearchResults();
         });
 
         document.getElementById('clearAdvancedSearch').addEventListener('click', function () {
             document.querySelectorAll('.advSearchField').forEach(field => {
                 field.value = '';
             });
-            advancedFilters = {};
-            currentPage = 1;
-            applyFiltersAndPagination();
+            renderAdvancedSearchResults();
+        });
+
+        document.querySelectorAll('.advSearchField').forEach(field => {
+            field.addEventListener('input', function () {
+                renderAdvancedSearchResults();
+            });
         });
 
         searchInput.addEventListener('input', function () {
@@ -729,9 +860,9 @@
             document.querySelectorAll('.advSearchField').forEach(field => {
                 field.value = '';
             });
-            advancedFilters = {};
             currentPage = 1;
             applyFiltersAndPagination();
+            renderAdvancedSearchResults();
         });
 
         columnToggles.forEach(toggle => {

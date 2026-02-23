@@ -30,10 +30,6 @@ class DocumentController extends BaseController
 
     public function index()
     {
-        if ($redirect = $this->ensureSuperadmin()) {
-            return $redirect;
-        }
-
         $page = (int) ($this->request->getGet('page') ?? 1);
         $page = max(1, $page);
         $perPage = 10;
@@ -44,6 +40,7 @@ class DocumentController extends BaseController
         $data['currentPage'] = $page;
         $data['perPage'] = $perPage;
         $data['title'] = 'Document Management';
+        $data['isReadOnly'] = !$this->isSuperadmin();
 
         return view('documents/index', $data);
     }
@@ -221,10 +218,6 @@ class DocumentController extends BaseController
 
     public function details($id)
     {
-        if ($redirect = $this->ensureSuperadmin()) {
-            return $redirect;
-        }
-
         $document = $this->documentModel->getWithMeta($id);
         if (!$document) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Document $id not found");
@@ -235,6 +228,7 @@ class DocumentController extends BaseController
         $data['notes'] = $this->documentNoteModel->getNotesByDocument($id);
         $data['files'] = $this->documentFileModel->getFilesByDocument($id);
         $data['title'] = 'Document Details';
+        $data['isReadOnly'] = !$this->isSuperadmin();
 
         return view('documents/details', $data);
     }
@@ -441,6 +435,11 @@ class DocumentController extends BaseController
         }
 
         return null;
+    }
+
+    private function isSuperadmin(): bool
+    {
+        return (bool) session()->get('user_id') && session()->get('usertype') === 'superadmin';
     }
 
     private function sanitizeRichText(string $html): ?string

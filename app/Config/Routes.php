@@ -182,7 +182,14 @@ $routes->get('/notifications', 'NotificationController::index');
 $routes->get('/dcf', 'DcfController::index');
 $routes->get('/dcf/create', 'DcfController::create');
 $routes->post('/dcf/store', 'DcfController::store');
+$routes->get('/dcf/details/(:num)', 'DcfController::details/$1');
 $routes->get('/dcf/edit/(:num)', 'DcfController::edit/$1');
 $routes->post('/dcf/update/(:num)', 'DcfController::update/$1');
 $routes->get('/dcf/delete/(:num)', 'DcfController::delete/$1');
+$routes->get('/dcf/questions', 'DcfController::questions');
+$routes->get('/dcf/past-questions/(:num)', 'DcfController::pastQuestionsByDepartment/$1');
+
+// DCF Public routes (no authentication required)
+$routes->get('/dcf/form/(:segment)', 'DcfPublicController::form/$1');
+$routes->post('/dcf/submit/(:segment)', 'DcfPublicController::submit/$1');
 

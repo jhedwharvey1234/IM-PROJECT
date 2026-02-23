@@ -3,9 +3,17 @@
 namespace App\Controllers;
 
 use App\Models\Dcf;
+use App\Models\Department;
+use App\Models\DcfPart;
+use App\Models\DcfQuestion;
+use App\Models\DcfQuestionOption;
+use App\Models\DcfResponse;
+use App\Models\DcfResponseAnswer;
 
 class DcfController extends BaseController
 {
+    private const QUESTION_TYPES_WITH_OPTIONS = ['multiple_choice', 'checkbox', 'dropdown'];
+
     public function index()
     {
         if (!session()->get('user_id')) {
@@ -17,7 +25,14 @@ class DcfController extends BaseController
         }
 
         $dcfModel = new Dcf();
-        $data['dcfs'] = $dcfModel->orderBy('name', 'ASC')->findAll();
+        $departmentModel = new Department();
+
+        $data['dcfs'] = $dcfModel
+            ->select('dcfs.*, departments.department_name')
+            ->join('departments', 'departments.id = dcfs.department_id', 'left')
+            ->orderBy('dcfs.title', 'ASC')
+            ->findAll();
+        $data['departments'] = $departmentModel->orderBy('department_name', 'ASC')->findAll();
         $data['title'] = 'DCF Management';
 
         return view('dcf/index', $data);
@@ -33,6 +48,9 @@ class DcfController extends BaseController
             return redirect()->to('dashboard')->with('error', 'Unauthorized access');
         }
 
+        $departmentModel = new Department();
+        $data['departments'] = $departmentModel->orderBy('department_name', 'ASC')->findAll();
+        $data['parts'] = [];
         $data['title'] = 'Create DCF';
         return view('dcf/create', $data);
     }
@@ -48,22 +66,77 @@ class DcfController extends BaseController
         }
 
         $dcfModel = new Dcf();
+        $partModel = new DcfPart();
+        $questionModel = new DcfQuestion();
+        $optionModel = new DcfQuestionOption();
+        $db = \Config\Database::connect();
 
-        $name = $this->request->getPost('name');
+        $title = $this->request->getPost('title');
         $description = $this->request->getPost('description');
-        $isActive = $this->request->getPost('is_active');
+        $dueDate = $this->request->getPost('due_date');
+        $departmentId = $this->request->getPost('department_id');
 
+        $titleValue = is_string($title) ? trim($title) : '';
+        // Generate a unique name from title + timestamp to satisfy UNIQUE constraint
+        $nameValue = preg_replace('/[^a-z0-9]+/i', '_', strtolower($titleValue)) . '_' . time();
+        
         $data = [
-            'name' => is_string($name) ? trim($name) : '',
+            'title' => $titleValue,
+            'name' => $nameValue,
             'description' => is_string($description) ? trim($description) : '',
-            'is_active' => $isActive ? 1 : 0,
+            'due_date' => is_string($dueDate) ? trim($dueDate) : '',
+            'department_id' => (int) $departmentId,
         ];
 
-        if ($dcfModel->insert($data)) {
-            return redirect()->to('/dcf')->with('success', 'DCF created successfully');
+        // Log incoming data for debugging
+        log_message('debug', 'DCF Store - Title: ' . $data['title']);
+        log_message('debug', 'DCF Store - Raw Parts: ' . json_encode($this->request->getPost('parts')));
+
+        $parts = $this->normalizePartsInput($this->request->getPost('parts'));
+        if (isset($parts['error'])) {
+            log_message('error', 'Part normalization failed: ' . $parts['error']);
+            return redirect()->back()->withInput()->with('errors', [$parts['error']]);
         }
 
-        return redirect()->back()->withInput()->with('errors', $dcfModel->errors());
+        log_message('debug', 'Normalized parts count: ' . count($parts));
+
+        $db->transBegin();
+
+        // Try inserting without skipping validation to get better error messages
+        log_message('debug', 'About to insert DCF with data: ' . json_encode($data));
+        $dcfId = $dcfModel->insert($data);
+        
+        if (!$dcfId) {
+            $db->transRollback();
+            $errors = $dcfModel->errors();
+            log_message('error', 'Failed to insert DCF. Model errors: ' . json_encode($errors));
+            
+            if (!empty($errors)) {
+                return redirect()->back()->withInput()->with('errors', $errors);
+            } else {
+                return redirect()->back()->withInput()->with('errors', ['Failed to create DCF record. Please check all required fields.']);
+            }
+        }
+
+        log_message('debug', 'DCF created with ID: ' . $dcfId);
+
+        if (count($parts) > 0) {
+            if (!$this->persistPartsAndQuestions((int) $dcfId, $parts, $partModel, $questionModel, $optionModel)) {
+                $db->transRollback();
+                log_message('error', 'Failed to persist parts/questions');
+                return redirect()->back()->withInput()->with('errors', ['Failed to save DCF parts and questions.']);
+            }
+        }
+
+        if ($db->transStatus() === false) {
+            $db->transRollback();
+            log_message('error', 'Transaction failed');
+            return redirect()->back()->withInput()->with('errors', ['Failed to create DCF.']);
+        }
+
+        $db->transCommit();
+        log_message('info', 'DCF created successfully with ID: ' . $dcfId);
+        return redirect()->to('/dcf')->with('success', 'DCF created successfully');
     }
 
     public function edit($id)
@@ -77,12 +150,20 @@ class DcfController extends BaseController
         }
 
         $dcfModel = new Dcf();
+        $departmentModel = new Department();
+        $partModel = new DcfPart();
+        $questionModel = new DcfQuestion();
+        $optionModel = new DcfQuestionOption();
         $data['dcf'] = $dcfModel->find($id);
 
         if (!$data['dcf']) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("DCF $id not found");
         }
 
+        $parts = $this->buildPartsWithQuestions((int) $id, $partModel, $questionModel, $optionModel);
+
+        $data['departments'] = $departmentModel->orderBy('department_name', 'ASC')->findAll();
+        $data['parts'] = $parts;
         $data['title'] = 'Edit DCF';
         return view('dcf/edit', $data);
     }
@@ -98,23 +179,68 @@ class DcfController extends BaseController
         }
 
         $dcfModel = new Dcf();
-        $dcfModel->setValidationRule('name', str_replace('{id}', $id, $dcfModel->validationRules['name']));
+        $partModel = new DcfPart();
+        $questionModel = new DcfQuestion();
+        $optionModel = new DcfQuestionOption();
+        $db = \Config\Database::connect();
 
-        $name = $this->request->getPost('name');
+        $title = $this->request->getPost('title');
         $description = $this->request->getPost('description');
-        $isActive = $this->request->getPost('is_active');
+        $dueDate = $this->request->getPost('due_date');
+        $departmentId = $this->request->getPost('department_id');
 
+        $titleValue = is_string($title) ? trim($title) : '';
+        // Generate a unique name from title + timestamp to satisfy UNIQUE constraint
+        $nameValue = preg_replace('/[^a-z0-9]+/i', '_', strtolower($titleValue)) . '_' . time();
+        
         $data = [
-            'name' => is_string($name) ? trim($name) : '',
+            'title' => $titleValue,
+            'name' => $nameValue,
             'description' => is_string($description) ? trim($description) : '',
-            'is_active' => $isActive ? 1 : 0,
+            'due_date' => is_string($dueDate) ? trim($dueDate) : '',
+            'department_id' => (int) $departmentId,
         ];
 
-        if ($dcfModel->update($id, $data)) {
-            return redirect()->to('/dcf')->with('success', 'DCF updated successfully');
+        $parts = $this->normalizePartsInput($this->request->getPost('parts'));
+        if (isset($parts['error'])) {
+            return redirect()->back()->withInput()->with('errors', [$parts['error']]);
         }
 
-        return redirect()->back()->withInput()->with('errors', $dcfModel->errors());
+        $db->transBegin();
+
+        if (!$dcfModel->update($id, $data)) {
+            $db->transRollback();
+            $errors = $dcfModel->errors();
+            log_message('error', 'Failed to update DCF. Model errors: ' . json_encode($errors));
+            
+            if (!empty($errors)) {
+                return redirect()->back()->withInput()->with('errors', $errors);
+            } else {
+                return redirect()->back()->withInput()->with('errors', ['Failed to update DCF record.']);
+            }
+        }
+
+        $existingQuestions = $questionModel->where('dcf_id', $id)->findAll();
+        foreach ($existingQuestions as $existingQuestion) {
+            $optionModel->where('question_id', $existingQuestion['id'])->delete();
+        }
+        $questionModel->where('dcf_id', $id)->delete();
+        $partModel->where('dcf_id', $id)->delete();
+
+        if (count($parts) > 0) {
+            if (!$this->persistPartsAndQuestions((int) $id, $parts, $partModel, $questionModel, $optionModel)) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('errors', ['Failed to save DCF parts and questions.']);
+            }
+        }
+
+        if ($db->transStatus() === false) {
+            $db->transRollback();
+            return redirect()->back()->withInput()->with('errors', ['Failed to update DCF.']);
+        }
+
+        $db->transCommit();
+        return redirect()->to('/dcf')->with('success', 'DCF updated successfully');
     }
 
     public function delete($id)
@@ -134,5 +260,394 @@ class DcfController extends BaseController
         }
 
         return redirect()->to('/dcf')->with('error', 'Failed to delete DCF');
+    }
+
+    public function questions()
+    {
+        if (!session()->get('user_id')) {
+            return redirect()->to('login');
+        }
+
+        if (session()->get('usertype') !== 'superadmin') {
+            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        $questionModel = new DcfQuestion();
+
+        $data['questions'] = $questionModel
+            ->select('dcf_questions.id, dcf_questions.dcf_id, dcfs.department_id, dcf_questions.question_text')
+            ->join('dcfs', 'dcfs.id = dcf_questions.dcf_id', 'left')
+            ->orderBy('dcf_questions.id', 'DESC')
+            ->findAll();
+
+        $data['title'] = 'DCF Questions';
+
+        return view('dcf/questions', $data);
+    }
+
+    public function pastQuestionsByDepartment($departmentId)
+    {
+        if (!session()->get('user_id')) {
+            return $this->response->setStatusCode(401)->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        if (session()->get('usertype') !== 'superadmin') {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Forbidden']);
+        }
+
+        $departmentId = (int) $departmentId;
+        if ($departmentId <= 0) {
+            return $this->response->setJSON(['success' => true, 'questions' => []]);
+        }
+
+        $questionModel = new DcfQuestion();
+        $optionModel = new DcfQuestionOption();
+
+        $rows = $questionModel
+            ->select('dcf_questions.id, dcf_questions.dcf_id, dcf_questions.question_text, dcf_questions.is_required, dcf_questions.answer_type, dcf_questions.rate_min, dcf_questions.rate_max, dcfs.department_id')
+            ->join('dcfs', 'dcfs.id = dcf_questions.dcf_id', 'inner')
+            ->where('dcfs.department_id', $departmentId)
+            ->orderBy('dcf_questions.id', 'DESC')
+            ->findAll();
+
+        foreach ($rows as &$row) {
+            $opts = $optionModel
+                ->select('option_text')
+                ->where('question_id', $row['id'])
+                ->orderBy('sort_order', 'ASC')
+                ->orderBy('id', 'ASC')
+                ->findAll();
+
+            $row['options'] = array_values(array_map(static fn($opt) => $opt['option_text'] ?? '', $opts));
+        }
+        unset($row);
+
+        return $this->response->setJSON(['success' => true, 'questions' => $rows]);
+    }
+
+    public function details($id)
+    {
+        if (!session()->get('user_id')) {
+            return redirect()->to('login');
+        }
+
+        if (session()->get('usertype') !== 'superadmin') {
+            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        $dcfModel = new Dcf();
+        $departmentModel = new Department();
+        $partModel = new DcfPart();
+        $questionModel = new DcfQuestion();
+        $optionModel = new DcfQuestionOption();
+        $responseModel = new DcfResponse();
+        $answerModel = new DcfResponseAnswer();
+
+        $dcf = $dcfModel->find($id);
+        if (!$dcf) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException("DCF $id not found");
+        }
+
+        $department = $departmentModel->find($dcf['department_id']);
+        $parts = $this->buildPartsWithQuestions((int) $id, $partModel, $questionModel, $optionModel);
+        $questions = [];
+        foreach ($parts as $part) {
+            foreach ($part['questions'] as $question) {
+                $questions[] = $question;
+            }
+        }
+
+        $responseCount = $responseModel->where('dcf_id', $id)->countAllResults();
+        $responses = $responseModel->where('dcf_id', $id)->orderBy('submitted_at', 'DESC')->findAll();
+
+        $analytics = [];
+        foreach ($questions as $question) {
+            $questionId = $question['id'];
+            $answers = $answerModel
+                ->select('dcf_response_answers.answer_text')
+                ->join('dcf_responses', 'dcf_responses.id = dcf_response_answers.response_id')
+                ->where('dcf_responses.dcf_id', $id)
+                ->where('dcf_response_answers.question_id', $questionId)
+                ->findAll();
+
+            $analytics[$questionId] = [
+                'question' => $question,
+                'answers' => $answers,
+                'summary' => $this->generateAnswerSummary($question, $answers)
+            ];
+        }
+
+        $baseUrl = base_url();
+        $shareUrl = $baseUrl . '/dcf/form/' . $dcf['share_token'];
+
+        $data = [
+            'dcf' => $dcf,
+            'department' => $department,
+            'parts' => $parts,
+            'questions' => $questions,
+            'responseCount' => $responseCount,
+            'responses' => $responses,
+            'analytics' => $analytics,
+            'shareUrl' => $shareUrl,
+            'title' => 'DCF Details - ' . $dcf['title']
+        ];
+
+        return view('dcf/details', $data);
+    }
+
+    private function generateAnswerSummary($question, $answers)
+    {
+        $type = $question['answer_type'];
+        
+        if (in_array($type, ['multiple_choice', 'dropdown', 'rate_me'])) {
+            $counts = [];
+            foreach ($answers as $ans) {
+                $val = $ans['answer_text'];
+                $counts[$val] = ($counts[$val] ?? 0) + 1;
+            }
+            if ($type === 'rate_me') {
+                ksort($counts, SORT_NUMERIC);
+            } else {
+                arsort($counts);
+            }
+            return $counts;
+        }
+
+        if ($type === 'checkbox') {
+            $counts = [];
+            foreach ($answers as $ans) {
+                $decoded = json_decode($ans['answer_text'], true);
+                if (is_array($decoded)) {
+                    foreach ($decoded as $item) {
+                        $counts[$item] = ($counts[$item] ?? 0) + 1;
+                    }
+                }
+            }
+            arsort($counts);
+            return $counts;
+        }
+
+        return array_map(fn($a) => $a['answer_text'], $answers);
+    }
+
+    private function normalizePartsInput($rawParts): array
+    {
+        if (!is_array($rawParts)) {
+            return [];
+        }
+
+        $normalizedParts = [];
+        $allowedTypes = ['multiple_choice', 'checkbox', 'dropdown', 'short_answer', 'paragraph', 'rate_me'];
+
+        foreach ($rawParts as $partRow) {
+            if (!is_array($partRow)) {
+                continue;
+            }
+
+            $partTitle = isset($partRow['title']) && is_string($partRow['title'])
+                ? trim($partRow['title'])
+                : '';
+            $partDescription = isset($partRow['description']) && is_string($partRow['description'])
+                ? trim($partRow['description'])
+                : '';
+            $rawQuestions = isset($partRow['questions']) && is_array($partRow['questions']) ? $partRow['questions'] : [];
+
+            $normalizedQuestions = [];
+            foreach ($rawQuestions as $row) {
+                if (!is_array($row)) {
+                    continue;
+                }
+
+                $questionText = isset($row['question_text']) && is_string($row['question_text'])
+                    ? trim($row['question_text'])
+                    : '';
+
+                if ($questionText === '') {
+                    continue;
+                }
+
+                $answerType = isset($row['answer_type']) && is_string($row['answer_type'])
+                    ? trim($row['answer_type'])
+                    : 'short_answer';
+
+                if (!in_array($answerType, $allowedTypes, true)) {
+                    return ['error' => 'Invalid question answer type provided.'];
+                }
+
+                $isRequired = !empty($row['is_required']) ? 1 : 0;
+                $options = [];
+                $rateMin = null;
+                $rateMax = null;
+
+                if (in_array($answerType, self::QUESTION_TYPES_WITH_OPTIONS, true)) {
+                    $rawOptions = isset($row['options']) && is_array($row['options']) ? $row['options'] : [];
+                    foreach ($rawOptions as $opt) {
+                        $optText = is_string($opt) ? trim($opt) : '';
+                        if ($optText !== '') {
+                            $options[] = $optText;
+                        }
+                    }
+
+                    if (count($options) === 0) {
+                        return ['error' => 'Multiple choice, checkbox, and dropdown questions require at least one option.'];
+                    }
+                }
+
+                if ($answerType === 'rate_me') {
+                    $rawMin = $row['rate_min'] ?? null;
+                    $rawMax = $row['rate_max'] ?? null;
+
+                    $rateMin = is_numeric($rawMin) ? (int) $rawMin : 1;
+                    $rateMax = is_numeric($rawMax) ? (int) $rawMax : 10;
+
+                    if ($rateMin < 1 || $rateMax < 1 || $rateMin > $rateMax) {
+                        return ['error' => 'Rate Me range is invalid. Minimum must be at least 1 and not greater than maximum.'];
+                    }
+                }
+
+                $normalizedQuestions[] = [
+                    'question_text' => $questionText,
+                    'is_required' => $isRequired,
+                    'answer_type' => $answerType,
+                    'options' => $options,
+                    'rate_min' => $rateMin,
+                    'rate_max' => $rateMax,
+                ];
+            }
+
+            if ($partTitle === '' && $partDescription === '' && count($normalizedQuestions) === 0) {
+                continue;
+            }
+
+            if ($partTitle === '') {
+                return ['error' => 'Part title is required for each part.'];
+            }
+
+            $normalizedParts[] = [
+                'title' => $partTitle,
+                'description' => $partDescription,
+                'questions' => $normalizedQuestions,
+            ];
+        }
+
+        return $normalizedParts;
+    }
+
+    private function persistPartsAndQuestions(
+        int $dcfId,
+        array $parts,
+        DcfPart $partModel,
+        DcfQuestion $questionModel,
+        DcfQuestionOption $optionModel
+    ): bool
+    {
+        foreach ($parts as $partIndex => $part) {
+            $partId = $partModel->insert([
+                'dcf_id' => $dcfId,
+                'title' => $part['title'],
+                'description' => $part['description'],
+                'sort_order' => $partIndex + 1,
+            ]);
+
+            if (!$partId) {
+                log_message('error', 'Failed to insert part: ' . json_encode($part));
+                log_message('error', 'Part errors: ' . json_encode($partModel->errors()));
+                return false;
+            }
+
+            foreach ($part['questions'] as $index => $question) {
+                $questionData = [
+                    'dcf_id' => $dcfId,
+                    'part_id' => (int) $partId,
+                    'question_text' => $question['question_text'],
+                    'is_required' => $question['is_required'],
+                    'answer_type' => $question['answer_type'],
+                    'rate_min' => $question['answer_type'] === 'rate_me' ? $question['rate_min'] : null,
+                    'rate_max' => $question['answer_type'] === 'rate_me' ? $question['rate_max'] : null,
+                    'sort_order' => $index + 1,
+                ];
+
+                $questionId = $questionModel->insert($questionData);
+
+                if (!$questionId) {
+                    log_message('error', 'Failed to insert question: ' . json_encode($questionData));
+                    log_message('error', 'Question errors: ' . json_encode($questionModel->errors()));
+                    return false;
+                }
+
+                if (isset($question['options']) && is_array($question['options']) && count($question['options']) > 0) {
+                    foreach ($question['options'] as $optIndex => $optionText) {
+                        $optionData = [
+                            'question_id' => (int) $questionId,
+                            'option_text' => $optionText,
+                            'sort_order' => $optIndex + 1,
+                        ];
+
+                        $ok = $optionModel->insert($optionData);
+
+                        if (!$ok) {
+                            log_message('error', 'Failed to insert option: ' . json_encode($optionData));
+                            log_message('error', 'Option errors: ' . json_encode($optionModel->errors()));
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private function buildPartsWithQuestions(int $dcfId, DcfPart $partModel, DcfQuestion $questionModel, DcfQuestionOption $optionModel): array
+    {
+        $parts = $partModel
+            ->where('dcf_id', $dcfId)
+            ->orderBy('sort_order', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->findAll();
+
+        $questions = $questionModel
+            ->where('dcf_id', $dcfId)
+            ->orderBy('part_id', 'ASC')
+            ->orderBy('sort_order', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->findAll();
+
+        $questionsByPart = [];
+        foreach ($questions as $question) {
+            $question['options'] = $optionModel
+                ->where('question_id', $question['id'])
+                ->orderBy('sort_order', 'ASC')
+                ->orderBy('id', 'ASC')
+                ->findAll();
+
+            $partKey = (string) ($question['part_id'] ?? 0);
+            if (!isset($questionsByPart[$partKey])) {
+                $questionsByPart[$partKey] = [];
+            }
+            $questionsByPart[$partKey][] = $question;
+        }
+
+        $result = [];
+        foreach ($parts as $part) {
+            $partKey = (string) $part['id'];
+            $part['questions'] = $questionsByPart[$partKey] ?? [];
+            $result[] = $part;
+            unset($questionsByPart[$partKey]);
+        }
+
+        if (isset($questionsByPart['0']) && count($questionsByPart['0']) > 0) {
+            $result[] = [
+                'id' => 0,
+                'dcf_id' => $dcfId,
+                'title' => 'General',
+                'description' => '',
+                'sort_order' => 999999,
+                'questions' => $questionsByPart['0'],
+            ];
+            unset($questionsByPart['0']);
+        }
+
+        return $result;
     }
 }

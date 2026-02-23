@@ -13,13 +13,15 @@ if ($conn->connect_error) {
 
 $sql = "CREATE TABLE IF NOT EXISTS dcfs (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
+    title VARCHAR(255) NOT NULL,
     description TEXT NULL,
-    is_active TINYINT(1) DEFAULT 1,
+    due_date DATE NOT NULL,
+    department_id BIGINT(20) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uniq_dcfs_name (name),
-    INDEX idx_dcfs_is_active (is_active)
+    INDEX idx_dcfs_due_date (due_date),
+    INDEX idx_dcfs_department_id (department_id),
+    CONSTRAINT fk_dcfs_department FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE RESTRICT ON UPDATE CASCADE
 )";
 
 if ($conn->query($sql) === TRUE) {

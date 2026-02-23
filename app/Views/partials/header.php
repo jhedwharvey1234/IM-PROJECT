@@ -15,7 +15,11 @@
                     <?php endif; ?>
                 </a>
             <?php endif; ?>
-            <a href="<?= site_url('auth/logout') ?>" class="btn btn-header">Logout</a>
+            <?php if (session()->get('user_id')): ?>
+                <a href="<?= site_url('auth/logout') ?>" class="btn btn-header">Logout</a>
+            <?php else: ?>
+                <a href="<?= site_url('login') ?>" class="btn btn-header">Login</a>
+            <?php endif; ?>
         </div>
     </div>
 </nav>
@@ -158,6 +162,10 @@
                 <a href="<?= site_url('dcf/create') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-plus-lg"></i>
                     <span>Create DCF</span>
+                </a>
+                <a href="<?= site_url('dcf/questions') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-question-circle"></i>
+                    <span>Questions</span>
                 </a>
                 <a href="<?= site_url('dcf') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-gear"></i>
