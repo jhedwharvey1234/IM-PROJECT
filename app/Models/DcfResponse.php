@@ -14,6 +14,8 @@ class DcfResponse extends Model
         'respondent_name',
         'respondent_mobile',
         'respondent_email',
+        'user_consent',
+        'consent_timestamp',
         'submitted_at',
         'ip_address',
         'user_agent',

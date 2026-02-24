@@ -188,6 +188,9 @@ $routes->post('/dcf/update/(:num)', 'DcfController::update/$1');
 $routes->get('/dcf/delete/(:num)', 'DcfController::delete/$1');
 $routes->get('/dcf/questions', 'DcfController::questions');
 $routes->get('/dcf/past-questions/(:num)', 'DcfController::pastQuestionsByDepartment/$1');
+$routes->get('/dcf/parts', 'DcfController::parts');
+$routes->get('/dcf/past-parts/(:num)', 'DcfController::pastPartsByDepartment/$1');
+$routes->post('/dcf/upload-image', 'DcfController::uploadImage');
 
 // DCF Public routes (no authentication required)
 $routes->get('/dcf/form/(:segment)', 'DcfPublicController::form/$1');

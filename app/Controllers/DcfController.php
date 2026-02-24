@@ -304,7 +304,7 @@ class DcfController extends BaseController
         $optionModel = new DcfQuestionOption();
 
         $rows = $questionModel
-            ->select('dcf_questions.id, dcf_questions.dcf_id, dcf_questions.question_text, dcf_questions.is_required, dcf_questions.answer_type, dcf_questions.rate_min, dcf_questions.rate_max, dcfs.department_id')
+            ->select('dcf_questions.id, dcf_questions.dcf_id, dcf_questions.question_text, dcf_questions.is_required, dcf_questions.answer_type, dcf_questions.rate_min, dcf_questions.rate_max, dcf_questions.grid_rows, dcf_questions.grid_columns, dcfs.department_id')
             ->join('dcfs', 'dcfs.id = dcf_questions.dcf_id', 'inner')
             ->where('dcfs.department_id', $departmentId)
             ->orderBy('dcf_questions.id', 'DESC')
@@ -427,6 +427,25 @@ class DcfController extends BaseController
             return $counts;
         }
 
+        if ($type === 'advance_checkbox') {
+            $counts = [];
+            foreach ($answers as $ans) {
+                $decoded = json_decode($ans['answer_text'], true);
+                if (is_array($decoded)) {
+                    foreach ($decoded as $rowSelections) {
+                        if (!is_array($rowSelections)) {
+                            continue;
+                        }
+                        foreach ($rowSelections as $item) {
+                            $counts[$item] = ($counts[$item] ?? 0) + 1;
+                        }
+                    }
+                }
+            }
+            arsort($counts);
+            return $counts;
+        }
+
         return array_map(fn($a) => $a['answer_text'], $answers);
     }
 
@@ -437,7 +456,7 @@ class DcfController extends BaseController
         }
 
         $normalizedParts = [];
-        $allowedTypes = ['multiple_choice', 'checkbox', 'dropdown', 'short_answer', 'paragraph', 'rate_me'];
+        $allowedTypes = ['multiple_choice', 'checkbox', 'dropdown', 'short_answer', 'paragraph', 'rate_me', 'wysiwyg', 'advance_checkbox'];
 
         foreach ($rawParts as $partRow) {
             if (!is_array($partRow)) {
@@ -478,6 +497,8 @@ class DcfController extends BaseController
                 $options = [];
                 $rateMin = null;
                 $rateMax = null;
+                $gridRows = [];
+                $gridColumns = [];
 
                 if (in_array($answerType, self::QUESTION_TYPES_WITH_OPTIONS, true)) {
                     $rawOptions = isset($row['options']) && is_array($row['options']) ? $row['options'] : [];
@@ -505,6 +526,25 @@ class DcfController extends BaseController
                     }
                 }
 
+                if ($answerType === 'advance_checkbox') {
+                    $rawRows = $row['grid_rows'] ?? [];
+                    $rawColumns = $row['grid_columns'] ?? [];
+
+                    $gridRows = is_array($rawRows)
+                        ? $rawRows
+                        : preg_split('/\r\n|\r|\n/', (string) $rawRows);
+                    $gridColumns = is_array($rawColumns)
+                        ? $rawColumns
+                        : preg_split('/\r\n|\r|\n/', (string) $rawColumns);
+
+                    $gridRows = array_values(array_filter(array_map('trim', $gridRows), 'strlen'));
+                    $gridColumns = array_values(array_filter(array_map('trim', $gridColumns), 'strlen'));
+
+                    if (count($gridRows) === 0 || count($gridColumns) === 0) {
+                        return ['error' => 'Advance Checkbox questions require at least one row and one column.'];
+                    }
+                }
+
                 $normalizedQuestions[] = [
                     'question_text' => $questionText,
                     'is_required' => $isRequired,
@@ -512,6 +552,8 @@ class DcfController extends BaseController
                     'options' => $options,
                     'rate_min' => $rateMin,
                     'rate_max' => $rateMax,
+                    'grid_rows' => $gridRows,
+                    'grid_columns' => $gridColumns,
                 ];
             }
 
@@ -564,6 +606,12 @@ class DcfController extends BaseController
                     'answer_type' => $question['answer_type'],
                     'rate_min' => $question['answer_type'] === 'rate_me' ? $question['rate_min'] : null,
                     'rate_max' => $question['answer_type'] === 'rate_me' ? $question['rate_max'] : null,
+                    'grid_rows' => $question['answer_type'] === 'advance_checkbox'
+                        ? json_encode($question['grid_rows'] ?? [])
+                        : null,
+                    'grid_columns' => $question['answer_type'] === 'advance_checkbox'
+                        ? json_encode($question['grid_columns'] ?? [])
+                        : null,
                     'sort_order' => $index + 1,
                 ];
 
@@ -649,5 +697,150 @@ class DcfController extends BaseController
         }
 
         return $result;
+    }
+
+    public function parts()
+    {
+        if (!session()->get('user_id')) {
+            return redirect()->to('login');
+        }
+
+        if (session()->get('usertype') !== 'superadmin') {
+            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        }
+
+        $partModel = new DcfPart();
+        $dcfModel = new Dcf();
+        $departmentModel = new Department();
+
+        // Fetch all parts with their DCF and department info
+        $data['parts'] = $partModel
+            ->select('dcf_parts.*, dcfs.title as dcf_title, dcfs.department_id, departments.department_name')
+            ->join('dcfs', 'dcfs.id = dcf_parts.dcf_id', 'inner')
+            ->join('departments', 'departments.id = dcfs.department_id', 'left')
+            ->orderBy('departments.department_name', 'ASC')
+            ->orderBy('dcf_parts.dcf_id', 'ASC')
+            ->orderBy('dcf_parts.sort_order', 'ASC')
+            ->findAll();
+
+        $data['departments'] = $departmentModel->orderBy('department_name', 'ASC')->findAll();
+        $data['title'] = 'Parts Management';
+
+        return view('dcf/parts', $data);
+    }
+
+    public function pastPartsByDepartment($departmentId)
+    {
+        if (!session()->get('user_id')) {
+            return $this->response->setStatusCode(401)->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        if (session()->get('usertype') !== 'superadmin') {
+            return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Forbidden']);
+        }
+
+        $departmentId = (int) $departmentId;
+        if ($departmentId <= 0) {
+            return $this->response->setJSON(['success' => true, 'parts' => []]);
+        }
+
+        $partModel = new DcfPart();
+        $questionModel = new DcfQuestion();
+        $optionModel = new DcfQuestionOption();
+
+        // Fetch all parts for the department with their questions and options
+        $rows = $partModel
+            ->select('dcf_parts.*, dcfs.department_id')
+            ->join('dcfs', 'dcfs.id = dcf_parts.dcf_id', 'inner')
+            ->where('dcfs.department_id', $departmentId)
+            ->orderBy('dcf_parts.dcf_id', 'DESC')
+            ->orderBy('dcf_parts.sort_order', 'ASC')
+            ->orderBy('dcf_parts.id', 'ASC')
+            ->findAll();
+
+        foreach ($rows as &$part) {
+            // Fetch questions for this part
+            $questions = $questionModel
+                ->where('dcf_id', $part['dcf_id'])
+                ->where('part_id', $part['id'])
+                ->orderBy('sort_order', 'ASC')
+                ->orderBy('id', 'ASC')
+                ->findAll();
+
+            foreach ($questions as &$question) {
+                // Fetch options for this question
+                $opts = $optionModel
+                    ->select('option_text')
+                    ->where('question_id', $question['id'])
+                    ->orderBy('sort_order', 'ASC')
+                    ->orderBy('id', 'ASC')
+                    ->findAll();
+
+                $question['options'] = array_values(array_map(static fn($opt) => $opt['option_text'] ?? '', $opts));
+            }
+            unset($question);
+
+            $part['questions'] = $questions;
+        }
+        unset($part);
+
+        return $this->response->setJSON(['success' => true, 'parts' => $rows]);
+    }
+
+    public function uploadImage()
+    {
+        // Allow both authenticated users and public form submissions
+        helper('filesystem');
+
+        try {
+            $file = $this->request->getFile('file');
+            
+            if (!$file || !$file->isValid()) {
+                return $this->response->setStatusCode(400)->setJSON([
+                    'error' => 'No valid file uploaded'
+                ]);
+            }
+
+            // Validate file type
+            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!in_array($file->getMimeType(), $allowedTypes)) {
+                return $this->response->setStatusCode(400)->setJSON([
+                    'error' => 'Invalid file type. Only images are allowed.'
+                ]);
+            }
+
+            // Validate file size (max 5MB)
+            if ($file->getSize() > 5242880) {
+                return $this->response->setStatusCode(400)->setJSON([
+                    'error' => 'File size too large. Maximum size is 5MB.'
+                ]);
+            }
+
+            // Create upload directory if it doesn't exist
+            $uploadPath = FCPATH . 'uploads/dcf-images';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+
+            // Generate unique filename
+            $newName = $file->getRandomName();
+            
+            // Move file to upload directory
+            if ($file->move($uploadPath, $newName)) {
+                $fileUrl = base_url('uploads/dcf-images/' . $newName);
+                
+                return $this->response->setJSON([
+                    'location' => $fileUrl
+                ]);
+            } else {
+                return $this->response->setStatusCode(500)->setJSON([
+                    'error' => 'Failed to upload file'
+                ]);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'error' => 'Upload error: ' . $e->getMessage()
+            ]);
+        }
     }
 }

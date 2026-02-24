@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         body { display: flex; min-height: 100vh; background-color: #eeeeee; }
         .sidebar { width: 250px; background-color: #f8f9fa; padding: 20px; position: fixed; height: 100%; top: 56px; left: 0; }
@@ -22,7 +23,26 @@
         .stat-box p { margin: 10px 0 0 0; }
         .share-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border: 2px dashed #dee2e6; }
         .chart-container { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .chart-and-table-wrapper { display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+        .chart-wrapper { flex: 0 0 450px; position: relative; height: 400px; }
+        .chart-canvas-wrapper { position: relative; height: 100%; }
+        .stats-table-wrapper { flex: 1; min-width: 300px; }
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; }
+        .stat-item { background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center; }
+        .stat-item-value { font-size: 1.8rem; font-weight: 700; color: #667eea; }
         #qrcode { display: inline-block; padding: 10px; background: white; border-radius: 8px; }
+        
+        /* WYSIWYG Content Display */
+        .wysiwyg-content { line-height: 1.6; font-size: 14px; }
+        .wysiwyg-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .wysiwyg-content p { margin-bottom: 12px; }
+        .wysiwyg-content ul, .wysiwyg-content ol { margin: 10px 0; padding-left: 25px; }
+        .wysiwyg-content table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .wysiwyg-content table td, .wysiwyg-content table th { border: 1px solid #dee2e6; padding: 8px; }
+        .wysiwyg-content table th { background: #f8f9fa; font-weight: 600; }
+        .wysiwyg-content blockquote { border-left: 4px solid #667eea; padding-left: 15px; margin: 15px 0; color: #6c757d; font-style: italic; }
+        .wysiwyg-content a { color: #0d6efd; text-decoration: none; }
+        .wysiwyg-content a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -211,40 +231,157 @@
                             
                             <?php if (is_array($data['summary']) && count($data['summary']) > 0): ?>
                                 <?php if (array_keys($data['summary'])[0] !== 0): ?>
-                                    <!-- Multiple Choice / Checkbox / Dropdown -->
-                                    <table class="table table-sm mt-3">
+                                    <!-- Multiple Choice / Checkbox / Dropdown - Show as Charts -->
+                                    <?php
+                                        $answers = array_keys($data['summary']);
+                                        $counts = array_values($data['summary']);
+                                        $total = array_sum($counts);
+                                        $percentages = array_map(fn($c) => round(($c / $total) * 100, 1), $counts);
+                                        $chartId = 'chart_' . $questionId;
+                                        $chartDataJson = json_encode([
+                                            'labels' => $answers,
+                                            'data' => $counts,
+                                            'percentages' => $percentages,
+                                            'type' => $data['question']['answer_type']
+                                        ]);
+                                    ?>
+                                    
+                                    <!-- Chart and Table Side by Side -->
+                                    <div class="chart-and-table-wrapper">
+                                        <!-- Pie Chart -->
+                                        <div class="chart-wrapper">
+                                            <div class="chart-canvas-wrapper">
+                                                <canvas id="<?= $chartId ?>"></canvas>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Statistics Table -->
+                                        <div class="stats-table-wrapper">
+                                            <table class="table table-sm table-hover">
                                         <thead>
                                             <tr>
                                                 <th>Answer</th>
-                                                <th width="100">Count</th>
-                                                <th width="200">Percentage</th>
+                                                <th width="80" class="text-center">Count</th>
+                                                <th width="100" class="text-center">Percentage</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php foreach ($data['summary'] as $answer => $count): ?>
-                                                <?php $percentage = round(($count / $responseCount) * 100, 1); ?>
+                                                <?php $pct = round(($count / $total) * 100, 1); ?>
                                                 <tr>
                                                     <td><?= esc($answer) ?></td>
-                                                    <td><?= $count ?></td>
-                                                    <td>
-                                                        <div class="progress">
-                                                            <div class="progress-bar" role="progressbar" style="width: <?= $percentage ?>%">
-                                                                <?= $percentage ?>%
-                                                            </div>
-                                                        </div>
+                                                    <td class="text-center"><strong><?= $count ?></strong></td>
+                                                    <td class="text-center">
+                                                        <span class="badge bg-primary"><?= $pct ?>%</span>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            const data = <?= $chartDataJson ?>;
+                                            const ctx = document.getElementById('<?= $chartId ?>').getContext('2d');
+                                            
+                                            // Generate colors
+                                            const colors = [
+                                                '#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe',
+                                                '#43e97b', '#38f9d7', '#fa709a', '#fee140', '#30cfd0',
+                                                '#a8edea', '#fed6e3', '#ff7675', '#74b9ff', '#81ecec',
+                                                '#ff9ff3', '#feca57', '#48dbfb', '#ff6b6b', '#1dd1a1'
+                                            ];
+                                            const backgroundColor = colors.slice(0, data.labels.length);
+                                            const hoverColors = backgroundColor.map(color => {
+                                                // Brighten on hover
+                                                return color + 'dd';
+                                            });
+                                            
+                                            new Chart(ctx, {
+                                                type: 'doughnut',
+                                                data: {
+                                                    labels: data.labels,
+                                                    datasets: [{
+                                                        label: 'Responses',
+                                                        data: data.data,
+                                                        backgroundColor: backgroundColor,
+                                                        borderColor: '#ffffff',
+                                                        borderWidth: 3,
+                                                        hoverBackgroundColor: hoverColors,
+                                                        hoverBorderColor: '#ffffff',
+                                                        hoverBorderWidth: 4,
+                                                        hoverOffset: 15
+                                                    }]
+                                                },
+                                                options: {
+                                                    responsive: true,
+                                                    maintainAspectRatio: true,
+                                                    aspectRatio: 1,
+                                                    plugins: {
+                                                        legend: {
+                                                            display: true,
+                                                            position: 'bottom',
+                                                            align: 'center',
+                                                            labels: {
+                                                                padding: 12,
+                                                                font: {
+                                                                    size: 11,
+                                                                    family: 'Arial, sans-serif'
+                                                                },
+                                                                boxWidth: 12,
+                                                                boxHeight: 12,
+                                                                usePointStyle: true,
+                                                                pointStyle: 'circle'
+                                                            }
+                                                        },
+                                                        tooltip: {
+                                                            backgroundColor: 'rgba(0,0,0,0.85)',
+                                                            padding: 12,
+                                                            cornerRadius: 8,
+                                                            titleFont: { size: 14, weight: 'bold' },
+                                                            bodyFont: { size: 13 },
+                                                            bodySpacing: 6,
+                                                            callbacks: {
+                                                                label: function(context) {
+                                                                    const label = context.label || '';
+                                                                    const value = context.parsed || 0;
+                                                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                                    const percentage = ((value / total) * 100).toFixed(1);
+                                                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    animation: {
+                                                        animateRotate: true,
+                                                        animateScale: true
+                                                    }
+                                                }
+                                            });
+                                        });
+                                    </script>
                                 <?php else: ?>
-                                    <!-- Short Answer / Paragraph -->
+                                    <!-- Short Answer / Paragraph / WYSIWYG -->
                                     <div class="mt-3">
-                                        <ul class="list-group">
+                                        <?php if ($data['question']['answer_type'] === 'wysiwyg'): ?>
+                                            <!-- WYSIWYG - Display HTML content with images -->
                                             <?php foreach ($data['summary'] as $answer): ?>
-                                                <li class="list-group-item"><?= esc($answer) ?></li>
+                                                <div class="card mb-3">
+                                                    <div class="card-body wysiwyg-content">
+                                                        <?php echo $answer; // Output raw HTML without escaping ?>
+                                                    </div>
+                                                </div>
                                             <?php endforeach; ?>
-                                        </ul>
+                                        <?php else: ?>
+                                            <!-- Short Answer / Paragraph - Display as text -->
+                                            <ul class="list-group">
+                                                <?php foreach ($data['summary'] as $answer): ?>
+                                                    <li class="list-group-item"><?= esc($answer) ?></li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
                             <?php else: ?>

@@ -167,6 +167,10 @@
                     <i class="bi bi-question-circle"></i>
                     <span>Questions</span>
                 </a>
+                <a href="<?= site_url('dcf/parts') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-collection"></i>
+                    <span>Parts</span>
+                </a>
                 <a href="<?= site_url('dcf') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-gear"></i>
                     <span>Manage DCF</span>

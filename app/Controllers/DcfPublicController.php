@@ -88,6 +88,7 @@ class DcfPublicController extends BaseController
             'respondent_name' => 'required|max_length[255]',
             'respondent_mobile' => 'permit_empty|max_length[50]',
             'respondent_email' => 'required|valid_email|max_length[255]',
+            'user_consent' => 'required'
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
@@ -116,11 +117,15 @@ class DcfPublicController extends BaseController
         $db = \Config\Database::connect();
         $db->transStart();
 
+        $userConsent = $this->request->getPost('user_consent') ? 1 : 0;
+
         $responseId = $responseModel->insert([
             'dcf_id' => $dcf['id'],
             'respondent_name' => $this->request->getPost('respondent_name'),
             'respondent_mobile' => $this->request->getPost('respondent_mobile'),
             'respondent_email' => $respondentEmail,
+            'user_consent' => $userConsent,
+            'consent_timestamp' => $userConsent ? date('Y-m-d H:i:s') : null,
             'ip_address' => $this->request->getIPAddress(),
             'user_agent' => $this->request->getUserAgent()->getAgentString(),
             'submitted_at' => date('Y-m-d H:i:s')
@@ -134,16 +139,24 @@ class DcfPublicController extends BaseController
             $isRequired = $question['is_required'];
             $answer = $answers[$questionId] ?? null;
 
-            if ($isRequired && ($answer === null || $answer === '' || (is_array($answer) && count($answer) === 0))) {
-                $db->transRollback();
-                return $this->response->setJSON(['success' => false, 'message' => 'Please answer all required questions']);
-            }
-
             $answerText = '';
             if (is_array($answer)) {
                 $answerText = json_encode($answer);
             } else {
                 $answerText = $answer ?? '';
+            }
+
+            if ($isRequired) {
+                $isEmpty = ($answer === null || $answer === '' || (is_array($answer) && count($answer) === 0));
+                if ($question['answer_type'] === 'wysiwyg') {
+                    $plainText = trim(strip_tags((string) $answerText));
+                    $isEmpty = ($plainText === '');
+                }
+
+                if ($isEmpty) {
+                    $db->transRollback();
+                    return $this->response->setJSON(['success' => false, 'message' => 'Please answer all required questions']);
+                }
             }
 
             if ($question['answer_type'] === 'rate_me' && $answerText !== '') {

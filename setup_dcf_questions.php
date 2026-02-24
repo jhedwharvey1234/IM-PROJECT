@@ -32,9 +32,11 @@ $sqlQuestions = "CREATE TABLE IF NOT EXISTS dcf_questions (
     part_id INT UNSIGNED NULL,
     question_text TEXT NOT NULL,
     is_required TINYINT(1) NOT NULL DEFAULT 0,
-    answer_type ENUM('multiple_choice','checkbox','dropdown','short_answer','paragraph','rate_me') NOT NULL,
+    answer_type ENUM('multiple_choice','checkbox','dropdown','short_answer','paragraph','rate_me','wysiwyg','advance_checkbox') NOT NULL,
     rate_min INT NULL,
     rate_max INT NULL,
+    grid_rows TEXT NULL,
+    grid_columns TEXT NULL,
     sort_order INT NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -48,9 +50,11 @@ $sqlQuestions = "CREATE TABLE IF NOT EXISTS dcf_questions (
 $sqlAlterPartId = "ALTER TABLE dcf_questions ADD COLUMN part_id INT UNSIGNED NULL AFTER dcf_id";
 $sqlAlterPartIndex = "ALTER TABLE dcf_questions ADD INDEX idx_dcf_questions_part_id (part_id)";
 $sqlAlterPartFk = "ALTER TABLE dcf_questions ADD CONSTRAINT fk_dcf_questions_part FOREIGN KEY (part_id) REFERENCES dcf_parts(id) ON DELETE CASCADE ON UPDATE CASCADE";
-$sqlAlterAnswerType = "ALTER TABLE dcf_questions MODIFY COLUMN answer_type ENUM('multiple_choice','checkbox','dropdown','short_answer','paragraph','rate_me') NOT NULL";
+$sqlAlterAnswerType = "ALTER TABLE dcf_questions MODIFY COLUMN answer_type ENUM('multiple_choice','checkbox','dropdown','short_answer','paragraph','rate_me','wysiwyg','advance_checkbox') NOT NULL";
 $sqlAlterRateMin = "ALTER TABLE dcf_questions ADD COLUMN rate_min INT NULL AFTER answer_type";
 $sqlAlterRateMax = "ALTER TABLE dcf_questions ADD COLUMN rate_max INT NULL AFTER rate_min";
+$sqlAlterGridRows = "ALTER TABLE dcf_questions ADD COLUMN grid_rows TEXT NULL AFTER rate_max";
+$sqlAlterGridColumns = "ALTER TABLE dcf_questions ADD COLUMN grid_columns TEXT NULL AFTER grid_rows";
 
 $sqlOptions = "CREATE TABLE IF NOT EXISTS dcf_question_options (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -107,7 +111,7 @@ if ($conn->query($sqlAlterPartFk) === TRUE) {
 }
 
 if ($conn->query($sqlAlterAnswerType) === TRUE) {
-    echo "✓ dcf_questions.answer_type updated to include rate_me.\n";
+    echo "✓ dcf_questions.answer_type updated to include advance_checkbox.\n";
 } else {
     echo "✗ Error updating answer_type enum: " . $conn->error . "\n";
 }
@@ -126,6 +130,22 @@ if ($conn->query($sqlAlterRateMax) === TRUE) {
     echo "• dcf_questions.rate_max already exists.\n";
 } else {
     echo "✗ Error adding dcf_questions.rate_max: " . $conn->error . "\n";
+}
+
+if ($conn->query($sqlAlterGridRows) === TRUE) {
+    echo "✓ dcf_questions.grid_rows added.\n";
+} elseif (stripos($conn->error, 'Duplicate column name') !== false) {
+    echo "• dcf_questions.grid_rows already exists.\n";
+} else {
+    echo "✗ Error adding dcf_questions.grid_rows: " . $conn->error . "\n";
+}
+
+if ($conn->query($sqlAlterGridColumns) === TRUE) {
+    echo "✓ dcf_questions.grid_columns added.\n";
+} elseif (stripos($conn->error, 'Duplicate column name') !== false) {
+    echo "• dcf_questions.grid_columns already exists.\n";
+} else {
+    echo "✗ Error adding dcf_questions.grid_columns: " . $conn->error . "\n";
 }
 
 $conn->close();

@@ -37,10 +37,16 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 ALTER TABLE dcf_questions
-    MODIFY COLUMN answer_type ENUM('multiple_choice','checkbox','dropdown','short_answer','paragraph','rate_me') NOT NULL;
+    MODIFY COLUMN answer_type ENUM('multiple_choice','checkbox','dropdown','short_answer','paragraph','rate_me','wysiwyg','advance_checkbox') NOT NULL;
 
 ALTER TABLE dcf_questions
     ADD COLUMN IF NOT EXISTS rate_min INT NULL AFTER answer_type;
 
 ALTER TABLE dcf_questions
     ADD COLUMN IF NOT EXISTS rate_max INT NULL AFTER rate_min;
+
+ALTER TABLE dcf_questions
+    ADD COLUMN IF NOT EXISTS grid_rows TEXT NULL AFTER rate_max;
+
+ALTER TABLE dcf_questions
+    ADD COLUMN IF NOT EXISTS grid_columns TEXT NULL AFTER grid_rows;
