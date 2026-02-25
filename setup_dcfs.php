@@ -16,6 +16,7 @@ $sql = "CREATE TABLE IF NOT EXISTS dcfs (
     title VARCHAR(255) NOT NULL,
     description TEXT NULL,
     due_date DATE NOT NULL,
+    respondents_needed INT UNSIGNED NULL,
     department_id BIGINT(20) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -17,11 +17,30 @@ class Auth extends Controller
         $userModel = new User();
 
         $data = [
-            'username' => $this->request->getPost('username'),
-            'email'    => $this->request->getPost('email'),
+            'username' => trim((string) $this->request->getPost('username')),
+            'email'    => strtolower(trim((string) $this->request->getPost('email'))),
             'password' => $this->request->getPost('password'),
             'usertype' => 'readonly',
         ];
+
+        $rules = [
+            'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username]',
+            'email' => 'required|valid_email|is_unique[users.email]',
+            'password' => 'required|min_length[8]',
+        ];
+
+        $messages = [
+            'username' => [
+                'is_unique' => 'Username already exists.',
+            ],
+            'email' => [
+                'is_unique' => 'Email already exists.',
+            ],
+        ];
+
+        if (!$this->validateData($data, $rules, $messages)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
 
         if ($userModel->insert($data)) {
             return redirect()->to(site_url('login'))->with('success', 'Registration successful. Please login.');

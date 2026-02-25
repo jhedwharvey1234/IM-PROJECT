@@ -1,0 +1,284 @@
+/* Global responsive support for IM */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img,
+video,
+canvas,
+svg,
+iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+table {
+    width: 100%;
+}
+
+.table-responsive,
+.grid-table-wrapper,
+.chart-and-table-wrapper,
+.modal-dialog,
+.modal-content {
+    max-width: 100%;
+}
+
+.form-control,
+.form-select,
+.btn {
+    max-width: 100%;
+}
+
+/* Make long content wrap safely */
+.table td,
+.table th,
+.list-group-item,
+.card,
+.alert,
+.modal-body {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+
+/* Better touch targets on smaller screens */
+@media (max-width: 991.98px) {
+    .btn,
+    .form-control,
+    .form-select,
+    .input-group-text {
+        min-height: 38px;
+    }
+
+    body {
+        min-width: 0;
+    }
+
+    .sidebar {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        margin-top: 56px !important;
+        padding: 12px !important;
+        width: 100% !important;
+        min-width: 0;
+    }
+
+    .d-flex.gap-2.align-items-center.mb-3.flex-wrap {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .d-flex.gap-2.align-items-center.mb-3.flex-wrap > .d-flex.gap-1 {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+    }
+
+    .d-flex.gap-2.align-items-center.mb-3.flex-wrap > div[style*="width"],
+    .d-flex.gap-2.align-items-center.mb-3.flex-wrap > div[style*="flex:"] {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: 1 1 100% !important;
+    }
+
+    .d-flex.gap-2.align-items-center.mb-3.flex-wrap .vr {
+        display: none !important;
+    }
+
+    .table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+
+    .table thead,
+    .table tbody,
+    .table tr {
+        white-space: nowrap;
+    }
+
+    .pagination-info {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+
+    .pagination-info,
+    .d-flex.gap-2.align-items-center.mb-3.flex-wrap,
+    .filter-bar,
+    .form-navigation {
+        gap: 8px !important;
+    }
+
+    .rows-per-page {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .rows-per-page select {
+        min-width: 90px;
+    }
+}
+
+/* Tablet */
+@media (max-width: 767.98px) {
+    body {
+        padding-top: 0;
+    }
+
+    .breadcrumb-nav {
+        padding: 8px 10px !important;
+        margin-bottom: 12px !important;
+        font-size: 14px !important;
+    }
+
+    .chart-wrapper,
+    .text-insight-canvas,
+    .chart-canvas-wrapper {
+        height: 240px !important;
+    }
+
+    .text-insights-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-body {
+        padding: 0.9rem;
+    }
+
+    .pagination-controls {
+        justify-content: center;
+    }
+}
+
+/* Phone */
+@media (max-width: 575.98px) {
+    .navbar .navbar-brand {
+        font-size: 15px;
+        max-width: 140px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .main-content {
+        padding: 8px !important;
+    }
+
+    .info-card,
+    .panel-card,
+    .chart-container,
+    .text-insight-card,
+    .part-card,
+    .question-card {
+        padding: 10px !important;
+    }
+
+    .table {
+        font-size: 12px;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.35rem 0.45rem;
+    }
+
+    .table .action-btn,
+    td .action-btn,
+    .action-buttons .action-btn {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 12px !important;
+    }
+
+    .asset-side-panel .action-btn,
+    .peripheral-side-panel .action-btn,
+    .app-side-panel .action-btn {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 38px;
+        display: flex !important;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0.5rem 0.65rem;
+        font-size: 13px !important;
+        line-height: 1.2;
+        white-space: normal;
+        text-align: left;
+    }
+
+    .asset-side-panel .action-btn i,
+    .peripheral-side-panel .action-btn i,
+    .app-side-panel .action-btn i {
+        margin-right: 8px;
+        flex: 0 0 auto;
+    }
+
+    .btn-group,
+    .btn-group-sm,
+    .input-group {
+        width: 100%;
+    }
+
+    .form-navigation {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-navigation .nav-buttons,
+    .form-navigation > button,
+    .form-navigation .btn {
+        width: 100%;
+    }
+
+    .pagination-controls {
+        gap: 4px;
+    }
+
+    .pagination-controls button {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+/* Print */
+@media print {
+    .sidebar,
+    .navbar,
+    .btn,
+    .pagination-controls,
+    .rows-per-page,
+    .modal,
+    .form-navigation {
+        display: none !important;
+    }
+
+    body,
+    .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    .table {
+        font-size: 11px;
+    }
+}

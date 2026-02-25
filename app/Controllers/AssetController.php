@@ -137,6 +137,7 @@ class AssetController extends Controller
                         'peripheral_type_id'     => $peripheralTypeId,
                         'brand'                  => $this->request->getPost("peripheral_brand[]")[$index] ?? null,
                         'model'                  => $this->request->getPost("peripheral_model[]")[$index] ?? null,
+                        'model_number'           => $this->request->getPost("peripheral_model_number[]")[$index] ?? null,
                         'serial_number'          => $this->request->getPost("peripheral_serial_number[]")[$index] ?? null,
                         'department_id'          => $this->request->getPost("peripheral_department_id[]")[$index] ?? null,
                         'location_id'            => $this->request->getPost("peripheral_location_id[]")[$index] ?? null,
@@ -146,7 +147,9 @@ class AssetController extends Controller
                         'condition_status'       => $this->request->getPost("peripheral_condition_status[]")[$index] ?? 'new',
                         'criticality'            => $this->request->getPost("peripheral_criticality[]")[$index] ?? 'low',
                         'purchase_date'          => !empty($this->request->getPost("peripheral_purchase_date[]")[$index] ?? null) ? date('Y-m-d', strtotime($this->request->getPost("peripheral_purchase_date[]")[$index])) : null,
-                        'notes'                  => $this->request->getPost("peripheral_notes[]")[$index] ?? null,
+                        'warranty_expiry'        => !empty($this->request->getPost("peripheral_warranty_expiry[]")[$index] ?? null) ? date('Y-m-d', strtotime($this->request->getPost("peripheral_warranty_expiry[]")[$index])) : null,
+                        'vendor'                 => $this->request->getPost("peripheral_vendor[]")[$index] ?? null,
+                        'qty'                    => $this->request->getPost("peripheral_qty[]")[$index] ?? 1,
                     ];
                     
                     if ($peripheralModel->insert($peripheralData)) {

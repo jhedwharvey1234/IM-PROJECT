@@ -38,6 +38,15 @@
         .action-btn-details { background-color: #17a2b8; }
         .action-btn-edit { background-color: #ffc107; color: #000; }
         .action-btn-delete { background-color: #dc3545; }
+        .main-content:fullscreen,
+        .main-content:-webkit-full-screen {
+            margin: 0;
+            padding: 20px;
+            background-color: #eeeeee;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
     </style>
 </head>
 <body>
@@ -503,14 +512,57 @@ document.addEventListener('DOMContentLoaded', function () {
         location.reload();
     });
 
-    // Fullscreen
-    document.getElementById('fullscreenBtn')?.addEventListener('click', function() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-        } else {
-            document.exitFullscreen();
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const fullscreenIcon = fullscreenBtn ? fullscreenBtn.querySelector('i') : null;
+
+    function isFullscreenActive() {
+        return !!(document.fullscreenElement || document.webkitFullscreenElement);
+    }
+
+    function updateFullscreenButtonState() {
+        if (!fullscreenBtn) {
+            return;
         }
-    });
+
+        const active = isFullscreenActive();
+        fullscreenBtn.classList.toggle('btn-primary', !active);
+        fullscreenBtn.classList.toggle('btn-danger', active);
+        fullscreenBtn.setAttribute('title', active ? 'Exit Fullscreen' : 'Fullscreen');
+        fullscreenBtn.setAttribute('aria-label', active ? 'Exit Fullscreen' : 'Fullscreen');
+
+        if (fullscreenIcon) {
+            fullscreenIcon.className = active ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-fullscreen';
+        }
+    }
+
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', function() {
+            const mainContent = document.querySelector('.main-content');
+            if (!mainContent) {
+                return;
+            }
+
+            if (!isFullscreenActive()) {
+                if (mainContent.requestFullscreen) {
+                    mainContent.requestFullscreen().catch(err => {
+                        alert('Could not enter fullscreen: ' + err.message);
+                    });
+                } else if (mainContent.webkitRequestFullscreen) {
+                    mainContent.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        });
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+    updateFullscreenButtonState();
 
     // Select all checkbox
     document.getElementById('selectAll')?.addEventListener('change', function() {

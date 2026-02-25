@@ -6,6 +6,11 @@
     <title>Login</title>
     <link rel="stylesheet" href="/IM/public/css/auth.css">
     <link rel="stylesheet" href="/IM/public/css/buttons.css">
+    <link rel="stylesheet" href="/IM/public/css/responsive-global.css">
+    <style>
+        .email-hint-invalid { display: none; font-size: 12px; margin-top: 4px; }
+        input[type="email"]:not(:placeholder-shown):invalid + .email-hint-invalid { display: block; }
+    </style>
 </head>
 <body>
     <main class="auth-wrap">
@@ -26,7 +31,8 @@
                 <?= csrf_field() ?>
                 <div class="form-group">
                     <label for="email" class="visually-hidden">Email</label>
-                    <input id="email" class="form-control" type="email" name="email" placeholder="Email" required autocomplete="username">
+                    <input id="email" class="form-control" type="email" name="email" placeholder="name@example.com" required autocomplete="username" title="Please enter a valid email address">
+                    <small class="email-hint-invalid text-danger">Please enter a valid email address</small>
                 </div>
 
                 <div class="form-group password-field">

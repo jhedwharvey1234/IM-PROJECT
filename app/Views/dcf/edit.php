@@ -93,6 +93,11 @@
                     <?php endforeach; ?>
                 </select>
             </div>
+            <div class="col-md-6">
+                <label for="respondents_needed" class="form-label">Number of Respondents Needed</label>
+                <input type="number" class="form-control" id="respondents_needed" name="respondents_needed" value="<?= old('respondents_needed', esc($dcf['respondents_needed'] ?? '')) ?>" min="1" step="1" placeholder="Optional target">
+                <small class="text-muted">When this target is reached, a notification will be created.</small>
+            </div>
             <div class="col-12">
                 <label for="description" class="form-label">Description</label>
                 <textarea class="form-control" id="description" name="description" rows="3"><?= old('description', esc($dcf['description'] ?? '')) ?></textarea>

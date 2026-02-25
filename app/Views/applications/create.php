@@ -21,6 +21,8 @@
         .section-card h5 { color: #0d6efd; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; font-size: 16px; }
         .section-card h5 i { margin-right: 10px; font-size: 18px; }
         .form-section { margin-bottom: 10px; }
+        .url-hint-invalid { display: none; font-size: 12px; margin-top: 4px; }
+        input[type="url"]:not(:placeholder-shown):invalid + .url-hint-invalid { display: block; }
         @media (max-width: 768px) {
             .sidebar { width: 200px; }
             .main-content { margin-left: 200px; padding: 15px; }
@@ -131,7 +133,8 @@
                     <div class="col-md-6">
                         <label for="production_url" class="form-label">Production URL</label>
                         <input type="url" class="form-control" id="production_url" name="production_url" 
-                               value="<?= old('production_url') ?>" maxlength="255" placeholder="https://...">
+                               value="<?= old('production_url') ?>" maxlength="255" placeholder="https://..." pattern="https?://.+" title="Please enter a valid URL starting with http:// or https://">
+                        <small class="url-hint-invalid text-danger">Please enter a valid URL starting with http:// or https://</small>
                     </div>
                     <div class="col-md-6">
                         <label for="archive_date" class="form-label">Archive Date</label>
@@ -273,7 +276,8 @@
                     <div class="col-md-6">
                         <label for="repository_url" class="form-label">Repository URL</label>
                         <input type="url" class="form-control" id="repository_url" name="repository_url" 
-                               value="<?= old('repository_url') ?>" maxlength="255" placeholder="https://github.com/...">
+                               value="<?= old('repository_url') ?>" maxlength="255" placeholder="https://github.com/..." pattern="https?://.+" title="Please enter a valid URL starting with http:// or https://">
+                        <small class="url-hint-invalid text-danger">Please enter a valid URL starting with http:// or https://</small>
                     </div>
                 </div>
                 <small class="text-muted">Additional integrations and dependencies can be added in the edit view.</small>
@@ -549,5 +553,47 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const integerFieldIds = [
+                'cpu_cores', 'memory_gb', 'storage_gb',
+                'peak_users', 'peak_transactions',
+                'mttr_target', 'rto_target', 'rpo_target'
+            ];
+
+            integerFieldIds.forEach((id) => {
+                const input = document.getElementById(id);
+                if (!input) return;
+
+                input.setAttribute('step', '1');
+                input.setAttribute('inputmode', 'numeric');
+
+                input.addEventListener('keydown', function (e) {
+                    if (['e', 'E', '+', '-', '.'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                });
+
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g, '');
+                });
+            });
+
+            const annualCost = document.getElementById('annual_cost');
+            if (annualCost) {
+                annualCost.setAttribute('inputmode', 'decimal');
+                annualCost.addEventListener('keydown', function (e) {
+                    if (['e', 'E', '+', '-'].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                });
+                annualCost.addEventListener('input', function () {
+                    this.value = this.value
+                        .replace(/[^0-9.]/g, '')
+                        .replace(/(\..*)\./g, '$1');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

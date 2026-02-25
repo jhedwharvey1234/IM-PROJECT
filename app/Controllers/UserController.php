@@ -113,15 +113,31 @@ class UserController extends Controller
         if ($userType === 'system') {
             // Create system user
             $data = [
-                'username' => $this->request->getPost('username'),
-                'email'    => $this->request->getPost('email'),
+                'username' => trim((string) $this->request->getPost('username')),
+                'email'    => strtolower(trim((string) $this->request->getPost('email'))),
                 'password' => $this->request->getPost('password'),
                 'usertype' => $this->request->getPost('usertype'),
             ];
 
-            // Set validation rules for insert (no id exclusion)
-            $this->userModel->setValidationRule('username', 'required|min_length[3]|max_length[100]|is_unique[users.username]');
-            $this->userModel->setValidationRule('email', 'required|valid_email|is_unique[users.email]');
+            $rules = [
+                'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username]',
+                'email' => 'required|valid_email|is_unique[users.email]',
+                'password' => 'required|min_length[8]',
+                'usertype' => 'required|in_list[readonly,readandwrite,superadmin]',
+            ];
+
+            $messages = [
+                'username' => [
+                    'is_unique' => 'Username already exists.',
+                ],
+                'email' => [
+                    'is_unique' => 'Email already exists.',
+                ],
+            ];
+
+            if (!$this->validateData($data, $rules, $messages)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
 
             if ($this->userModel->insert($data)) {
                 return redirect()->to('/users')->with('success', 'System user created successfully');
@@ -131,11 +147,22 @@ class UserController extends Controller
         } else {
             // Create non-system user (assignable only)
             $data = [
-                'full_name' => $this->request->getPost('full_name'),
+                'full_name' => trim((string) $this->request->getPost('full_name')),
             ];
 
-            // Set validation rules
-            $this->assignableUserModel->setValidationRule('full_name', 'required|max_length[150]|is_unique[assignable_users.full_name]');
+            $rules = [
+                'full_name' => 'required|max_length[150]|is_unique[assignable_users.full_name]',
+            ];
+
+            $messages = [
+                'full_name' => [
+                    'is_unique' => 'Name already exists.',
+                ],
+            ];
+
+            if (!$this->validateData($data, $rules, $messages)) {
+                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
 
             if ($this->assignableUserModel->insert($data)) {
                 return redirect()->to('/users')->with('success', 'Non-system user created and added to assignable users');
@@ -170,22 +197,42 @@ class UserController extends Controller
         }
     
         $oldUser = $this->userModel->find($id);
+        if (!$oldUser) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('User not found');
+        }
         
         $data = [
-            'username' => $this->request->getPost('username'),
-            'email'    => $this->request->getPost('email'),
+            'username' => trim((string) $this->request->getPost('username')),
+            'email'    => strtolower(trim((string) $this->request->getPost('email'))),
             'usertype' => $this->request->getPost('usertype'),
+            'password' => $this->request->getPost('password'),
         ];
-        $password = $this->request->getPost('password');
-        if (!empty($password)) {
-            $data['password'] = $password;
+
+        $rules = [
+            'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username,id,' . (int) $id . ']',
+            'email' => 'required|valid_email|is_unique[users.email,id,' . (int) $id . ']',
+            'password' => 'permit_empty|min_length[8]',
+            'usertype' => 'required|in_list[readonly,readandwrite,superadmin]',
+        ];
+
+        $messages = [
+            'username' => [
+                'is_unique' => 'Username already exists.',
+            ],
+            'email' => [
+                'is_unique' => 'Email already exists.',
+            ],
+        ];
+
+        if (!$this->validateData($data, $rules, $messages)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        if (empty($data['password'])) {
+            unset($data['password']);
         }
 
         $syncToAssignable = $this->request->getPost('sync_to_assignable');
-
-        // Set validation rules with id for unique checks
-        $this->userModel->setValidationRule('username', str_replace('{id}', $id, $this->userModel->validationRules['username']));
-        $this->userModel->setValidationRule('email', str_replace('{id}', $id, $this->userModel->validationRules['email']));
 
         if ($this->userModel->update($id, $data)) {
             // Handle sync to assignable users

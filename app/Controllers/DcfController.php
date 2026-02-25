@@ -75,6 +75,7 @@ class DcfController extends BaseController
         $description = $this->request->getPost('description');
         $dueDate = $this->request->getPost('due_date');
         $departmentId = $this->request->getPost('department_id');
+        $respondentsNeeded = $this->request->getPost('respondents_needed');
 
         $titleValue = is_string($title) ? trim($title) : '';
         // Generate a unique name from title + timestamp to satisfy UNIQUE constraint
@@ -86,6 +87,7 @@ class DcfController extends BaseController
             'description' => is_string($description) ? trim($description) : '',
             'due_date' => is_string($dueDate) ? trim($dueDate) : '',
             'department_id' => (int) $departmentId,
+            'respondents_needed' => (is_numeric($respondentsNeeded) && (int) $respondentsNeeded > 0) ? (int) $respondentsNeeded : null,
         ];
 
         // Log incoming data for debugging
@@ -188,6 +190,7 @@ class DcfController extends BaseController
         $description = $this->request->getPost('description');
         $dueDate = $this->request->getPost('due_date');
         $departmentId = $this->request->getPost('department_id');
+        $respondentsNeeded = $this->request->getPost('respondents_needed');
 
         $titleValue = is_string($title) ? trim($title) : '';
         // Generate a unique name from title + timestamp to satisfy UNIQUE constraint
@@ -199,6 +202,7 @@ class DcfController extends BaseController
             'description' => is_string($description) ? trim($description) : '',
             'due_date' => is_string($dueDate) ? trim($dueDate) : '',
             'department_id' => (int) $departmentId,
+            'respondents_needed' => (is_numeric($respondentsNeeded) && (int) $respondentsNeeded > 0) ? (int) $respondentsNeeded : null,
         ];
 
         $parts = $this->normalizePartsInput($this->request->getPost('parts'));
@@ -360,6 +364,37 @@ class DcfController extends BaseController
         $responseCount = $responseModel->where('dcf_id', $id)->countAllResults();
         $responses = $responseModel->where('dcf_id', $id)->orderBy('submitted_at', 'DESC')->findAll();
 
+        $responseAnswersRows = $answerModel
+            ->select('dcf_response_answers.response_id, dcf_response_answers.question_id, dcf_response_answers.answer_text, dcf_questions.question_text, dcf_questions.answer_type')
+            ->join('dcf_responses', 'dcf_responses.id = dcf_response_answers.response_id')
+            ->join('dcf_questions', 'dcf_questions.id = dcf_response_answers.question_id', 'left')
+            ->where('dcf_responses.dcf_id', $id)
+            ->orderBy('dcf_response_answers.response_id', 'ASC')
+            ->orderBy('dcf_response_answers.question_id', 'ASC')
+            ->findAll();
+
+        $responseAnswersMap = [];
+        foreach ($responseAnswersRows as $row) {
+            $responseId = (int) ($row['response_id'] ?? 0);
+            if ($responseId <= 0) {
+                continue;
+            }
+
+            if (!isset($responseAnswersMap[$responseId])) {
+                $responseAnswersMap[$responseId] = [];
+            }
+
+            $questionType = (string) ($row['answer_type'] ?? 'short_answer');
+            $formattedAnswer = $this->formatResponseAnswerForDetails((string) ($row['answer_text'] ?? ''), $questionType);
+
+            $responseAnswersMap[$responseId][] = [
+                'question_id' => (int) ($row['question_id'] ?? 0),
+                'question_text' => (string) ($row['question_text'] ?? 'Question'),
+                'answer_type' => $questionType,
+                'answer_text' => $formattedAnswer,
+            ];
+        }
+
         $analytics = [];
         foreach ($questions as $question) {
             $questionId = $question['id'];
@@ -370,10 +405,13 @@ class DcfController extends BaseController
                 ->where('dcf_response_answers.question_id', $questionId)
                 ->findAll();
 
+            $isTextQuestion = in_array($question['answer_type'], ['short_answer', 'paragraph', 'wysiwyg'], true);
+
             $analytics[$questionId] = [
                 'question' => $question,
                 'answers' => $answers,
-                'summary' => $this->generateAnswerSummary($question, $answers)
+                'summary' => $this->generateAnswerSummary($question, $answers),
+                'textInsights' => $isTextQuestion ? $this->buildTextInsights($answers, $question['answer_type']) : null,
             ];
         }
 
@@ -387,6 +425,7 @@ class DcfController extends BaseController
             'questions' => $questions,
             'responseCount' => $responseCount,
             'responses' => $responses,
+            'responseAnswersMap' => $responseAnswersMap,
             'analytics' => $analytics,
             'shareUrl' => $shareUrl,
             'title' => 'DCF Details - ' . $dcf['title']
@@ -447,6 +486,166 @@ class DcfController extends BaseController
         }
 
         return array_map(fn($a) => $a['answer_text'], $answers);
+    }
+
+    private function buildTextInsights(array $answers, string $answerType): array
+    {
+        $responses = [];
+
+        foreach ($answers as $answer) {
+            $raw = isset($answer['answer_text']) ? (string) $answer['answer_text'] : '';
+            if (trim($raw) === '') {
+                continue;
+            }
+
+            $normalized = $answerType === 'wysiwyg'
+                ? html_entity_decode(strip_tags($raw), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                : html_entity_decode($raw, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+            $normalized = preg_replace('/\s+/u', ' ', trim($normalized));
+            if ($normalized !== '') {
+                $responses[] = $normalized;
+            }
+        }
+
+        $stopWords = [
+            'the', 'and', 'for', 'that', 'this', 'with', 'from', 'have', 'has', 'had', 'are', 'was', 'were', 'will', 'would',
+            'could', 'should', 'about', 'into', 'over', 'under', 'than', 'then', 'them', 'they', 'you', 'your', 'our', 'ours',
+            'their', 'theirs', 'his', 'her', 'hers', 'its', 'what', 'when', 'where', 'which', 'while', 'there', 'here', 'also',
+            'only', 'very', 'just', 'more', 'most', 'some', 'such', 'each', 'any', 'all', 'not', 'can', 'may', 'might', 'shall',
+            'to', 'of', 'in', 'on', 'at', 'by', 'is', 'it', 'as', 'an', 'be', 'or', 'if', 'we', 'us', 'a'
+        ];
+        $stopWordsLookup = array_fill_keys($stopWords, true);
+
+        $wordCounts = [];
+        $phraseCounts = [
+            2 => [],
+            3 => [],
+            4 => [],
+            5 => [],
+        ];
+        $sentenceCounts = [];
+        $sentenceDisplay = [];
+
+        foreach ($responses as $response) {
+            $lower = function_exists('mb_strtolower') ? mb_strtolower($response, 'UTF-8') : strtolower($response);
+            $clean = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $lower);
+            $tokens = preg_split('/\s+/u', trim((string) $clean)) ?: [];
+            $filteredTokens = [];
+
+            foreach ($tokens as $token) {
+                $token = trim($token);
+                if ($token === '' || isset($stopWordsLookup[$token])) {
+                    continue;
+                }
+                if (function_exists('mb_strlen') ? mb_strlen($token, 'UTF-8') < 3 : strlen($token) < 3) {
+                    continue;
+                }
+                $wordCounts[$token] = ($wordCounts[$token] ?? 0) + 1;
+                $filteredTokens[] = $token;
+            }
+
+            $tokenCount = count($filteredTokens);
+            for ($n = 2; $n <= 5; $n++) {
+                if ($tokenCount < $n) {
+                    continue;
+                }
+
+                for ($index = 0; $index <= $tokenCount - $n; $index++) {
+                    $phrase = implode(' ', array_slice($filteredTokens, $index, $n));
+                    $phraseCounts[$n][$phrase] = ($phraseCounts[$n][$phrase] ?? 0) + 1;
+                }
+            }
+
+            $sentences = preg_split('/(?<=[.!?])\s+|\R+/u', $response) ?: [];
+            foreach ($sentences as $sentence) {
+                $sentence = trim(preg_replace('/\s+/u', ' ', $sentence));
+                if ($sentence === '') {
+                    continue;
+                }
+
+                $normalizedKey = function_exists('mb_strtolower')
+                    ? mb_strtolower(preg_replace('/[^\p{L}\p{N}\s]/u', '', $sentence), 'UTF-8')
+                    : strtolower(preg_replace('/[^\p{L}\p{N}\s]/u', '', $sentence));
+                $normalizedKey = trim(preg_replace('/\s+/u', ' ', $normalizedKey));
+
+                if ($normalizedKey === '') {
+                    continue;
+                }
+
+                $wordCount = count(preg_split('/\s+/u', $normalizedKey));
+                if ($wordCount < 3) {
+                    continue;
+                }
+
+                if (!isset($sentenceDisplay[$normalizedKey])) {
+                    if (function_exists('mb_strlen') && mb_strlen($sentence, 'UTF-8') > 120) {
+                        $sentenceDisplay[$normalizedKey] = mb_substr($sentence, 0, 120, 'UTF-8') . '…';
+                    } elseif (strlen($sentence) > 120) {
+                        $sentenceDisplay[$normalizedKey] = substr($sentence, 0, 120) . '…';
+                    } else {
+                        $sentenceDisplay[$normalizedKey] = $sentence;
+                    }
+                }
+
+                $sentenceCounts[$normalizedKey] = ($sentenceCounts[$normalizedKey] ?? 0) + 1;
+            }
+        }
+
+        arsort($wordCounts);
+        arsort($sentenceCounts);
+        for ($n = 2; $n <= 5; $n++) {
+            arsort($phraseCounts[$n]);
+            $phraseCounts[$n] = array_slice($phraseCounts[$n], 0, 25, true);
+        }
+
+        $topWords = array_slice($wordCounts, 0, 15, true);
+        $topSentences = [];
+        foreach (array_slice($sentenceCounts, 0, 10, true) as $key => $count) {
+            $topSentences[$sentenceDisplay[$key] ?? $key] = $count;
+        }
+
+        return [
+            'responses_count' => count($responses),
+            'word_counts' => $topWords,
+            'phrase_counts' => [
+                '2' => $phraseCounts[2],
+                '3' => $phraseCounts[3],
+                '4' => $phraseCounts[4],
+                '5' => $phraseCounts[5],
+            ],
+            'sentence_counts' => $topSentences,
+        ];
+    }
+
+    private function formatResponseAnswerForDetails(string $answerText, string $answerType): string
+    {
+        if (in_array($answerType, ['checkbox', 'advance_checkbox'], true)) {
+            $decoded = json_decode($answerText, true);
+            if (is_array($decoded)) {
+                $flattened = [];
+                $iterator = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($decoded));
+                foreach ($iterator as $value) {
+                    if (is_scalar($value)) {
+                        $flattened[] = trim((string) $value);
+                    }
+                }
+
+                $flattened = array_values(array_filter($flattened, static fn($item) => $item !== ''));
+                if (!empty($flattened)) {
+                    return implode(', ', $flattened);
+                }
+            }
+        }
+
+        if ($answerType === 'wysiwyg') {
+            $plainText = html_entity_decode(strip_tags($answerText), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $plainText = trim(preg_replace('/\s+/u', ' ', $plainText));
+            return $plainText !== '' ? $plainText : 'N/A';
+        }
+
+        $normalized = trim(preg_replace('/\s+/u', ' ', html_entity_decode($answerText, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+        return $normalized !== '' ? $normalized : 'N/A';
     }
 
     private function normalizePartsInput($rawParts): array

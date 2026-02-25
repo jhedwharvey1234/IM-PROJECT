@@ -17,6 +17,8 @@
         .breadcrumb-nav a:hover { text-decoration: underline; }
         .breadcrumb-nav .separator { margin: 0 10px; color: #6c757d; }
         .breadcrumb-nav .current { color: #212529; font-weight: 500; }
+        .email-hint-invalid { display: none; font-size: 12px; margin-top: 4px; }
+        input[type="email"]:not(:placeholder-shown):invalid + .email-hint-invalid { display: block; }
     </style>
 </head>
 <body>
@@ -123,7 +125,8 @@
                                                         <div class="mb-3">
                                                             <label for="email" class="form-label">Email</label>
                                                             <input type="email" class="form-control" name="email" 
-                                                                   value="<?= esc($contact['email']) ?>" required>
+                                                                   value="<?= esc($contact['email']) ?>" required placeholder="name@example.com" title="Please enter a valid email address">
+                                                            <small class="email-hint-invalid text-danger">Please enter a valid email address</small>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label for="phone" class="form-label">Phone</label>
@@ -179,7 +182,8 @@
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" name="email" required>
+                                <input type="email" class="form-control" name="email" required placeholder="name@example.com" title="Please enter a valid email address">
+                                <small class="email-hint-invalid text-danger">Please enter a valid email address</small>
                             </div>
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Phone</label>

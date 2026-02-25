@@ -6,6 +6,7 @@
     <title><?= esc($dcf['title']) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/IM/public/css/responsive-global.css">
     <style>
         body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 2rem 0; }
         .form-container { background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
@@ -52,6 +53,8 @@
         .consent-section { background: #f0f3ff; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 1.5rem; }
         .consent-section h6 { margin-bottom: 1rem; color: #667eea; }
         .consent-terms { background: white; padding: 1rem; border-radius: 6px; max-height: 200px; overflow-y: auto; margin-bottom: 1rem; font-size: 13px; line-height: 1.6; }
+        .email-hint-invalid { display: none; font-size: 12px; margin-top: 4px; }
+        input[type="email"]:not(:placeholder-shown):invalid + .email-hint-invalid { display: block; }
     </style>
 </head>
 <body>
@@ -61,9 +64,22 @@
                 <div class="form-container">
                     <div class="form-header">
                         <h2 class="mb-2"><i class="bi bi-file-earmark-text"></i> <?= esc($dcf['title']) ?></h2>
-                        <p class="mb-0"><?= esc($dcf['description']) ?></p>
-                        <small><i class="bi bi-calendar-event"></i> Due: <?= esc($dcf['due_date']) ?></small>
+                        <?php if (empty($isPastDue)): ?>
+                            <p class="mb-0"><?= esc($dcf['description']) ?></p>
+                            <small><i class="bi bi-calendar-event"></i> Due: <?= esc($dcf['due_date']) ?></small>
+                        <?php else: ?>
+                            <p class="mb-0"><span class="badge bg-danger"><i class="bi bi-calendar2-x"></i> Submission Closed</span></p>
+                        <?php endif; ?>
                     </div>
+
+                    <?php if (!empty($isPastDue)): ?>
+                        <div class="alert alert-danger rounded-0 mb-0 border-0">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            This form is past its due date and is no longer accepting responses.
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (empty($isPastDue)): ?>
 
                     <div class="progress-indicator">
                         <div class="d-flex justify-content-between align-items-center">
@@ -88,7 +104,8 @@
                                 
                                 <div class="mb-3">
                                     <label class="form-label">Email Address <span class="required-mark">*</span></label>
-                                    <input type="email" class="form-control" name="respondent_email" required>
+                                    <input type="email" class="form-control" name="respondent_email" placeholder="name@example.com" title="Please enter a valid email address" required>
+                                    <small class="email-hint-invalid text-danger">Please enter a valid email address</small>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -276,6 +293,14 @@
                             <p class="text-muted">Thank you for completing the form. Your response has been recorded.</p>
                         </div>
                     </div>
+                    <?php else: ?>
+                    <div class="page-content">
+                        <div class="alert alert-warning mb-0">
+                            <h6 class="mb-2"><i class="bi bi-calendar2-x"></i> Submission Closed</h6>
+                            <p class="mb-0">This DCF form already passed its due date and no longer accepts responses.</p>
+                        </div>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -292,10 +317,13 @@
         const progressBar = document.getElementById('progressBar');
         const currentPageSpan = document.getElementById('currentPage');
         const totalPagesSpan = document.getElementById('totalPages');
+        const isPastDue = <?= !empty($isPastDue) ? 'true' : 'false' ?>;
         
         // Calculate total pages (1 for info + consent, then 1 per part)
         const totalPages = <?= (1 + count($parts ?? [])) ?>;
-        totalPagesSpan.textContent = totalPages;
+        if (totalPagesSpan) {
+            totalPagesSpan.textContent = totalPages;
+        }
         
         let currentPage = 0;
 
@@ -432,13 +460,21 @@
 
         // Show specific page
         function showPage(pageNum) {
+            if (!progressBar || !currentPageSpan || !nextBtn || !backBtn || !submitBtn) {
+                return;
+            }
+
             // Hide all pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
             });
             
             // Show current page
-            document.getElementById(`page-${pageNum}`).classList.add('active');
+            const activePage = document.getElementById(`page-${pageNum}`);
+            if (!activePage) {
+                return;
+            }
+            activePage.classList.add('active');
             
             // Update button visibility and text
             backBtn.style.display = pageNum === 0 ? 'none' : 'block';
@@ -449,7 +485,7 @@
                 submitBtn.style.display = 'none';
             } else if (pageNum === totalPages - 1) {
                 nextBtn.style.display = 'none';
-                submitBtn.style.display = 'block';
+                submitBtn.style.display = isPastDue ? 'none' : 'block';
             } else {
                 nextBtn.innerHTML = '<i class="bi bi-arrow-right"></i> Next';
                 nextBtn.style.display = 'block';
@@ -469,6 +505,9 @@
         // Validate current page
         function validateCurrentPage() {
             const page = document.getElementById(`page-${currentPage}`);
+            if (!page) {
+                return false;
+            }
             const wysiwygRequired = page.querySelectorAll('textarea.wysiwyg-answer[required]');
             wysiwygRequired.forEach(textarea => {
                 const hasContent = getWysiwygText(textarea) !== '';
@@ -491,79 +530,112 @@
         }
 
         // Next button click
-        nextBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            if (validateCurrentPage()) {
-                if (currentPage < totalPages - 1) {
-                    currentPage++;
-                    showPage(currentPage);
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (validateCurrentPage()) {
+                    if (currentPage < totalPages - 1) {
+                        currentPage++;
+                        showPage(currentPage);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         // Back button click
-        backBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (currentPage > 0) {
-                currentPage--;
-                showPage(currentPage);
-            }
-        });
+        if (backBtn) {
+            backBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 0) {
+                    currentPage--;
+                    showPage(currentPage);
+                }
+            });
+        }
 
         // Form submission
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
 
-            if (!validateCurrentPage()) {
-                return;
-            }
+                if (isPastDue) {
+                    const messageDiv = document.getElementById('responseMessage');
+                    if (messageDiv) {
+                        messageDiv.className = 'alert alert-danger';
+                        messageDiv.innerHTML = '<i class="bi bi-exclamation-triangle"></i> This form is past its due date and is no longer accepting responses.';
+                        messageDiv.style.display = 'block';
+                    }
+                    return;
+                }
+
+                if (!validateCurrentPage()) {
+                    return;
+                }
 
             if (window.tinymce) {
                 tinymce.triggerSave();
             }
 
-            const formData = new FormData(this);
-            submitBtn.disabled = true;
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Submitting...';
+                const formData = new FormData(this);
+                submitBtn.disabled = true;
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Submitting...';
 
             try {
-                const response = await fetch('<?= base_url('dcf/submit/' . $dcf['share_token']) ?>', {
-                    method: 'POST',
-                    body: formData
-                });
+                    const response = await fetch('<?= base_url('dcf/submit/' . $dcf['share_token']) ?>', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                const result = await response.json();
-                const messageDiv = document.getElementById('responseMessage');
+                    const result = await response.json();
+                    const messageDiv = document.getElementById('responseMessage');
 
-                if (result.success) {
-                    form.style.display = 'none';
-                    document.querySelector('.form-navigation').style.display = 'none';
-                    document.querySelector('.progress-indicator').style.display = 'none';
-                    messageDiv.style.display = 'none';
-                    document.getElementById('submittedState').style.display = 'block';
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                    messageDiv.className = 'alert alert-danger';
-                    messageDiv.innerHTML = '<i class="bi bi-exclamation-triangle"></i> ' + (result.message || 'An error occurred');
-                    messageDiv.style.display = 'block';
+                    if (result.success) {
+                        form.style.display = 'none';
+                        const navigation = document.querySelector('.form-navigation');
+                        if (navigation) {
+                            navigation.style.display = 'none';
+                        }
+                        const indicator = document.querySelector('.progress-indicator');
+                        if (indicator) {
+                            indicator.style.display = 'none';
+                        }
+                        if (messageDiv) {
+                            messageDiv.style.display = 'none';
+                        }
+                        const submittedState = document.getElementById('submittedState');
+                        if (submittedState) {
+                            submittedState.style.display = 'block';
+                        }
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        if (messageDiv) {
+                            messageDiv.className = 'alert alert-danger';
+                            messageDiv.innerHTML = '<i class="bi bi-exclamation-triangle"></i> ' + (result.message || 'An error occurred');
+                            messageDiv.style.display = 'block';
+                        }
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    }
+                } catch (error) {
+                    const messageDiv = document.getElementById('responseMessage');
+                    if (messageDiv) {
+                        messageDiv.className = 'alert alert-danger';
+                        messageDiv.innerHTML = '<i class="bi bi-exclamation-triangle"></i> An error occurred. Please try again.';
+                        messageDiv.style.display = 'block';
+                    }
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
                 }
-            } catch (error) {
-                const messageDiv = document.getElementById('responseMessage');
-                messageDiv.className = 'alert alert-danger';
-                messageDiv.innerHTML = '<i class="bi bi-exclamation-triangle"></i> An error occurred. Please try again.';
-                messageDiv.style.display = 'block';
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }
-        });
+            });
+        }
 
         // Initialize
-        initWysiwygEditors();
-        showPage(0);
+        if (!isPastDue && form) {
+            initWysiwygEditors();
+            showPage(0);
+        }
     </script>
 </body>
 </html>

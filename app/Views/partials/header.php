@@ -1,9 +1,16 @@
 <link rel="stylesheet" href="/IM/public/css/buttons.css">
+<link rel="stylesheet" href="/IM/public/css/responsive-global.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" style = "height: 50px;">
     <div class="container-fluid">
         <div class="d-flex align-items-center">
+            <div class="dropdown mobile-sidebar-dropdown me-2">
+                <button class="btn btn-header mobile-menu-btn dropdown-toggle" type="button" id="mobileSidebarMenuBtn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open navigation menu" title="Menu">
+                    <i class="bi bi-list"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-start" id="mobileSidebarDropdownMenu" aria-labelledby="mobileSidebarMenuBtn"></ul>
+            </div>
             <a class="navbar-brand" href="#"><?= isset($title) ? esc($title) : '' ?></a>
         </div>
         <div class="d-flex align-items-center">
@@ -285,6 +292,43 @@
     .notification-btn {
         position: relative;
         line-height: 1;
+    }
+
+    .mobile-sidebar-dropdown {
+        display: none;
+    }
+
+    .mobile-menu-btn {
+        padding: 0.35rem 0.55rem;
+        border-radius: 4px;
+    }
+
+    .mobile-menu-btn i {
+        font-size: 1.1rem;
+    }
+
+    #mobileSidebarDropdownMenu {
+        min-width: 260px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    #mobileSidebarDropdownMenu .dropdown-header {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    #mobileSidebarDropdownMenu .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.92rem;
+    }
+
+    #mobileSidebarDropdownMenu .dropdown-item i {
+        font-size: 1rem;
+        min-width: 18px;
     }
 
     .notification-btn i {
@@ -586,11 +630,152 @@
 
     /* Small adjustment for navbar alignment when collapsed */
     body.sidebar-collapsed .navbar .navbar-brand { margin-left: 0; }
+
+    @media (max-width: 991.98px) {
+        .mobile-sidebar-dropdown {
+            display: inline-flex;
+        }
+    }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.querySelector('.sidebar');
         const toggle = document.getElementById('sidebarToggle');
+        const mobileMenuButton = document.getElementById('mobileSidebarMenuBtn');
+        const mobileDropdownMenu = document.getElementById('mobileSidebarDropdownMenu');
+
+        function getLinkLabel(link) {
+            const linkText = link.querySelector('.link-text');
+            if (linkText && linkText.textContent.trim()) {
+                return linkText.textContent.trim();
+            }
+
+            const plainText = link.textContent.trim();
+            return plainText || 'Menu Item';
+        }
+
+        function createMobileItem(link, isSubItem = false) {
+            const href = link.getAttribute('href');
+            if (!href || href === '#') {
+                return null;
+            }
+
+            const listItem = document.createElement('li');
+            const anchor = document.createElement('a');
+            anchor.className = `dropdown-item${isSubItem ? ' ps-4' : ''}`;
+            anchor.href = href;
+
+            const icon = link.querySelector('i');
+            if (icon) {
+                anchor.appendChild(icon.cloneNode(true));
+            }
+
+            const text = document.createElement('span');
+            text.textContent = getLinkLabel(link);
+            anchor.appendChild(text);
+
+            listItem.appendChild(anchor);
+            return listItem;
+        }
+
+        function buildMobileDropdownMenu() {
+            if (!mobileDropdownMenu || !sidebar) {
+                return;
+            }
+
+            mobileDropdownMenu.innerHTML = '';
+            let hasItems = false;
+
+            Array.from(sidebar.children).forEach((child) => {
+                if (child.id === 'sidebarToggle' || child.classList.contains('sidebar-toggle-btn')) {
+                    return;
+                }
+
+                if (child.matches('a.sidebar-link')) {
+                    const item = createMobileItem(child);
+                    if (item) {
+                        mobileDropdownMenu.appendChild(item);
+                        hasItems = true;
+                    }
+                    return;
+                }
+
+                if (child.classList.contains('sidebar-item')) {
+                    const parentLink = child.querySelector(':scope > .sidebar-link');
+                    const subLinks = child.querySelectorAll(':scope > .sidebar-submenu .sidebar-submenu-link');
+
+                    if (parentLink) {
+                        const header = document.createElement('li');
+                        const headerText = document.createElement('h6');
+                        headerText.className = 'dropdown-header';
+                        headerText.textContent = getLinkLabel(parentLink);
+                        header.appendChild(headerText);
+                        mobileDropdownMenu.appendChild(header);
+                    }
+
+                    subLinks.forEach((subLink) => {
+                        const subItem = createMobileItem(subLink, true);
+                        if (subItem) {
+                            mobileDropdownMenu.appendChild(subItem);
+                            hasItems = true;
+                        }
+                    });
+
+                    if (parentLink && subLinks.length > 0) {
+                        const divider = document.createElement('li');
+                        divider.innerHTML = '<hr class="dropdown-divider">';
+                        mobileDropdownMenu.appendChild(divider);
+                    }
+                }
+            });
+
+            const trailingDivider = mobileDropdownMenu.querySelector('li:last-child .dropdown-divider');
+            if (trailingDivider) {
+                trailingDivider.closest('li').remove();
+            }
+
+            if (!hasItems) {
+                const emptyItem = document.createElement('li');
+                emptyItem.innerHTML = '<span class="dropdown-item-text text-muted">No navigation items</span>';
+                mobileDropdownMenu.appendChild(emptyItem);
+            }
+        }
+
+        buildMobileDropdownMenu();
+
+        function closeMobileDropdown() {
+            if (!mobileMenuButton) {
+                return;
+            }
+
+            if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+                const instance = bootstrap.Dropdown.getOrCreateInstance(mobileMenuButton);
+                instance.hide();
+            } else {
+                mobileMenuButton.setAttribute('aria-expanded', 'false');
+                mobileMenuButton.classList.remove('show');
+                if (mobileDropdownMenu) {
+                    mobileDropdownMenu.classList.remove('show');
+                }
+            }
+        }
+
+        if (mobileDropdownMenu) {
+            mobileDropdownMenu.addEventListener('click', function (event) {
+                const targetLink = event.target.closest('a.dropdown-item');
+                if (targetLink) {
+                    closeMobileDropdown();
+                }
+            });
+        }
+
+        window.addEventListener('resize', function () {
+            if (window.innerWidth > 991.98) {
+                closeMobileDropdown();
+            }
+        });
+
         if (!toggle) return;
 
         // Apply saved state without animation

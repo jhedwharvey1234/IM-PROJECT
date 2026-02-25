@@ -65,8 +65,8 @@ class Application extends Model
         'department_id' => 'permit_empty|integer',
         'owner_name' => 'permit_empty|max_length[100]',
         'business_criticality' => 'permit_empty|in_list[High,Medium,Low]',
-        'repository_url' => 'permit_empty|max_length[255]',
-        'production_url' => 'permit_empty|max_length[255]',
+        'repository_url' => 'permit_empty|valid_url|max_length[255]',
+        'production_url' => 'permit_empty|valid_url|max_length[255]',
         'archive_date' => 'permit_empty|valid_date[Y-m-d]',
         'version' => 'permit_empty|max_length[20]',
         'status_id' => 'permit_empty|integer',
@@ -105,6 +105,12 @@ class Application extends Model
         ],
         'business_criticality' => [
             'in_list' => 'Business criticality must be High, Medium, or Low',
+        ],
+        'repository_url' => [
+            'valid_url' => 'Repository URL must be a valid URL',
+        ],
+        'production_url' => [
+            'valid_url' => 'Production URL must be a valid URL',
         ],
     ];
 

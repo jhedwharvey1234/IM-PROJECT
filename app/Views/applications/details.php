@@ -53,6 +53,8 @@
         .record-item { background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 10px; border-left: 4px solid #0d6efd; }
         .record-item-title { font-weight: 600; color: #212529; }
         .record-item-meta { font-size: 12px; color: #6c757d; margin-top: 4px; }
+        .url-hint-invalid { display: none; font-size: 12px; margin-top: 4px; }
+        input[type="url"]:not(:placeholder-shown):invalid + .url-hint-invalid { display: block; }
     </style>
 </head>
 <body>
@@ -673,7 +675,8 @@
                                                         </div>
                                                         <div class="mb-3">
                                                             <label class="form-label">Link (Optional)</label>
-                                                            <input type="url" class="form-control" name="link" value="<?= esc($item['link'] ?? '') ?>" maxlength="255" placeholder="https://...">
+                                                            <input type="url" class="form-control" name="link" value="<?= esc($item['link'] ?? '') ?>" maxlength="255" placeholder="https://..." pattern="https?://.+" title="Please enter a valid URL starting with http:// or https://">
+                                                            <small class="url-hint-invalid text-danger">Please enter a valid URL starting with http:// or https://</small>
                                                         </div>
                                                         <div class="mb-3">
                                                             <label class="form-label">Relation</label>
@@ -753,7 +756,8 @@
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Link (Optional)</label>
-                                                <input type="url" class="form-control" name="link" maxlength="255" placeholder="https://...">
+                                                <input type="url" class="form-control" name="link" maxlength="255" placeholder="https://..." pattern="https?://.+" title="Please enter a valid URL starting with http:// or https://">
+                                                <small class="url-hint-invalid text-danger">Please enter a valid URL starting with http:// or https://</small>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label">Relation</label>

@@ -8,9 +8,24 @@ use App\Models\DcfQuestion;
 use App\Models\DcfQuestionOption;
 use App\Models\DcfResponse;
 use App\Models\DcfResponseAnswer;
+use App\Models\Notification;
 
 class DcfPublicController extends BaseController
 {
+    private function isPastDueDate(?string $dueDate): bool
+    {
+        if (!is_string($dueDate) || trim($dueDate) === '') {
+            return false;
+        }
+
+        $dueTimestamp = strtotime($dueDate . ' 23:59:59');
+        if ($dueTimestamp === false) {
+            return false;
+        }
+
+        return time() > $dueTimestamp;
+    }
+
     public function form($shareToken)
     {
         $dcfModel = new Dcf();
@@ -68,6 +83,7 @@ class DcfPublicController extends BaseController
             'dcf' => $dcf,
             'questions' => $questions,
             'parts' => $partsWithQuestions,
+            'isPastDue' => $this->isPastDueDate($dcf['due_date'] ?? null),
             'title' => $dcf['title']
         ];
 
@@ -81,6 +97,13 @@ class DcfPublicController extends BaseController
 
         if (!$dcf) {
             return $this->response->setJSON(['success' => false, 'message' => 'Invalid DCF']);
+        }
+
+        if ($this->isPastDueDate($dcf['due_date'] ?? null)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'This form is past its due date and is no longer accepting responses.'
+            ]);
         }
 
         $validation = \Config\Services::validation();
@@ -186,6 +209,31 @@ class DcfPublicController extends BaseController
 
         if ($db->transStatus() === false) {
             return $this->response->setJSON(['success' => false, 'message' => 'Failed to submit response']);
+        }
+
+        $respondentsNeeded = isset($dcf['respondents_needed']) ? (int) $dcf['respondents_needed'] : 0;
+        if ($respondentsNeeded > 0) {
+            $currentResponseCount = (int) $responseModel->where('dcf_id', $dcf['id'])->countAllResults();
+
+            if ($currentResponseCount >= $respondentsNeeded) {
+                $notificationModel = new Notification();
+                $existing = $notificationModel
+                    ->where('source_type', 'dcf_respondent_target')
+                    ->where('source_id', (int) $dcf['id'])
+                    ->first();
+
+                if (!$existing) {
+                    $notificationModel->insert([
+                        'type' => 'dcf_target_reached',
+                        'title' => 'DCF Respondent Target Reached',
+                        'message' => '"' . ($dcf['title'] ?? 'DCF Form') . '" reached the target of ' . $respondentsNeeded . ' respondents.',
+                        'source_type' => 'dcf_respondent_target',
+                        'source_id' => (int) $dcf['id'],
+                        'related_url' => site_url('dcf/details/' . (int) $dcf['id']),
+                        'is_read' => 0,
+                    ]);
+                }
+            }
         }
 
         return $this->response->setJSON(['success' => true, 'message' => 'Form submitted successfully.']);

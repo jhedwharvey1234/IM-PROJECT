@@ -23,6 +23,7 @@
         .form-section { margin-bottom: 10px; }
         .date-field { display: none; }
         .date-field.active { display: block; }
+        .peripheral-row { border: 1px solid #dee2e6; border-radius: 6px; padding: 15px; margin-bottom: 12px; background: #fff; }
     </style>
 </head>
 <body>
@@ -238,78 +239,99 @@
             <!-- Peripherals Section -->
             <div class="section-card">
                 <h5><i class="bi bi-cpu"></i> Peripherals (Optional)</h5>
-                <div class="table-responsive">
-                    <table class="table table-sm mb-0" id="peripherals_table">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 12%;">Type</th>
-                                <th style="width: 10%;">Brand</th>
-                                <th style="width: 10%;">Model</th>
-                                <th style="width: 10%;">Serial #</th>
-                                <th style="width: 10%;">Department</th>
-                                <th style="width: 10%;">Location</th>
-                                <th style="width: 10%;">Workstation</th>
-                                <th style="width: 12%;">Assigned To</th>
-                                <th style="width: 8%;">Status</th>
-                                <th style="width: 5%;"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="peripherals_body">
-                            <tr class="peripheral-row">
-                                <td>
-                                    <select class="form-select form-select-sm" name="peripheral_type_id[]">
-                                        <option value="">Select</option>
-                                        <?php foreach ($peripheral_types as $id => $name): ?>
-                                            <option value="<?= $id ?>"><?= $name ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </td>
-                                <td><input type="text" class="form-control form-control-sm" name="peripheral_brand[]"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="peripheral_model[]"></td>
-                                <td><input type="text" class="form-control form-control-sm" name="peripheral_serial_number[]"></td>
-                                <td>
-                                    <select class="form-select form-select-sm" name="peripheral_department_id[]">
-                                        <option value="">Select</option>
-                                        <?php foreach ($departments as $id => $name): ?>
-                                            <option value="<?= $id ?>"><?= $name ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-select form-select-sm" name="peripheral_location_id[]">
-                                        <option value="">Select</option>
-                                        <?php foreach ($locations as $id => $name): ?>
-                                            <option value="<?= $id ?>"><?= $name ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-select form-select-sm" name="peripheral_workstation_id[]">
-                                        <option value="">Select</option>
-                                        <?php foreach ($workstations as $id => $code): ?>
-                                            <option value="<?= $id ?>"><?= $code ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-select form-select-sm" name="peripheral_assigned_to_user_id[]">
-                                        <option value="">Select</option>
-                                        <?php foreach ($assignable_users as $id => $full_name): ?>
-                                            <option value="<?= $id ?>"><?= $full_name ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </td>
-                                <td>
-                                    <select class="form-select form-select-sm" name="peripheral_status[]">
-                                        <option value="available">Available</option>
-                                        <option value="in_use">In Use</option>
-                                        <option value="standby">Standby</option>
-                                    </select>
-                                </td>
-                                <td><button type="button" class="btn btn-sm btn-outline-danger remove-peripheral" style="display:none;" title="Remove peripheral"><i class="bi bi-trash"></i></button></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div id="peripherals_body">
+                    <div class="peripheral-row">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong>Peripheral</strong>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-peripheral" style="display:none;" title="Remove peripheral"><i class="bi bi-trash"></i></button>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <label class="form-label form-label-sm">Type</label>
+                                <select class="form-select form-select-sm" name="peripheral_type_id[]">
+                                    <option value="">Select</option>
+                                    <?php foreach ($peripheral_types as $id => $name): ?>
+                                        <option value="<?= $id ?>"><?= $name ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3"><label class="form-label form-label-sm">Brand</label><input type="text" class="form-control form-control-sm" name="peripheral_brand[]"></div>
+                            <div class="col-md-3"><label class="form-label form-label-sm">Model</label><input type="text" class="form-control form-control-sm" name="peripheral_model[]"></div>
+                            <div class="col-md-3"><label class="form-label form-label-sm">Model #</label><input type="text" class="form-control form-control-sm" name="peripheral_model_number[]"></div>
+
+                            <div class="col-md-3"><label class="form-label form-label-sm">Serial #</label><input type="text" class="form-control form-control-sm" name="peripheral_serial_number[]"></div>
+                            <div class="col-md-3">
+                                <label class="form-label form-label-sm">Department</label>
+                                <select class="form-select form-select-sm" name="peripheral_department_id[]">
+                                    <option value="">Select</option>
+                                    <?php foreach ($departments as $id => $name): ?>
+                                        <option value="<?= $id ?>"><?= $name ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label form-label-sm">Location</label>
+                                <select class="form-select form-select-sm" name="peripheral_location_id[]">
+                                    <option value="">Select</option>
+                                    <?php foreach ($locations as $id => $name): ?>
+                                        <option value="<?= $id ?>"><?= $name ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label form-label-sm">Workstation</label>
+                                <select class="form-select form-select-sm" name="peripheral_workstation_id[]">
+                                    <option value="">Select</option>
+                                    <?php foreach ($workstations as $id => $code): ?>
+                                        <option value="<?= $id ?>"><?= $code ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label form-label-sm">Assigned To</label>
+                                <select class="form-select form-select-sm" name="peripheral_assigned_to_user_id[]">
+                                    <option value="">Select</option>
+                                    <?php foreach ($assignable_users as $id => $full_name): ?>
+                                        <option value="<?= $id ?>"><?= $full_name ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label form-label-sm">Status</label>
+                                <select class="form-select form-select-sm" name="peripheral_status[]">
+                                    <option value="available">Available</option>
+                                    <option value="in_use">In Use</option>
+                                    <option value="standby">Standby</option>
+                                    <option value="under_repair">Under Repair</option>
+                                    <option value="retired">Retired</option>
+                                    <option value="lost">Lost</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label form-label-sm">Condition</label>
+                                <select class="form-select form-select-sm" name="peripheral_condition_status[]">
+                                    <option value="new">New</option>
+                                    <option value="good">Good</option>
+                                    <option value="fair">Fair</option>
+                                    <option value="damaged">Damaged</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label form-label-sm">Criticality</label>
+                                <select class="form-select form-select-sm" name="peripheral_criticality[]">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3"><label class="form-label form-label-sm">Purchase Date</label><input type="date" class="form-control form-control-sm" name="peripheral_purchase_date[]"></div>
+                            <div class="col-md-3"><label class="form-label form-label-sm">Warranty Expiry</label><input type="date" class="form-control form-control-sm" name="peripheral_warranty_expiry[]"></div>
+                            <div class="col-md-3"><label class="form-label form-label-sm">Vendor</label><input type="text" class="form-control form-control-sm" name="peripheral_vendor[]"></div>
+                            <div class="col-md-3"><label class="form-label form-label-sm">Qty</label><input type="number" min="1" class="form-control form-control-sm" name="peripheral_qty[]" value="1"></div>
+                        </div>
+                    </div>
                 </div>
                 <button type="button" class="btn btn-sm btn-success mt-3" id="add_peripheral">
                     <i class="bi bi-plus-circle"></i> Add Peripheral
@@ -364,13 +386,17 @@
         if (assetAssignedTo) assetAssignedTo.addEventListener('change', syncAllPeripheralRows);
 
         document.getElementById('add_peripheral').addEventListener('click', function() {
-            const tbody = document.getElementById('peripherals_body');
-            const firstRow = tbody.querySelector('.peripheral-row');
+            const container = document.getElementById('peripherals_body');
+            const firstRow = container.querySelector('.peripheral-row');
             const newRow = firstRow.cloneNode(true);
             
             // Clear input values
             newRow.querySelectorAll('input, select').forEach(input => {
-                input.value = '';
+                if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                } else {
+                    input.value = '';
+                }
             });
             
             // Show remove button
@@ -383,7 +409,7 @@
 
             syncPeripheralRow(newRow);
             
-            tbody.appendChild(newRow);
+            container.appendChild(newRow);
             updateRemoveButtons();
         });
         
@@ -405,7 +431,7 @@
             initialRemoveBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 if (document.querySelectorAll('.peripheral-row').length > 1) {
-                    this.closest('tr').remove();
+                    this.closest('.peripheral-row').remove();
                     updateRemoveButtons();
                 }
             });

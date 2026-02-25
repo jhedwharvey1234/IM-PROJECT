@@ -20,6 +20,8 @@
         .section-card { background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #0d6efd; }
         .section-card h5 { color: #0d6efd; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; }
         .section-card h5 i { margin-right: 10px; }
+        .email-hint-invalid { display: none; font-size: 12px; margin-top: 4px; }
+        input[type="email"]:not(:placeholder-shown):invalid + .email-hint-invalid { display: block; }
     </style>
 </head>
 <body>
@@ -79,7 +81,8 @@
                     </div>
                     <div class="col-md-6">
                         <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control" id="email" name="email" value="<?= old('email') ?>">
+                        <input type="email" class="form-control" id="email" name="email" value="<?= old('email') ?>" placeholder="name@example.com" title="Please enter a valid email address">
+                        <small class="email-hint-invalid text-danger">Please enter a valid email address</small>
                     </div>
                     <div class="col-md-6">
                         <label for="password" class="form-label">Password <span class="text-danger">*</span></label>

@@ -34,6 +34,15 @@
         .pagination-controls span { margin: 0 5px; }
         .rows-per-page { display: flex; align-items: center; gap: 8px; }
         .rows-per-page select { padding: 4px 6px; border: 1px solid #dee2e6; border-radius: 3px; font-size: 13px; }
+        .main-content:fullscreen,
+        .main-content:-webkit-full-screen {
+            margin: 0;
+            padding: 20px;
+            background-color: #eeeeee;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+        }
     </style>
 </head>
 <body>
@@ -599,17 +608,56 @@
                 printWindow.print();
             });
 
-            // Fullscreen Button
-            fullscreenBtn.addEventListener('click', function() {
-                const mainContent = document.querySelector('.main-content');
-                if (!document.fullscreenElement) {
-                    mainContent.requestFullscreen().catch(err => {
-                        alert('Could not enter fullscreen: ' + err.message);
-                    });
-                } else {
-                    document.exitFullscreen();
+            const fullscreenIcon = fullscreenBtn ? fullscreenBtn.querySelector('i') : null;
+
+            function isFullscreenActive() {
+                return !!(document.fullscreenElement || document.webkitFullscreenElement);
+            }
+
+            function updateFullscreenButtonState() {
+                if (!fullscreenBtn) {
+                    return;
                 }
-            });
+
+                const active = isFullscreenActive();
+                fullscreenBtn.classList.toggle('btn-primary', !active);
+                fullscreenBtn.classList.toggle('btn-danger', active);
+                fullscreenBtn.setAttribute('title', active ? 'Exit Fullscreen' : 'Fullscreen');
+                fullscreenBtn.setAttribute('aria-label', active ? 'Exit Fullscreen' : 'Fullscreen');
+
+                if (fullscreenIcon) {
+                    fullscreenIcon.className = active ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-fullscreen';
+                }
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', function() {
+                    const mainContent = document.querySelector('.main-content');
+                    if (!mainContent) {
+                        return;
+                    }
+
+                    if (!isFullscreenActive()) {
+                        if (mainContent.requestFullscreen) {
+                            mainContent.requestFullscreen().catch(err => {
+                                alert('Could not enter fullscreen: ' + err.message);
+                            });
+                        } else if (mainContent.webkitRequestFullscreen) {
+                            mainContent.webkitRequestFullscreen();
+                        }
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        } else if (document.webkitExitFullscreen) {
+                            document.webkitExitFullscreen();
+                        }
+                    }
+                });
+            }
+
+            document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+            document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+            updateFullscreenButtonState();
 
             // Export Functions
             function exportTableToCSV(filename, selectedOnly = false) {

@@ -15,6 +15,7 @@ class Dcf extends Model
         'description',
         'due_date',
         'department_id',
+        'respondents_needed',
         'share_token',
     ];
 
@@ -28,7 +29,8 @@ class Dcf extends Model
         'name' => 'required|max_length[150]|is_unique[dcfs.name,id,{id}]',
         'description' => 'permit_empty|string|max_length[5000]',
         'due_date' => 'required',
-        'department_id' => 'required|integer'
+        'department_id' => 'required|integer',
+        'respondents_needed' => 'permit_empty|integer|greater_than_equal_to[1]'
     ];
 
     protected $validationMessages = [
@@ -45,6 +47,10 @@ class Dcf extends Model
         'department_id' => [
             'required' => 'Department is required',
             'integer' => 'Invalid department selected'
+        ],
+        'respondents_needed' => [
+            'integer' => 'Respondents needed must be a valid whole number',
+            'greater_than_equal_to' => 'Respondents needed must be at least 1'
         ]
     ];
 

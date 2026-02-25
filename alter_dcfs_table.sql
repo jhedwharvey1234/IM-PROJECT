@@ -18,6 +18,14 @@ PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 SET @sql := IF(
     (SELECT COUNT(*) FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'dcfs' AND COLUMN_NAME = 'respondents_needed') = 0,
+    'ALTER TABLE dcfs ADD COLUMN respondents_needed INT UNSIGNED NULL AFTER due_date',
+    'SELECT ''Column respondents_needed already exists'' AS info'
+);
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'dcfs' AND COLUMN_NAME = 'department_id') = 0,
     'ALTER TABLE dcfs ADD COLUMN department_id BIGINT(20) NULL AFTER due_date',
     'SELECT ''Column department_id already exists'' AS info'
