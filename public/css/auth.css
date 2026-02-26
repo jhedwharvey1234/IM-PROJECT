@@ -1,7 +1,7 @@
 /* Auth pages styles: centered card, clean inputs, subtle background */
 :root{
-  --auth-bg-1: #0f172a;
-  --auth-bg-2: #1e293b;
+  --auth-bg-1: #f8f9fa;
+  --auth-bg-2: #f8f9fa;
   --card-bg: #ffffff;
   --card-radius: .5rem;
   --muted: #6b7280;
@@ -17,12 +17,78 @@ body{
   -moz-osx-font-smoothing:grayscale;
 }
 
-.auth-wrap{
+.auth-shell{
   min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+.auth-topbar{
+  width:100%;
+  margin:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:.55rem .9rem;
+  background:#212529;
+  border-bottom:1px solid rgba(255,255,255,.14);
+  position:sticky;
+  top:0;
+  z-index:1030;
+}
+
+.auth-topbar-brand{
+  color:#f8fafc !important;
+  text-decoration:none !important;
+  font-weight:600;
+  letter-spacing:.2px;
+  display:inline-flex;
+  align-items:center;
+  gap:.42rem;
+  line-height:1;
+}
+
+.auth-topbar-brand i{
+  font-size:.95rem;
+  opacity:.95;
+}
+
+.auth-topbar-nav{
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+}
+
+.auth-topbar-nav a{
+  color:#e2e8f0 !important;
+  text-decoration:none !important;
+  font-size:.86rem;
+  padding:.38rem .62rem;
+  border-radius:.35rem;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08);
+  transition:all .15s ease;
+  display:inline-flex;
+  align-items:center;
+  gap:.38rem;
+  font-weight:500;
+}
+
+.auth-topbar-nav a:hover,
+.auth-topbar-nav a:focus-visible{
+  color:#ffffff;
+  border-color:rgba(255,255,255,.4);
+  background:rgba(255,255,255,.14);
+}
+
+.auth-wrap{
+  flex:1;
+  min-height:0;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:2rem;
+  padding:1.25rem 2rem 2rem;
 }
 
 .auth-card{
@@ -82,5 +148,20 @@ body{
 .auth-footer{margin-top:1.25rem; text-align:center; color:var(--muted); font-size:.85rem}
 
 @media (max-width:520px){
+  .auth-topbar{
+    padding:.5rem .55rem;
+  }
+
+  .auth-topbar-nav{
+    gap:.2rem;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+
+  .auth-topbar-nav a{
+    padding:.34rem .48rem;
+    font-size:.79rem;
+  }
+
   .auth-card{padding:1.25rem}
 }

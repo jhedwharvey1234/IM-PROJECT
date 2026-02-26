@@ -4,17 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <link rel="stylesheet" href="/IM/public/css/auth.css">
+    <link rel="stylesheet" href="/IM/public/css/auth.css?v=20260226-2">
     <link rel="stylesheet" href="/IM/public/css/buttons.css">
     <link rel="stylesheet" href="/IM/public/css/responsive-global.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         .email-hint-invalid { display: none; font-size: 12px; margin-top: 4px; }
         input[type="email"]:not(:placeholder-shown):invalid + .email-hint-invalid { display: block; }
     </style>
 </head>
 <body>
-    <main class="auth-wrap">
-        <div class="auth-card" role="main" aria-labelledby="register-heading">
+    <div class="auth-shell">
+        <header class="auth-topbar" aria-label="Authentication navigation">
+            <a class="auth-topbar-brand" href="<?= site_url('register') ?>">
+                <i class="bi bi-shield-lock"></i>
+                <span>IM Admin</span>
+            </a>
+            <nav class="auth-topbar-nav">
+                <a href="<?= site_url('documents') ?>">
+                    <i class="bi bi-folder2-open"></i>
+                    <span>Public Documents</span>
+                </a>
+                <a href="<?= site_url('login') ?>">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span>Sign in</span>
+                </a>
+            </nav>
+        </header>
+
+        <main class="auth-wrap">
+            <div class="auth-card" role="main" aria-labelledby="register-heading">
             <div class="auth-brand">
                 <h2 id="register-heading">Create Account</h2>
                 <div class="auth-sub">Register a new administrator account</div>
@@ -56,8 +75,9 @@
                 <p>Already have an account? <a href="<?= site_url('login') ?>">Sign in</a></p>
             </div>
             <div class="auth-footer">&copy; <?= date('Y') ?> IM Admin</div>
-        </div>
-    </main>
+            </div>
+        </main>
+    </div>
 
     <script>
     (function(){

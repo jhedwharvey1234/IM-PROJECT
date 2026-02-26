@@ -8,9 +8,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/IM/public/css/responsive-global.css">
     <style>
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 2rem 0; }
+        body { background: linear-gradient(135deg, #f1f1f1 0%, #f1f1f1 100%); min-height: 100vh; padding: 2rem 0; }
         .form-container { background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        .form-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 12px 12px 0 0; }
+        .form-header { background: linear-gradient(135deg, #3b3b3b 0%, #3b3b3b 100%); color: white; padding: 2rem; border-radius: 12px 12px 0 0; }
         .progress-indicator { background: #f8f9fa; padding: 1.5rem; border-bottom: 1px solid #dee2e6; }
         .page-content { padding: 2rem; min-height: 400px; }
         .part-block { padding: 1.5rem; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 1.5rem; background: #ffffff; }
