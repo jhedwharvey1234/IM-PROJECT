@@ -90,11 +90,21 @@
                     </div>
                     <div class="col-md-6">
                         <label for="usertype" class="form-label">Usertype <span class="text-danger">*</span></label>
+                        <?php
+                            $defaultRoleKey = '';
+                            if (!empty($userRoles) && is_array($userRoles)) {
+                                $defaultRoleKey = (string) ($userRoles[0]['role_key'] ?? '');
+                            }
+                            $selectedRoleKey = old('usertype', $defaultRoleKey);
+                        ?>
                         <select class="form-select" id="usertype" name="usertype">
-                            <option value="">Select Usertype</option>
-                            <option value="readonly" <?= old('usertype') == 'readonly' ? 'selected' : '' ?>>Readonly</option>
-                            <option value="readandwrite" <?= old('usertype') == 'readandwrite' ? 'selected' : '' ?>>Read and Write</option>
-                            <option value="superadmin" <?= old('usertype') == 'superadmin' ? 'selected' : '' ?>>Superadmin</option>
+                            <?php if (!empty($userRoles)): ?>
+                                <?php foreach ($userRoles as $role): ?>
+                                    <option value="<?= esc($role['role_key']) ?>" <?= $selectedRoleKey == $role['role_key'] ? 'selected' : '' ?>>
+                                        <?= esc($role['role_name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </select>
                     </div>
                 </div>

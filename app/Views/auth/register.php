@@ -66,6 +66,20 @@
                     <button type="button" class="password-toggle-btn" id="togglePassword" aria-label="Show password">Show</button>
                 </div>
 
+                <div class="form-group">
+                    <label for="usertype" class="visually-hidden">User Role</label>
+                    <select id="usertype" class="form-control" name="usertype" required>
+                        <option value="">Select User Role</option>
+                        <?php if (!empty($userRoles)): ?>
+                            <?php foreach ($userRoles as $role): ?>
+                                <option value="<?= esc($role['role_key']) ?>" <?= old('usertype') === $role['role_key'] ? 'selected' : '' ?>>
+                                    <?= esc($role['role_name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
+
                 <div class="form-actions">
                     <button class="btn btn-primary btn-block" type="submit">Create account</button>
                 </div>

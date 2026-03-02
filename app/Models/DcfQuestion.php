@@ -13,6 +13,7 @@ class DcfQuestion extends Model
         'dcf_id',
         'part_id',
         'question_text',
+        'role_key',
         'is_required',
         'answer_type',
         'allow_multiple',

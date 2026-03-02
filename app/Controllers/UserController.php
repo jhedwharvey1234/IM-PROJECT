@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\AssignableUser;
 use App\Models\Asset;
 use App\Models\AssetHistory;
+use App\Models\UserRole;
 use CodeIgniter\Controller;
 
 class UserController extends Controller
@@ -99,7 +100,9 @@ class UserController extends Controller
             return redirect()->to('/dashboard')->with('error', 'Access denied');
         }
 
-        return view('users/create');
+            $data['userRoles'] = $this->getAvailableRoles();
+
+        return view('users/create', $data);
     }
 
     public function store()
@@ -111,19 +114,25 @@ class UserController extends Controller
         $userType = $this->request->getPost('user_type');
 
         if ($userType === 'system') {
+            $selectedRole = trim((string) $this->request->getPost('usertype'));
+
             // Create system user
             $data = [
                 'username' => trim((string) $this->request->getPost('username')),
                 'email'    => strtolower(trim((string) $this->request->getPost('email'))),
                 'password' => $this->request->getPost('password'),
-                'usertype' => $this->request->getPost('usertype'),
+                'usertype' => $selectedRole,
             ];
+
+            if ($selectedRole === '') {
+                return redirect()->back()->withInput()->with('errors', ['usertype' => 'User role is required.']);
+            }
 
             $rules = [
                 'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username]',
                 'email' => 'required|valid_email|is_unique[users.email]',
                 'password' => 'required|min_length[8]',
-                'usertype' => 'required|in_list[readonly,readandwrite,superadmin]',
+                'usertype' => 'required|max_length[50]',
             ];
 
             $messages = [
@@ -137,6 +146,10 @@ class UserController extends Controller
 
             if (!$this->validateData($data, $rules, $messages)) {
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+            }
+
+                if (!$this->isValidRoleKey((string) $data['usertype'])) {
+                return redirect()->back()->withInput()->with('errors', ['usertype' => 'Selected user role is invalid.']);
             }
 
             if ($this->userModel->insert($data)) {
@@ -187,6 +200,8 @@ class UserController extends Controller
         $assignableUser = $this->assignableUserModel->where('full_name', $data['user']['username'])->first();
         $data['is_assignable'] = !empty($assignableUser);
 
+        $data['userRoles'] = $this->getAvailableRoles();
+
         return view('users/edit', $data);
     }
 
@@ -212,7 +227,7 @@ class UserController extends Controller
             'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username,id,' . (int) $id . ']',
             'email' => 'required|valid_email|is_unique[users.email,id,' . (int) $id . ']',
             'password' => 'permit_empty|min_length[8]',
-            'usertype' => 'required|in_list[readonly,readandwrite,superadmin]',
+            'usertype' => 'required|max_length[50]',
         ];
 
         $messages = [
@@ -226,6 +241,10 @@ class UserController extends Controller
 
         if (!$this->validateData($data, $rules, $messages)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        if (!$this->isValidRoleKey((string) $data['usertype'])) {
+            return redirect()->back()->withInput()->with('errors', ['usertype' => 'Selected user role is invalid.']);
         }
 
         if (empty($data['password'])) {
@@ -413,5 +432,27 @@ class UserController extends Controller
         ];
 
         return view('users/details', $data);
+    }
+
+    private function getAvailableRoles(): array
+    {
+        $db = \Config\Database::connect();
+        if (!$db->tableExists('user_roles')) {
+            return [
+                ['role_name' => 'Readonly', 'role_key' => 'readonly'],
+                ['role_name' => 'Read and Write', 'role_key' => 'readandwrite'],
+                ['role_name' => 'Superadmin', 'role_key' => 'superadmin'],
+            ];
+        }
+
+        $roleModel = new UserRole();
+        return $roleModel->orderBy('role_name', 'ASC')->findAll();
+    }
+
+    private function isValidRoleKey(string $roleKey): bool
+    {
+        $roles = $this->getAvailableRoles();
+        $keys = array_column($roles, 'role_key');
+        return in_array($roleKey, $keys, true);
     }
 }

@@ -34,6 +34,7 @@ $routes->post('/assets/batch-delete', 'AssetController::batchDelete');
 $routes->get('/assets/details/(:num)', 'AssetController::details/$1');
 $routes->get('/assets/export-pdf/(:num)', 'AssetController::exportPdf/$1');
 $routes->get('/assets/search', 'AssetController::search');
+$routes->get('/assets/public/(:segment)', 'AssetPublicController::details/$1');
 $routes->post('/assets/note/add', 'AssetController::addNote');
 $routes->get('/assets/note/delete/(:num)', 'AssetController::deleteNote/$1');
 
@@ -135,6 +136,13 @@ $routes->get('/settings/assigned-users/edit/(:num)', 'AssignableUserController::
 $routes->post('/settings/assigned-users/update/(:num)', 'AssignableUserController::update/$1');
 $routes->get('/settings/assigned-users/delete/(:num)', 'AssignableUserController::delete/$1');
 
+$routes->get('/settings/user-roles', 'UserRoleController::index');
+$routes->get('/settings/user-roles/create', 'UserRoleController::create');
+$routes->post('/settings/user-roles/store', 'UserRoleController::store');
+$routes->get('/settings/user-roles/edit/(:num)', 'UserRoleController::edit/$1');
+$routes->post('/settings/user-roles/update/(:num)', 'UserRoleController::update/$1');
+$routes->get('/settings/user-roles/delete/(:num)', 'UserRoleController::delete/$1');
+
 $routes->get('/settings/document-categories', 'SettingsController::documentCategories');
 $routes->post('/settings/document-categories/store', 'SettingsController::storeDocumentCategory');
 $routes->post('/settings/document-categories/update/(:num)', 'SettingsController::updateDocumentCategory/$1');
@@ -194,5 +202,6 @@ $routes->post('/dcf/upload-image', 'DcfController::uploadImage');
 
 // DCF Public routes (no authentication required)
 $routes->get('/dcf/form/(:segment)', 'DcfPublicController::form/$1');
+$routes->get('/dcf/email-role/(:segment)', 'DcfPublicController::emailRole/$1');
 $routes->post('/dcf/submit/(:segment)', 'DcfPublicController::submit/$1');
 

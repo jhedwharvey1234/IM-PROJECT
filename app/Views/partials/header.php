@@ -218,6 +218,10 @@
                     <i class="bi bi-diagram-3"></i>
                     <span>Departments</span>
                 </a>
+                <a href="<?= site_url('settings/user-roles') ?>" class="sidebar-submenu-link">
+                    <i class="bi bi-person-badge"></i>
+                    <span>User Roles</span>
+                </a>
                 <a href="<?= site_url('settings/categories') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-tags"></i>
                     <span>Asset Categories</span>

@@ -61,6 +61,11 @@
                 <a href="<?= site_url('settings/departments') ?>">Manage Departments</a>
             </div>
             <div class="settings-card">
+                <h5><i class="bi bi-person-badge"></i> User Roles</h5>
+                <p class="text-muted">Roles used in user management and registration.</p>
+                <a href="<?= site_url('settings/user-roles') ?>">Manage User Roles</a>
+            </div>
+            <div class="settings-card">
                 <h5><i class="bi bi-tag"></i> Asset Categories</h5>
                 <p class="text-muted">Asset classification categories.</p>
                 <a href="<?= site_url('settings/categories') ?>">Manage Categories</a>

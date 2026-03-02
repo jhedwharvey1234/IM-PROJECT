@@ -104,8 +104,24 @@
                                 
                                 <div class="mb-3">
                                     <label class="form-label">Email Address <span class="required-mark">*</span></label>
-                                    <input type="email" class="form-control" name="respondent_email" placeholder="name@example.com" title="Please enter a valid email address" required>
+                                    <input type="email" class="form-control" id="respondentEmail" name="respondent_email" placeholder="name@example.com" title="Please enter a valid email address" required>
                                     <small class="email-hint-invalid text-danger">Please enter a valid email address</small>
+                                    <small class="text-muted d-block mt-1" id="emailRoleStatus"></small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Role <span class="required-mark">*</span></label>
+                                    <select class="form-select" id="respondentRole" name="respondent_role" required>
+                                        <option value="">Select role</option>
+                                        <option value="all">All Roles</option>
+                                        <?php foreach (($userRoles ?? []) as $role): ?>
+                                            <?php $roleKey = trim((string) ($role['role_key'] ?? '')); ?>
+                                            <?php if ($roleKey !== ''): ?>
+                                                <option value="<?= esc($roleKey) ?>"><?= esc((string) ($role['role_name'] ?? $roleKey)) ?></option>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <small class="text-muted">If your email is registered, your role is auto-detected.</small>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -133,9 +149,10 @@
                         <!-- Pages for each part -->
                         <?php if (!empty($parts)): ?>
                             <?php foreach ($parts as $partIndex => $part): ?>
+                                <?php $partRoleKey = trim((string) ($part['role_key'] ?? 'all')); ?>
                                 <div class="page" id="page-<?= ($partIndex + 1) ?>">
                                     <div class="page-content">
-                                        <div class="part-block mb-4">
+                                        <div class="part-block mb-4" data-part-role="<?= esc($partRoleKey !== '' ? $partRoleKey : 'all') ?>">
                                             <h5 class="mb-2"><i class="bi bi-folder-check"></i> <?= esc($part['title'] ?? 'Part') ?></h5>
                                             <?php if (!empty($part['description'])): ?>
                                                 <p class="text-muted"><?= esc($part['description']) ?></p>
@@ -143,7 +160,8 @@
                                         </div>
 
                                         <?php foreach (($part['questions'] ?? []) as $questionIndex => $question): ?>
-                                            <div class="question-block">
+                                            <?php $questionRoleKey = trim((string) ($question['role_key'] ?? '')); ?>
+                                            <div class="question-block" data-question-role="<?= esc($questionRoleKey) ?>" data-part-role="<?= esc($partRoleKey !== '' ? $partRoleKey : 'all') ?>">
                                                 <label class="form-label fw-bold">
                                                     <?= ($questionIndex + 1) ?>. <?= esc($question['question_text']) ?>
                                                     <?php if (!empty($question['is_required'])): ?>
@@ -311,6 +329,9 @@
     <script>
         const ANSWER_TYPES_WITH_OPTIONS = ['multiple_choice', 'checkbox', 'dropdown'];
         const form = document.getElementById('dcfResponseForm');
+        const respondentEmailInput = document.getElementById('respondentEmail');
+        const respondentRoleSelect = document.getElementById('respondentRole');
+        const emailRoleStatus = document.getElementById('emailRoleStatus');
         const nextBtn = document.getElementById('nextBtn');
         const backBtn = document.getElementById('backBtn');
         const submitBtn = document.getElementById('submitBtn');
@@ -318,6 +339,167 @@
         const currentPageSpan = document.getElementById('currentPage');
         const totalPagesSpan = document.getElementById('totalPages');
         const isPastDue = <?= !empty($isPastDue) ? 'true' : 'false' ?>;
+        const emailRoleLookupUrl = '<?= site_url('dcf/email-role/' . $dcf['share_token']) ?>';
+        let emailLookupTimer = null;
+
+        function setEmailRoleStatus(message, cssClass = 'text-muted') {
+            if (!emailRoleStatus) {
+                return;
+            }
+
+            emailRoleStatus.className = `${cssClass} d-block mt-1`;
+            emailRoleStatus.textContent = message;
+        }
+
+        function ensureRoleOption(roleKey) {
+            if (!respondentRoleSelect || !roleKey) {
+                return;
+            }
+
+            const existing = Array.from(respondentRoleSelect.options).find(option => option.value === roleKey);
+            if (existing) {
+                return;
+            }
+
+            const option = document.createElement('option');
+            option.value = roleKey;
+            option.textContent = roleKey;
+            respondentRoleSelect.appendChild(option);
+        }
+
+        function setRoleLocked(locked) {
+            if (!respondentRoleSelect) {
+                return;
+            }
+
+            respondentRoleSelect.disabled = !!locked;
+            respondentRoleSelect.classList.toggle('bg-light', !!locked);
+            respondentRoleSelect.title = locked
+                ? 'Role is locked because this email is registered.'
+                : '';
+        }
+
+        async function lookupEmailRole(emailValue) {
+            const email = String(emailValue || '').trim().toLowerCase();
+            if (!email || !respondentRoleSelect) {
+                setEmailRoleStatus('', 'text-muted');
+                setRoleLocked(false);
+                return;
+            }
+
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                setEmailRoleStatus('', 'text-muted');
+                setRoleLocked(false);
+                return;
+            }
+
+            setEmailRoleStatus('Checking registered email...', 'text-muted');
+
+            try {
+                const response = await fetch(`${emailRoleLookupUrl}?email=${encodeURIComponent(email)}`);
+                const result = await response.json();
+
+                if (!result || result.success !== true) {
+                    setEmailRoleStatus('Unable to verify email right now.', 'text-warning');
+                    setRoleLocked(false);
+                    return;
+                }
+
+                if (result.registered && result.role_key) {
+                    ensureRoleOption(result.role_key);
+                    respondentRoleSelect.value = result.role_key;
+                    setRoleLocked(true);
+                    setEmailRoleStatus(`Registered email detected. Role auto-selected: ${result.role_key}`, 'text-success');
+                    applyRoleScope();
+                } else if (result.registered) {
+                    setRoleLocked(false);
+                    setEmailRoleStatus('Registered email found, but no role is assigned yet. Please select your role.', 'text-warning');
+                    applyRoleScope();
+                } else {
+                    setRoleLocked(false);
+                    setEmailRoleStatus('Email is not registered. Please select your role.', 'text-warning');
+                    applyRoleScope();
+                }
+            } catch (error) {
+                setEmailRoleStatus('Unable to verify email right now.', 'text-warning');
+                setRoleLocked(false);
+            }
+        }
+
+        function resolveEffectiveTargetRole(questionRole, partRole) {
+            const qRole = String(questionRole || '').trim();
+            if (qRole !== '') {
+                return qRole;
+            }
+
+            const pRole = String(partRole || '').trim();
+            return pRole !== '' ? pRole : 'all';
+        }
+
+        function canAccessByRole(targetRole, selectedRole) {
+            const target = String(targetRole || '').trim();
+            const selected = String(selectedRole || '').trim();
+
+            if (target === '' || target === 'all') {
+                return true;
+            }
+
+            if (selected === '' || selected === 'all') {
+                return true;
+            }
+
+            return target === selected;
+        }
+
+        function applyRoleScope() {
+            const selectedRole = respondentRoleSelect ? respondentRoleSelect.value : '';
+            const questionBlocks = document.querySelectorAll('.question-block');
+
+            questionBlocks.forEach((block) => {
+                const questionRole = block.getAttribute('data-question-role') || '';
+                const partRole = block.getAttribute('data-part-role') || 'all';
+                const targetRole = resolveEffectiveTargetRole(questionRole, partRole);
+                const accessible = canAccessByRole(targetRole, selectedRole);
+
+                block.style.display = accessible ? '' : 'none';
+
+                const fields = block.querySelectorAll('input, select, textarea');
+                fields.forEach((field) => {
+                    if (!field.dataset.requiredOriginal) {
+                        field.dataset.requiredOriginal = field.hasAttribute('required') ? '1' : '0';
+                    }
+
+                    field.disabled = !accessible;
+
+                    if (accessible) {
+                        if (field.dataset.requiredOriginal === '1') {
+                            field.setAttribute('required', 'required');
+                        }
+                    } else {
+                        field.removeAttribute('required');
+                    }
+                });
+            });
+        }
+
+        if (respondentEmailInput) {
+            respondentEmailInput.addEventListener('input', () => {
+                if (emailLookupTimer) {
+                    clearTimeout(emailLookupTimer);
+                }
+
+                emailLookupTimer = setTimeout(() => {
+                    lookupEmailRole(respondentEmailInput.value);
+                }, 300);
+            });
+        }
+
+        if (respondentRoleSelect) {
+            respondentRoleSelect.addEventListener('change', () => {
+                applyRoleScope();
+            });
+        }
         
         // Calculate total pages (1 for info + consent, then 1 per part)
         const totalPages = <?= (1 + count($parts ?? [])) ?>;
@@ -635,6 +817,11 @@
         if (!isPastDue && form) {
             initWysiwygEditors();
             showPage(0);
+            applyRoleScope();
+
+            if (respondentEmailInput && respondentEmailInput.value.trim() !== '') {
+                lookupEmailRole(respondentEmailInput.value);
+            }
         }
     </script>
 </body>

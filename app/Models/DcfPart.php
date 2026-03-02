@@ -13,6 +13,7 @@ class DcfPart extends Model
         'dcf_id',
         'title',
         'description',
+        'role_key',
         'sort_order',
     ];
 

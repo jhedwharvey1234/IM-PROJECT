@@ -43,6 +43,9 @@
         .asset-image { background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 20px; min-height: 250px; display: flex; align-items: center; justify-content: center; }
         .asset-image img { max-width: 100%; max-height: 240px; object-fit: contain; }
         .asset-image .placeholder { color: #adb5bd; font-size: 14px; }
+
+        .share-box { background: #ffffff; border: 1px solid #e9ecef; border-radius: 6px; padding: 12px; }
+        .share-url-input { font-size: 12px; }
         
         .action-btn { width: 100%; margin-bottom: 12px; }
         .action-btn i { margin-right: 8px; }
@@ -645,6 +648,29 @@
                         <a href="<?= site_url('assets/delete/' . $asset['id']) ?>" class="btn btn-danger action-btn" onclick="return confirm('Are you sure you want to delete this asset?')" title="Delete this asset"><i class="bi bi-trash"></i> Delete Asset</a>
                     </div>
 
+                    <!-- Share Asset Public Link -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #198754; margin-top: 15px;">
+                        <h6 style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #6c757d; margin-bottom: 12px;"><i class="bi bi-share"></i> Share Asset</h6>
+
+                        <?php if (!empty($shareUrl)): ?>
+                            <div class="share-box text-center mb-2">
+                                <div id="assetQrCode" class="mb-2"></div>
+                                <small class="text-muted">Scan to open public asset details</small>
+                            </div>
+                            <div class="input-group input-group-sm mb-2">
+                                <input type="text" class="form-control share-url-input" id="assetShareUrl" value="<?= esc($shareUrl) ?>" readonly>
+                                <button class="btn btn-success" type="button" onclick="copyAssetShareUrl()"><i class="bi bi-clipboard"></i></button>
+                            </div>
+                            <a href="<?= esc($shareUrl) ?>" target="_blank" class="btn btn-outline-success btn-sm w-100">
+                                <i class="bi bi-box-arrow-up-right"></i> Open Public Page
+                            </a>
+                        <?php else: ?>
+                            <div class="alert alert-warning mb-0 py-2" style="font-size: 12px;">
+                                Share links are unavailable until the assets share-token migration is applied.
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
                     <!-- Status Summary -->
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #0d6efd; margin-top: 15px;">
                         <h6 style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #6c757d; margin-bottom: 12px;"><i class="bi bi-info-circle"></i> Status Summary</h6>
@@ -1226,9 +1252,35 @@
 
        
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function copyAssetShareUrl() {
+            const shareInput = document.getElementById('assetShareUrl');
+            if (!shareInput) {
+                return;
+            }
+
+            shareInput.select();
+            shareInput.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            <?php if (!empty($shareUrl)): ?>
+            const shareTarget = document.getElementById('assetQrCode');
+            if (shareTarget) {
+                new QRCode(shareTarget, {
+                    text: '<?= esc($shareUrl) ?>',
+                    width: 140,
+                    height: 140,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            }
+            <?php endif; ?>
+
             const saveNoteBtn = document.getElementById('saveNoteBtn');
             const addNoteForm = document.getElementById('addNoteForm');
             const noteError = document.getElementById('noteError');

@@ -87,7 +87,7 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab">
-                    <i class="bi bi-bar-chart"></i> Results (<?= $responseCount ?>)
+                    <i class="bi bi-bar-chart"></i> Results (<?= (int) ($responseCount ?? 0) ?>)
                 </button>
             </li>
         </ul>
@@ -164,8 +164,18 @@
 
                     <div class="col-md-4">
                         <div class="stat-box mb-3">
-                            <h3><?= $responseCount ?></h3>
-                            <p><i class="bi bi-people"></i> Total Responses</p>
+                            <?php $activeRoleFilter = (string) ($selectedRoleFilter ?? 'all'); ?>
+                            <?php if ($activeRoleFilter === 'all'): ?>
+                                <h3><?= (int) ($totalResponseCount ?? $responseCount ?? 0) ?></h3>
+                                <p><i class="bi bi-people"></i> Total Responses</p>
+                            <?php else: ?>
+                                <h3><?= (int) ($responseCount ?? 0) ?></h3>
+                                <p><i class="bi bi-funnel"></i> Filtered Responses</p>
+                                <small class="d-block opacity-75">
+                                    <?= esc($activeRoleFilter === 'unassigned' ? 'Unassigned Role' : $activeRoleFilter) ?>
+                                    (<?= (int) ($responseCount ?? 0) ?> of <?= (int) ($totalResponseCount ?? $responseCount ?? 0) ?>)
+                                </small>
+                            <?php endif; ?>
                         </div>
 
                         <div class="info-card">
@@ -194,11 +204,50 @@
 
             <!-- Results Tab -->
             <div class="tab-pane fade" id="results" role="tabpanel">
+                <div class="info-card mb-3">
+                    <form method="get" action="<?= site_url('dcf/details/' . (int) $dcf['id']) ?>#results" class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label for="roleFilter" class="form-label mb-1"><strong>Analytics Role Filter</strong></label>
+                            <select class="form-select form-select-sm" id="roleFilter" name="role">
+                                <option value="all" <?= ($selectedRoleFilter ?? 'all') === 'all' ? 'selected' : '' ?>>All Roles</option>
+                                <?php foreach (($roleFilterOptions ?? []) as $roleOption): ?>
+                                    <?php $optKey = (string) ($roleOption['role_key'] ?? ''); ?>
+                                    <?php if ($optKey !== ''): ?>
+                                        <option value="<?= esc($optKey) ?>" <?= ($selectedRoleFilter ?? 'all') === $optKey ? 'selected' : '' ?>>
+                                            <?= esc((string) ($roleOption['role_name'] ?? $optKey)) ?>
+                                        </option>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                                <option value="unassigned" <?= ($selectedRoleFilter ?? 'all') === 'unassigned' ? 'selected' : '' ?>>Unassigned Role</option>
+                            </select>
+                        </div>
+                        <div class="col-md-auto">
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-funnel"></i> Apply</button>
+                            <a href="<?= site_url('dcf/details/' . (int) $dcf['id']) ?>#results" class="btn btn-outline-secondary btn-sm">Reset</a>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">
+                                Showing analytics for
+                                <strong>
+                                    <?php if (($selectedRoleFilter ?? 'all') === 'all'): ?>
+                                        All Roles
+                                    <?php elseif (($selectedRoleFilter ?? 'all') === 'unassigned'): ?>
+                                        Unassigned Role
+                                    <?php else: ?>
+                                        <?= esc((string) ($selectedRoleFilter ?? 'all')) ?>
+                                    <?php endif; ?>
+                                </strong>
+                                (<?= (int) ($responseCount ?? 0) ?> of <?= (int) ($totalResponseCount ?? $responseCount ?? 0) ?> responses)
+                            </small>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="row mb-3">
                     <div class="col-md-3">
                         <div class="stat-box" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                            <h3><?= $responseCount ?></h3>
-                            <p>Total Respondents</p>
+                            <h3><?= (int) ($responseCount ?? 0) ?></h3>
+                            <p><?= (($selectedRoleFilter ?? 'all') === 'all') ? 'Total Respondents' : 'Filtered Respondents' ?></p>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -224,6 +273,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Name</th>
+                                        <th>Role</th>
                                         <th>Mobile</th>
                                         <th>Email</th>
                                         <th>Submitted At</th>
@@ -236,6 +286,14 @@
                                         <tr class="respondent-row">
                                             <td class="respondent-row-number"><?= $idx + 1 ?></td>
                                             <td><?= esc($response['respondent_name']) ?></td>
+                                            <td>
+                                                <?php $respondentRole = trim((string) ($response['respondent_role'] ?? '')); ?>
+                                                <?php if ($respondentRole !== ''): ?>
+                                                    <span class="badge bg-secondary"><?= esc($respondentRole) ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted">N/A</span>
+                                                <?php endif; ?>
+                                            </td>
                                             <td><?= esc($response['respondent_mobile'] ?: 'N/A') ?></td>
                                             <td><?= esc($response['respondent_email'] ?: 'N/A') ?></td>
                                             <td><?= esc($response['submitted_at']) ?></td>
@@ -275,6 +333,7 @@
                                             <div class="row g-2 mb-3">
                                                 <div class="col-md-6"><strong>Name:</strong> <?= esc($response['respondent_name'] ?: 'N/A') ?></div>
                                                 <div class="col-md-6"><strong>Email:</strong> <?= esc($response['respondent_email'] ?: 'N/A') ?></div>
+                                                <div class="col-md-6"><strong>Role:</strong> <?= esc($response['respondent_role'] ?? 'N/A') ?></div>
                                                 <div class="col-md-6"><strong>Mobile:</strong> <?= esc($response['respondent_mobile'] ?: 'N/A') ?></div>
                                                 <div class="col-md-6"><strong>Submitted At:</strong> <?= esc($response['submitted_at'] ?: 'N/A') ?></div>
                                             </div>
@@ -1417,6 +1476,13 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             initRespondentTable();
+
+            if (window.location.hash === '#results') {
+                const resultsTabBtn = document.getElementById('results-tab');
+                if (resultsTabBtn && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                    bootstrap.Tab.getOrCreateInstance(resultsTabBtn).show();
+                }
+            }
         });
     </script>
 </body>

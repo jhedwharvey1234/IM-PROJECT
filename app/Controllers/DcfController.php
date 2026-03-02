@@ -9,6 +9,7 @@ use App\Models\DcfQuestion;
 use App\Models\DcfQuestionOption;
 use App\Models\DcfResponse;
 use App\Models\DcfResponseAnswer;
+use App\Models\UserRole;
 
 class DcfController extends BaseController
 {
@@ -50,6 +51,7 @@ class DcfController extends BaseController
 
         $departmentModel = new Department();
         $data['departments'] = $departmentModel->orderBy('department_name', 'ASC')->findAll();
+        $data['userRoles'] = $this->getAvailableRoles();
         $data['parts'] = [];
         $data['title'] = 'Create DCF';
         return view('dcf/create', $data);
@@ -94,7 +96,8 @@ class DcfController extends BaseController
         log_message('debug', 'DCF Store - Title: ' . $data['title']);
         log_message('debug', 'DCF Store - Raw Parts: ' . json_encode($this->request->getPost('parts')));
 
-        $parts = $this->normalizePartsInput($this->request->getPost('parts'));
+        $allowedRoleKeys = $this->getAllowedRoleKeys();
+        $parts = $this->normalizePartsInput($this->request->getPost('parts'), $allowedRoleKeys);
         if (isset($parts['error'])) {
             log_message('error', 'Part normalization failed: ' . $parts['error']);
             return redirect()->back()->withInput()->with('errors', [$parts['error']]);
@@ -165,6 +168,7 @@ class DcfController extends BaseController
         $parts = $this->buildPartsWithQuestions((int) $id, $partModel, $questionModel, $optionModel);
 
         $data['departments'] = $departmentModel->orderBy('department_name', 'ASC')->findAll();
+        $data['userRoles'] = $this->getAvailableRoles();
         $data['parts'] = $parts;
         $data['title'] = 'Edit DCF';
         return view('dcf/edit', $data);
@@ -205,7 +209,8 @@ class DcfController extends BaseController
             'respondents_needed' => (is_numeric($respondentsNeeded) && (int) $respondentsNeeded > 0) ? (int) $respondentsNeeded : null,
         ];
 
-        $parts = $this->normalizePartsInput($this->request->getPost('parts'));
+        $allowedRoleKeys = $this->getAllowedRoleKeys();
+        $parts = $this->normalizePartsInput($this->request->getPost('parts'), $allowedRoleKeys);
         if (isset($parts['error'])) {
             return redirect()->back()->withInput()->with('errors', [$parts['error']]);
         }
@@ -308,7 +313,7 @@ class DcfController extends BaseController
         $optionModel = new DcfQuestionOption();
 
         $rows = $questionModel
-            ->select('dcf_questions.id, dcf_questions.dcf_id, dcf_questions.question_text, dcf_questions.is_required, dcf_questions.answer_type, dcf_questions.rate_min, dcf_questions.rate_max, dcf_questions.grid_rows, dcf_questions.grid_columns, dcfs.department_id')
+            ->select('dcf_questions.id, dcf_questions.dcf_id, dcf_questions.question_text, dcf_questions.role_key, dcf_questions.is_required, dcf_questions.answer_type, dcf_questions.rate_min, dcf_questions.rate_max, dcf_questions.grid_rows, dcf_questions.grid_columns, dcfs.department_id')
             ->join('dcfs', 'dcfs.id = dcf_questions.dcf_id', 'inner')
             ->where('dcfs.department_id', $departmentId)
             ->orderBy('dcf_questions.id', 'DESC')
@@ -361,17 +366,39 @@ class DcfController extends BaseController
             }
         }
 
-        $responseCount = $responseModel->where('dcf_id', $id)->countAllResults();
-        $responses = $responseModel->where('dcf_id', $id)->orderBy('submitted_at', 'DESC')->findAll();
+        $selectedRoleFilter = trim((string) $this->request->getGet('role'));
+        if ($selectedRoleFilter === '') {
+            $selectedRoleFilter = 'all';
+        }
 
-        $responseAnswersRows = $answerModel
+        $roleFilterOptions = $this->getRoleFilterOptions();
+        $allowedFilterValues = array_merge(['all', 'unassigned'], array_column($roleFilterOptions, 'role_key'));
+        if (!in_array($selectedRoleFilter, $allowedFilterValues, true)) {
+            $selectedRoleFilter = 'all';
+        }
+
+        $totalResponseCount = $responseModel->where('dcf_id', $id)->countAllResults();
+
+        $filteredResponseModel = new DcfResponse();
+        $filteredResponseModel->where('dcf_id', $id);
+        $this->applyRespondentRoleFilterToModel($filteredResponseModel, $selectedRoleFilter);
+        $responseCount = $filteredResponseModel->countAllResults();
+
+        $responsesModel = new DcfResponse();
+        $responsesModel->where('dcf_id', $id);
+        $this->applyRespondentRoleFilterToModel($responsesModel, $selectedRoleFilter);
+        $responses = $responsesModel->orderBy('submitted_at', 'DESC')->findAll();
+
+        $responseAnswersQuery = $answerModel
             ->select('dcf_response_answers.response_id, dcf_response_answers.question_id, dcf_response_answers.answer_text, dcf_questions.question_text, dcf_questions.answer_type')
             ->join('dcf_responses', 'dcf_responses.id = dcf_response_answers.response_id')
             ->join('dcf_questions', 'dcf_questions.id = dcf_response_answers.question_id', 'left')
             ->where('dcf_responses.dcf_id', $id)
             ->orderBy('dcf_response_answers.response_id', 'ASC')
-            ->orderBy('dcf_response_answers.question_id', 'ASC')
-            ->findAll();
+            ->orderBy('dcf_response_answers.question_id', 'ASC');
+
+        $this->applyRespondentRoleFilterToModel($responseAnswersQuery, $selectedRoleFilter, 'dcf_responses.respondent_role');
+        $responseAnswersRows = $responseAnswersQuery->findAll();
 
         $responseAnswersMap = [];
         foreach ($responseAnswersRows as $row) {
@@ -398,12 +425,14 @@ class DcfController extends BaseController
         $analytics = [];
         foreach ($questions as $question) {
             $questionId = $question['id'];
-            $answers = $answerModel
+            $answersQuery = $answerModel
                 ->select('dcf_response_answers.answer_text')
                 ->join('dcf_responses', 'dcf_responses.id = dcf_response_answers.response_id')
                 ->where('dcf_responses.dcf_id', $id)
-                ->where('dcf_response_answers.question_id', $questionId)
-                ->findAll();
+                ->where('dcf_response_answers.question_id', $questionId);
+
+            $this->applyRespondentRoleFilterToModel($answersQuery, $selectedRoleFilter, 'dcf_responses.respondent_role');
+            $answers = $answersQuery->findAll();
 
             $isTextQuestion = in_array($question['answer_type'], ['short_answer', 'paragraph', 'wysiwyg'], true);
 
@@ -423,15 +452,47 @@ class DcfController extends BaseController
             'department' => $department,
             'parts' => $parts,
             'questions' => $questions,
+            'totalResponseCount' => $totalResponseCount,
             'responseCount' => $responseCount,
             'responses' => $responses,
             'responseAnswersMap' => $responseAnswersMap,
             'analytics' => $analytics,
+            'selectedRoleFilter' => $selectedRoleFilter,
+            'roleFilterOptions' => $roleFilterOptions,
             'shareUrl' => $shareUrl,
             'title' => 'DCF Details - ' . $dcf['title']
         ];
 
         return view('dcf/details', $data);
+    }
+
+    private function applyRespondentRoleFilterToModel($model, string $selectedRoleFilter, string $column = 'respondent_role')
+    {
+        if ($selectedRoleFilter === 'all') {
+            return $model;
+        }
+
+        if ($selectedRoleFilter === 'unassigned') {
+            $model->groupStart()
+                ->where($column, null)
+                ->orWhere($column, '')
+                ->groupEnd();
+
+            return $model;
+        }
+
+        $model->where($column, $selectedRoleFilter);
+        return $model;
+    }
+
+    private function getRoleFilterOptions(): array
+    {
+        return array_map(static function ($role) {
+            return [
+                'role_key' => (string) ($role['role_key'] ?? ''),
+                'role_name' => (string) ($role['role_name'] ?? ($role['role_key'] ?? '')),
+            ];
+        }, $this->getAvailableRoles());
     }
 
     private function generateAnswerSummary($question, $answers)
@@ -648,7 +709,7 @@ class DcfController extends BaseController
         return $normalized !== '' ? $normalized : 'N/A';
     }
 
-    private function normalizePartsInput($rawParts): array
+    private function normalizePartsInput($rawParts, array $allowedRoleKeys): array
     {
         if (!is_array($rawParts)) {
             return [];
@@ -668,6 +729,16 @@ class DcfController extends BaseController
             $partDescription = isset($partRow['description']) && is_string($partRow['description'])
                 ? trim($partRow['description'])
                 : '';
+            $partRoleKey = isset($partRow['role_key']) && is_string($partRow['role_key'])
+                ? trim($partRow['role_key'])
+                : 'all';
+            if ($partRoleKey === '') {
+                $partRoleKey = 'all';
+            }
+
+            if (!in_array($partRoleKey, $allowedRoleKeys, true)) {
+                return ['error' => 'Invalid part role provided.'];
+            }
             $rawQuestions = isset($partRow['questions']) && is_array($partRow['questions']) ? $partRow['questions'] : [];
 
             $normalizedQuestions = [];
@@ -693,6 +764,12 @@ class DcfController extends BaseController
                 }
 
                 $isRequired = !empty($row['is_required']) ? 1 : 0;
+                $questionRoleKey = isset($row['role_key']) && is_string($row['role_key'])
+                    ? trim($row['role_key'])
+                    : '';
+                if ($questionRoleKey !== '' && !in_array($questionRoleKey, $allowedRoleKeys, true)) {
+                    return ['error' => 'Invalid question role provided.'];
+                }
                 $options = [];
                 $rateMin = null;
                 $rateMax = null;
@@ -746,6 +823,7 @@ class DcfController extends BaseController
 
                 $normalizedQuestions[] = [
                     'question_text' => $questionText,
+                    'role_key' => $questionRoleKey,
                     'is_required' => $isRequired,
                     'answer_type' => $answerType,
                     'options' => $options,
@@ -767,6 +845,7 @@ class DcfController extends BaseController
             $normalizedParts[] = [
                 'title' => $partTitle,
                 'description' => $partDescription,
+                'role_key' => $partRoleKey,
                 'questions' => $normalizedQuestions,
             ];
         }
@@ -787,6 +866,7 @@ class DcfController extends BaseController
                 'dcf_id' => $dcfId,
                 'title' => $part['title'],
                 'description' => $part['description'],
+                'role_key' => $part['role_key'] ?? 'all',
                 'sort_order' => $partIndex + 1,
             ]);
 
@@ -797,10 +877,15 @@ class DcfController extends BaseController
             }
 
             foreach ($part['questions'] as $index => $question) {
+                $questionRoleKey = is_string($question['role_key'] ?? null) && trim((string) ($question['role_key'] ?? '')) !== ''
+                    ? trim((string) $question['role_key'])
+                    : null;
+
                 $questionData = [
                     'dcf_id' => $dcfId,
                     'part_id' => (int) $partId,
                     'question_text' => $question['question_text'],
+                    'role_key' => $questionRoleKey,
                     'is_required' => $question['is_required'],
                     'answer_type' => $question['answer_type'],
                     'rate_min' => $question['answer_type'] === 'rate_me' ? $question['rate_min'] : null,
@@ -1041,5 +1126,29 @@ class DcfController extends BaseController
                 'error' => 'Upload error: ' . $e->getMessage()
             ]);
         }
+    }
+
+    private function getAvailableRoles(): array
+    {
+        $db = \Config\Database::connect();
+        if (!$db->tableExists('user_roles')) {
+            return [
+                ['role_name' => 'Readonly', 'role_key' => 'readonly'],
+                ['role_name' => 'Read and Write', 'role_key' => 'readandwrite'],
+                ['role_name' => 'Superadmin', 'role_key' => 'superadmin'],
+            ];
+        }
+
+        $roleModel = new UserRole();
+        return $roleModel->orderBy('role_name', 'ASC')->findAll();
+    }
+
+    private function getAllowedRoleKeys(): array
+    {
+        $keys = array_column($this->getAvailableRoles(), 'role_key');
+        $keys[] = 'all';
+        $keys = array_values(array_unique(array_filter(array_map('strval', $keys), static fn($key) => $key !== '')));
+
+        return $keys;
     }
 }

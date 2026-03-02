@@ -9,9 +9,13 @@ use App\Models\DcfQuestionOption;
 use App\Models\DcfResponse;
 use App\Models\DcfResponseAnswer;
 use App\Models\Notification;
+use App\Models\User;
+use App\Models\UserRole;
 
 class DcfPublicController extends BaseController
 {
+    private const ALL_ROLES_KEY = 'all';
+
     private function isPastDueDate(?string $dueDate): bool
     {
         if (!is_string($dueDate) || trim($dueDate) === '') {
@@ -83,6 +87,7 @@ class DcfPublicController extends BaseController
             'dcf' => $dcf,
             'questions' => $questions,
             'parts' => $partsWithQuestions,
+            'userRoles' => $this->getAvailableRoles(),
             'isPastDue' => $this->isPastDueDate($dcf['due_date'] ?? null),
             'title' => $dcf['title']
         ];
@@ -111,6 +116,7 @@ class DcfPublicController extends BaseController
             'respondent_name' => 'required|max_length[255]',
             'respondent_mobile' => 'permit_empty|max_length[50]',
             'respondent_email' => 'required|valid_email|max_length[255]',
+            'respondent_role' => 'permit_empty|max_length[50]',
             'user_consent' => 'required'
         ]);
 
@@ -121,9 +127,26 @@ class DcfPublicController extends BaseController
         $responseModel = new DcfResponse();
         $answerModel = new DcfResponseAnswer();
         $questionModel = new DcfQuestion();
+        $partModel = new DcfPart();
 
         $respondentEmailRaw = $this->request->getPost('respondent_email');
         $respondentEmail = is_string($respondentEmailRaw) ? strtolower(trim($respondentEmailRaw)) : '';
+        $selectedRoleRaw = $this->request->getPost('respondent_role');
+        $selectedRole = is_string($selectedRoleRaw) ? trim($selectedRoleRaw) : '';
+
+        $registeredUser = $this->findRegisteredUserByEmail($respondentEmail);
+        $detectedRole = $registeredUser['role_key'];
+        if (($detectedRole === null || $detectedRole === '') && $selectedRole === '') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Please select your role.']);
+        }
+
+        $effectiveRole = $detectedRole !== null && $detectedRole !== ''
+            ? $detectedRole
+            : ($selectedRole !== '' ? $selectedRole : self::ALL_ROLES_KEY);
+
+        if (!$this->isAllowedRoleKey($effectiveRole)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Selected role is invalid.']);
+        }
 
         $existingResponse = $responseModel
             ->where('dcf_id', $dcf['id'])
@@ -147,6 +170,7 @@ class DcfPublicController extends BaseController
             'respondent_name' => $this->request->getPost('respondent_name'),
             'respondent_mobile' => $this->request->getPost('respondent_mobile'),
             'respondent_email' => $respondentEmail,
+            'respondent_role' => $effectiveRole,
             'user_consent' => $userConsent,
             'consent_timestamp' => $userConsent ? date('Y-m-d H:i:s') : null,
             'ip_address' => $this->request->getIPAddress(),
@@ -155,7 +179,24 @@ class DcfPublicController extends BaseController
         ]);
 
         $answers = $this->request->getPost('answers');
+        $partRoleMap = [];
+        $parts = $partModel->where('dcf_id', $dcf['id'])->findAll();
+        foreach ($parts as $part) {
+            $partRole = (string) ($part['role_key'] ?? self::ALL_ROLES_KEY);
+            $partId = (int) ($part['id'] ?? 0);
+            if ($partId > 0) {
+                $partRoleMap[$partId] = $partRole;
+            }
+        }
+
         $questions = $questionModel->where('dcf_id', $dcf['id'])->findAll();
+        $questions = array_values(array_filter($questions, function ($question) use ($effectiveRole, $partRoleMap) {
+            $partId = (int) ($question['part_id'] ?? 0);
+            $partRole = $partRoleMap[$partId] ?? self::ALL_ROLES_KEY;
+            $targetRole = $this->getEffectiveRoleKey((string) ($question['role_key'] ?? ''), (string) $partRole);
+
+            return $this->canAccessRole($targetRole, $effectiveRole);
+        }));
 
         foreach ($questions as $question) {
             $questionId = $question['id'];
@@ -237,5 +278,110 @@ class DcfPublicController extends BaseController
         }
 
         return $this->response->setJSON(['success' => true, 'message' => 'Form submitted successfully.']);
+    }
+
+    public function emailRole($shareToken)
+    {
+        $dcfModel = new Dcf();
+        $dcf = $dcfModel->where('share_token', $shareToken)->first();
+        if (!$dcf) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'success' => false,
+                'message' => 'Invalid DCF link.',
+            ]);
+        }
+
+        $email = trim(strtolower((string) $this->request->getGet('email')));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->response->setJSON([
+                'success' => true,
+                'registered' => false,
+                'role_key' => null,
+            ]);
+        }
+
+        $registeredUser = $this->findRegisteredUserByEmail($email);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'registered' => (bool) ($registeredUser['registered'] ?? false),
+            'role_key' => $registeredUser['role_key'] ?? null,
+        ]);
+    }
+
+    private function canAccessRole(string $targetRoleKey, string $currentRoleKey): bool
+    {
+        $target = trim($targetRoleKey);
+        if ($target === '' || $target === self::ALL_ROLES_KEY) {
+            return true;
+        }
+
+        return $currentRoleKey !== '' && $target === $currentRoleKey;
+    }
+
+    private function getEffectiveRoleKey(string $questionRoleKey, string $partRoleKey): string
+    {
+        $questionRole = trim($questionRoleKey);
+        if ($questionRole !== '') {
+            return $questionRole;
+        }
+
+        $partRole = trim($partRoleKey);
+        return $partRole !== '' ? $partRole : self::ALL_ROLES_KEY;
+    }
+
+    private function findRegisteredUserByEmail(string $email): array
+    {
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return [
+                'registered' => false,
+                'role_key' => null,
+            ];
+        }
+
+        $userModel = new User();
+        $user = $userModel
+            ->select('id, usertype')
+            ->where('email', $email)
+            ->first();
+
+        if (!is_array($user)) {
+            return [
+                'registered' => false,
+                'role_key' => null,
+            ];
+        }
+
+        $role = trim((string) ($user['usertype'] ?? ''));
+        return [
+            'registered' => true,
+            'role_key' => $role !== '' ? $role : null,
+        ];
+    }
+
+    private function getAvailableRoles(): array
+    {
+        $db = \Config\Database::connect();
+        if (!$db->tableExists('user_roles')) {
+            return [
+                ['role_name' => 'Readonly', 'role_key' => 'readonly'],
+                ['role_name' => 'Read and Write', 'role_key' => 'readandwrite'],
+                ['role_name' => 'Superadmin', 'role_key' => 'superadmin'],
+            ];
+        }
+
+        $roleModel = new UserRole();
+        return $roleModel->orderBy('role_name', 'ASC')->findAll();
+    }
+
+    private function isAllowedRoleKey(string $roleKey): bool
+    {
+        $normalized = trim($roleKey);
+        if ($normalized === self::ALL_ROLES_KEY) {
+            return true;
+        }
+
+        $keys = array_column($this->getAvailableRoles(), 'role_key');
+        return in_array($normalized, $keys, true);
     }
 }

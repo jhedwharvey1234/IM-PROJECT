@@ -82,6 +82,10 @@ class AssetController extends Controller
             'unit_id'             => $this->request->getPost('unit_id') ?: null,
         ];
 
+        if ($this->assetsShareTokenEnabled()) {
+            $data['share_token'] = $this->generateUniqueShareToken();
+        }
+
         $purchaseDate = $this->request->getPost('purchase_date');
         if ($purchaseDate) {
             $data['purchase_date'] = date('Y-m-d', strtotime($purchaseDate));
@@ -179,6 +183,13 @@ class AssetController extends Controller
 
         if (!$data['asset']) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Asset $id not found");
+        }
+
+        if ($this->assetsShareTokenEnabled()) {
+            $data['asset'] = $this->ensureAssetShareToken($data['asset'], $assetModel);
+            $data['shareUrl'] = base_url('assets/public/' . $data['asset']['share_token']);
+        } else {
+            $data['shareUrl'] = null;
         }
 
         $data['title'] = 'Edit Asset';
@@ -394,6 +405,13 @@ class AssetController extends Controller
 
         if (!$data['asset']) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Asset $id not found");
+        }
+
+        if ($this->assetsShareTokenEnabled()) {
+            $data['asset'] = $this->ensureAssetShareToken($data['asset'], $assetModel);
+            $data['shareUrl'] = base_url('assets/public/' . $data['asset']['share_token']);
+        } else {
+            $data['shareUrl'] = null;
         }
 
         $data['peripherals'] = $peripheralModel->where('asset_id', $id)->findAll();
@@ -873,5 +891,44 @@ class AssetController extends Controller
         } else {
             return redirect()->back()->with('error', 'Failed to delete note');
         }
+    }
+
+    private function assetsShareTokenEnabled(): bool
+    {
+        static $enabled = null;
+        if ($enabled !== null) {
+            return $enabled;
+        }
+
+        $db = \Config\Database::connect();
+        $enabled = $db->fieldExists('share_token', 'assets');
+
+        return $enabled;
+    }
+
+    private function generateUniqueShareToken(): string
+    {
+        $assetModel = new Asset();
+
+        do {
+            $token = bin2hex(random_bytes(16));
+            $exists = $assetModel->where('share_token', $token)->first();
+        } while ($exists);
+
+        return $token;
+    }
+
+    private function ensureAssetShareToken(array $asset, Asset $assetModel): array
+    {
+        $token = (string) ($asset['share_token'] ?? '');
+        if ($token !== '') {
+            return $asset;
+        }
+
+        $token = $this->generateUniqueShareToken();
+        $assetModel->update((int) $asset['id'], ['share_token' => $token]);
+        $asset['share_token'] = $token;
+
+        return $asset;
     }
 }

@@ -12,7 +12,7 @@ class Asset extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['asset_tag', 'box_number', 'barcode', 'device_image', 'serial_number', 'model', 'model_number', 'manufacturer', 'category', 'qty', 'sender', 'recipient', 'address', 'date_updated', 'purchase_date', 'purchase_cost', 'order_number', 'supplier', 'requestable', 'byod', 'department_id', 'location_id', 'workstation_id', 'assigned_to_user_id', 'unit_id', 'description', 'status'];
+    protected $allowedFields    = ['asset_tag', 'box_number', 'barcode', 'device_image', 'serial_number', 'model', 'model_number', 'manufacturer', 'category', 'qty', 'sender', 'recipient', 'address', 'date_updated', 'purchase_date', 'purchase_cost', 'order_number', 'supplier', 'requestable', 'byod', 'department_id', 'location_id', 'workstation_id', 'assigned_to_user_id', 'unit_id', 'share_token', 'description', 'status'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = false;
@@ -53,6 +53,7 @@ class Asset extends Model
         'workstation_id'  => 'permit_empty|numeric',
         'assigned_to_user_id' => 'permit_empty|numeric',
         'unit_id'         => 'permit_empty|numeric',
+        'share_token'     => 'permit_empty|is_unique[assets.share_token,id,{id}]',
         'description'     => 'permit_empty|string',
         'status'          => 'permit_empty|in_list[pending,ready to deploy,archived,broken - not fixable,lost/stolen,out for diagnostics,out for repair]',
     ];

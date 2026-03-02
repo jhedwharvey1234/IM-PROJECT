@@ -8,13 +8,15 @@ class AddUsertypeToUsersTable extends Migration
 {
     public function up()
     {
-        $this->forge->addColumn('users', [
-            'usertype' => [
-                'type' => 'ENUM',
-                'constraint' => ['readandwrite', 'readonly', 'superadmin'],
-                
-            ],
-        ]);
+        if (!$this->db->fieldExists('usertype', 'users')) {
+            $this->forge->addColumn('users', [
+                'usertype' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 50,
+                    'default' => 'readonly',
+                ],
+            ]);
+        }
 
         // Set user id 1 as superadmin
         $this->db->table('users')->where('id', 1)->update(['usertype' => 'superadmin']);

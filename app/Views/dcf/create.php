@@ -218,6 +218,7 @@
         const pastPartsTbody = document.getElementById('pastPartsTbody');
 
         const oldParts = <?= json_encode(old('parts') ?: [], JSON_UNESCAPED_UNICODE) ?>;
+        const userRoles = <?= json_encode($userRoles ?? [], JSON_UNESCAPED_UNICODE) ?>;
 
         let partIndex = 0;
         const questionIndexByPart = {};
@@ -229,6 +230,33 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
+        }
+
+        function buildRoleOptions(selectedRole = 'all', includeInherit = false) {
+            const options = [];
+
+            if (includeInherit) {
+                const inheritSelected = selectedRole === '' ? 'selected' : '';
+                options.push(`<option value="" ${inheritSelected}>Inherit from Part Role</option>`);
+            }
+
+            const allSelected = selectedRole === 'all' ? 'selected' : '';
+            options.push(`<option value="all" ${allSelected}>All Roles</option>`);
+
+            if (Array.isArray(userRoles)) {
+                userRoles.forEach((role) => {
+                    const roleKey = String(role.role_key || '').trim();
+                    if (!roleKey) {
+                        return;
+                    }
+
+                    const roleName = String(role.role_name || roleKey);
+                    const selected = selectedRole === roleKey ? 'selected' : '';
+                    options.push(`<option value="${escapeHtml(roleKey)}" ${selected}>${escapeHtml(roleName)}</option>`);
+                });
+            }
+
+            return options.join('');
         }
 
         function createOptionRow(partIdx, qIdx, value = '', answerType = 'multiple_choice') {
@@ -444,6 +472,7 @@
             const questionText = question?.question_text || '';
             const isRequired = question?.is_required ? 'checked' : '';
             const answerType = question?.answer_type || 'short_answer';
+            const questionRoleKey = question?.role_key || '';
             const allowMultiple = question?.allow_multiple ? 'checked' : '';
             const options = Array.isArray(question?.options) ? question.options : [];
             const rateMin = Number.isFinite(Number(question?.rate_min)) ? Number(question.rate_min) : 1;
@@ -488,6 +517,13 @@
                             <option value="rate_me" ${answerType === 'rate_me' ? 'selected' : ''}>Rate Me</option>
                         </select>
                     </div>
+                </div>
+                <div class="mt-2">
+                    <label class="form-label">Question Role</label>
+                    <select class="form-select" name="parts[${partIdx}][questions][${qIdx}][role_key]">
+                        ${buildRoleOptions(questionRoleKey, true)}
+                    </select>
+                    <small class="text-muted">Leave as inherit to use this part role.</small>
                 </div>
                 <div class="allow-multiple-area mt-2" style="display:none;">
                     <div class="form-check form-switch">
@@ -605,6 +641,7 @@
 
             const partTitle = part?.title || '';
             const partDescription = part?.description || '';
+            const partRoleKey = part?.role_key || 'all';
             const questions = Array.isArray(part?.questions) ? part.questions : [];
 
             const block = document.createElement('div');
@@ -622,6 +659,13 @@
                 <div class="mb-3">
                     <label class="form-label">Part Description</label>
                     <textarea class="form-control" rows="2" name="parts[${pIdx}][description]" placeholder="Enter part description">${escapeHtml(partDescription)}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Part Role</label>
+                    <select class="form-select" name="parts[${pIdx}][role_key]">
+                        ${buildRoleOptions(partRoleKey, false)}
+                    </select>
+                    <small class="text-muted">Default is All Roles. Questions can inherit this role.</small>
                 </div>
                 <div class="questions-container"></div>
                 <button type="button" class="btn btn-outline-primary btn-sm add-question-btn"><i class="bi bi-plus-circle"></i> Add Question</button>
@@ -654,6 +698,7 @@
             addPartBlock({
                 title: part.title,
                 description: part.description,
+                role_key: part.role_key || 'all',
                 questions: Array.isArray(part.questions) ? part.questions : []
             });
         }
@@ -746,6 +791,7 @@
                 question_text: row.question_text || '',
                 is_required: row.is_required ? 1 : 0,
                 answer_type: row.answer_type || 'short_answer',
+                role_key: row.role_key || '',
                 options: Array.isArray(row.options) ? row.options : [],
                 rate_min: row.rate_min ?? 1,
                 rate_max: row.rate_max ?? 10,

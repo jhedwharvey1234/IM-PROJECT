@@ -73,9 +73,13 @@
                         <label for="usertype" class="form-label">Usertype <span class="text-danger">*</span></label>
                         <select class="form-select" id="usertype" name="usertype" required>
                             <option value="">Select Usertype</option>
-                            <option value="readonly" <?= old('usertype', $user['usertype']) == 'readonly' ? 'selected' : '' ?>>Readonly</option>
-                            <option value="readandwrite" <?= old('usertype', $user['usertype']) == 'readandwrite' ? 'selected' : '' ?>>Read and Write</option>
-                            <option value="superadmin" <?= old('usertype', $user['usertype']) == 'superadmin' ? 'selected' : '' ?>>Superadmin</option>
+                            <?php if (!empty($userRoles)): ?>
+                                <?php foreach ($userRoles as $role): ?>
+                                    <option value="<?= esc($role['role_key']) ?>" <?= old('usertype', $user['usertype']) == $role['role_key'] ? 'selected' : '' ?>>
+                                        <?= esc($role['role_name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </select>
                     </div>
                     <div class="col-12">
