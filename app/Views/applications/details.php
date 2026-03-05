@@ -55,9 +55,11 @@
         .record-item-meta { font-size: 12px; color: #6c757d; margin-top: 4px; }
         .url-hint-invalid { display: none; font-size: 12px; margin-top: 4px; }
         input[type="url"]:not(:placeholder-shown):invalid + .url-hint-invalid { display: block; }
+        .readonly-user .write-action { display: none !important; }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'Application Details']) ?>
 
     <div class="main-content">
@@ -625,7 +627,7 @@
                         <div class="detail-card">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h3 class="mb-0"><i class="bi bi-folder2-open"></i> Related Data</h3>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRelatedDataModal">
+                                <button class="btn btn-primary btn-sm write-action" data-bs-toggle="modal" data-bs-target="#addRelatedDataModal">
                                     <i class="bi bi-plus-circle"></i> Add Related Data
                                 </button>
                             </div>
@@ -644,11 +646,11 @@
                                                 </div>
                                             </div>
                                             <div>
-                                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editRelatedDataModal<?= $item['id'] ?>">
+                                                <button class="btn btn-sm btn-warning write-action" data-bs-toggle="modal" data-bs-target="#editRelatedDataModal<?= $item['id'] ?>">
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
                                                 <a href="<?= site_url('applications/related-data/delete/' . $application['id'] . '/' . $item['id']) ?>"
-                                                   class="btn btn-sm btn-danger"
+                                                   class="btn btn-sm btn-danger write-action"
                                                    onclick="return confirm('Are you sure you want to delete this related data?')">
                                                     <i class="bi bi-trash"></i>
                                                 </a>
@@ -659,7 +661,7 @@
                                         <?php endif; ?>
                                     </div>
 
-                                    <div class="modal fade" id="editRelatedDataModal<?= $item['id'] ?>" tabindex="-1">
+                                    <div class="modal fade write-action" id="editRelatedDataModal<?= $item['id'] ?>" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form action="<?= site_url('applications/related-data/update/' . $application['id'] . '/' . $item['id']) ?>" method="post">
@@ -740,7 +742,7 @@
                         </div>
                         <?php endif; ?>
 
-                        <div class="modal fade" id="addRelatedDataModal" tabindex="-1">
+                        <div class="modal fade write-action" id="addRelatedDataModal" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <form action="<?= site_url('applications/related-data/store/' . $application['id']) ?>" method="post">
@@ -787,7 +789,7 @@
                         <i class="bi bi-gear"></i> Quick Actions
                     </h5>
                     
-                    <a href="<?= site_url('applications/edit/' . $application['id']) ?>" class="btn btn-warning action-btn">
+                    <a href="<?= site_url('applications/edit/' . $application['id']) ?>" class="btn btn-warning action-btn write-action">
                         <i class="bi bi-pencil-square"></i> Edit Application
                     </a>
                     

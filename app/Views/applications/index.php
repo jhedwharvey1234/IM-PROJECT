@@ -47,7 +47,8 @@
         }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'Application Management']) ?>
 
     <div class="main-content">
@@ -63,12 +64,12 @@
             <!-- Action Buttons Group -->
             <div class="d-flex gap-1">
                 <!-- Create Button -->
-                <a href="<?= site_url('applications/create') ?>" class="btn btn-success btn-sm" title="Create" aria-label="Create" data-bs-toggle="tooltip">
+                <a href="<?= site_url('applications/create') ?>" class="btn btn-success btn-sm write-action" title="Create" aria-label="Create" data-bs-toggle="tooltip">
                     <i class="bi bi-plus-circle"></i>
                 </a>
 
                 <!-- Delete Selected Button -->
-                <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip">
+                <button class="btn btn-danger btn-sm write-action" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip">
                     <i class="bi bi-trash"></i>
                 </button>
 
@@ -252,7 +253,7 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th style="width: 50px;">
+                    <th style="width: 50px;" class="write-action">
                         <input type="checkbox" id="selectAll" class="form-check-input" title="Select all applications">
                     </th>
                     <th data-column="app_code">App Code</th>
@@ -273,7 +274,7 @@
             <tbody id="applicationsTable">
                 <?php foreach ($applications as $app): ?>
                     <tr>
-                        <td>
+                        <td class="write-action">
                             <input type="checkbox" class="form-check-input applicationCheckbox" value="<?= $app['id'] ?>" title="Select this application">
                         </td>
                         <td data-column="app_code">
@@ -306,13 +307,17 @@
                         <td data-column="date_updated" style="display: none;"><?= esc($app['date_updated'] ?? 'N/A') ?></td>
                         <td>
                             <a href="<?= site_url('applications/details/' . $app['id']) ?>" class="action-btn action-btn-details" title="View Details" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
-                            <a href="<?= site_url('applications/edit/' . $app['id']) ?>" class="action-btn action-btn-edit" title="Edit Application" data-bs-toggle="tooltip"><i class="bi bi-pencil-square"></i></a>
-                            <a href="<?= site_url('applications/delete/' . $app['id']) ?>" class="action-btn action-btn-delete" onclick="return confirm('Are you sure?')" title="Delete Application" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
+                            <a href="<?= site_url('applications/edit/' . $app['id']) ?>" class="action-btn action-btn-edit write-action" title="Edit Application" data-bs-toggle="tooltip"><i class="bi bi-pencil-square"></i></a>
+                            <a href="<?= site_url('applications/delete/' . $app['id']) ?>" class="action-btn action-btn-delete write-action" onclick="return confirm('Are you sure?')" title="Delete Application" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <style>
+            .readonly-user .write-action { display: none !important; }
+        </style>
 
         <!-- Pagination Controls -->
         <div class="pagination-controls">

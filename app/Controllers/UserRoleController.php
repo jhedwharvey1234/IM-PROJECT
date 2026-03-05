@@ -6,13 +6,13 @@ use App\Models\UserRole;
 
 class UserRoleController extends BaseController
 {
-    private function guard()
+    private function guard(bool $requireFullAccess = true)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
-        if (session()->get('usertype') !== 'superadmin') {
+        if ($requireFullAccess && !$this->hasFullAccessRole()) {
             return redirect()->to('dashboard')->with('error', 'Unauthorized access');
         }
 
@@ -21,7 +21,7 @@ class UserRoleController extends BaseController
 
     public function index()
     {
-        if ($redirect = $this->guard()) {
+        if ($redirect = $this->guard(false)) {
             return $redirect;
         }
 

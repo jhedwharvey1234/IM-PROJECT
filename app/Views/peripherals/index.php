@@ -49,7 +49,8 @@
         }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'Peripherals Management']) ?>
 
     <div class="main-content">
@@ -65,12 +66,12 @@
             <!-- Action Buttons Group -->
             <div class="d-flex gap-1">
                 <!-- Create Button -->
-                <a href="<?= site_url('peripherals/create') ?>" class="btn btn-success btn-sm" title="Create" aria-label="Create" data-bs-toggle="tooltip">
+                <a href="<?= site_url('peripherals/create') ?>" class="btn btn-success btn-sm write-action" title="Create" aria-label="Create" data-bs-toggle="tooltip">
                     <i class="bi bi-plus-circle"></i>
                 </a>
 
                 <!-- Delete Selected Button -->
-                <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip">
+                <button class="btn btn-danger btn-sm write-action" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip">
                     <i class="bi bi-trash"></i>
                 </button>
 
@@ -303,7 +304,7 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th style="width: 50px;">
+                    <th style="width: 50px;" class="write-action">
                         <input type="checkbox" id="selectAll" class="form-check-input" title="Select all peripherals">
                     </th>
                     <th>ID</th>
@@ -338,7 +339,7 @@
             <tbody id="peripheralsTable">
                 <?php foreach ($peripherals as $peripheral): ?>
                     <tr>
-                        <td>
+                        <td class="write-action">
                             <input type="checkbox" class="form-check-input peripheralCheckbox" value="<?= $peripheral['id'] ?>" title="Select this peripheral">
                         </td>
                         <td><?= $peripheral['id'] ?></td>
@@ -407,13 +408,17 @@
                         <td data-column="updated_at" style="display: none;"><?= date('M d, Y h:i A', strtotime($peripheral['updated_at'])) ?></td>
                         <td>
                             <a href="<?= site_url('peripherals/details/' . $peripheral['id']) ?>" class="action-btn action-btn-details" title="View Details" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
-                            <a href="<?= site_url('peripherals/edit/' . $peripheral['id']) ?>" class="action-btn action-btn-edit" title="Edit Peripheral" data-bs-toggle="tooltip"><i class="bi bi-pencil-square"></i></a>
-                            <a href="<?= site_url('peripherals/delete/' . $peripheral['id']) ?>" class="action-btn action-btn-delete" onclick="return confirm('Are you sure?')" title="Delete Peripheral" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
+                            <a href="<?= site_url('peripherals/edit/' . $peripheral['id']) ?>" class="action-btn action-btn-edit write-action" title="Edit Peripheral" data-bs-toggle="tooltip"><i class="bi bi-pencil-square"></i></a>
+                            <a href="<?= site_url('peripherals/delete/' . $peripheral['id']) ?>" class="action-btn action-btn-delete write-action" onclick="return confirm('Are you sure?')" title="Delete Peripheral" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <style>
+            .readonly-user .write-action { display: none !important; }
+        </style>
 
         <!-- Pagination Controls -->
         <div class="pagination-controls">

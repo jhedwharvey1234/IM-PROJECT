@@ -339,11 +339,13 @@ class DcfPublicController extends BaseController
             ];
         }
 
-        $userModel = new User();
-        $user = $userModel
-            ->select('id, usertype')
-            ->where('email', $email)
-            ->first();
+        $db = \Config\Database::connect();
+        $builder = $db->table('users');
+        $builder->select('users.id, users.usertype, users.user_role_id, user_roles.role_key AS added_role_key');
+        $builder->join('user_roles', 'user_roles.id = users.user_role_id', 'left');
+        $builder->where('users.email', $email);
+
+        $user = $builder->get()->getRowArray();
 
         if (!is_array($user)) {
             return [
@@ -352,7 +354,9 @@ class DcfPublicController extends BaseController
             ];
         }
 
-        $role = trim((string) ($user['usertype'] ?? ''));
+        $addedRole = trim((string) ($user['added_role_key'] ?? ''));
+
+        $role = $addedRole;
         return [
             'registered' => true,
             'role_key' => $role !== '' ? $role : null,
@@ -363,15 +367,17 @@ class DcfPublicController extends BaseController
     {
         $db = \Config\Database::connect();
         if (!$db->tableExists('user_roles')) {
-            return [
-                ['role_name' => 'Readonly', 'role_key' => 'readonly'],
-                ['role_name' => 'Read and Write', 'role_key' => 'readandwrite'],
-                ['role_name' => 'Superadmin', 'role_key' => 'superadmin'],
-            ];
+            return [];
         }
 
         $roleModel = new UserRole();
-        return $roleModel->orderBy('role_name', 'ASC')->findAll();
+        $roles = $roleModel->orderBy('role_name', 'ASC')->findAll();
+
+        $excludedRoleKeys = ['readonly', 'readandwrite', 'superadmin'];
+        return array_values(array_filter($roles, static function ($role) use ($excludedRoleKeys) {
+            $roleKey = strtolower(trim((string) ($role['role_key'] ?? '')));
+            return $roleKey !== '' && !in_array($roleKey, $excludedRoleKeys, true);
+        }));
     }
 
     private function isAllowedRoleKey(string $roleKey): bool

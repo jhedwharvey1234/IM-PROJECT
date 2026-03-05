@@ -16,7 +16,8 @@
         .breadcrumb-nav .current { color: #212529; font-weight: 500; }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'DCF Questions']) ?>
 
     <div class="main-content">
@@ -31,7 +32,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Past Created Questions</h5>
-                <a href="<?= site_url('dcf/create') ?>" class="btn btn-sm btn-primary"><i class="bi bi-plus-circle"></i> Create DCF</a>
+                <a href="<?= site_url('dcf/create') ?>" class="btn btn-sm btn-primary write-action"><i class="bi bi-plus-circle"></i> Create DCF</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -69,5 +70,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .readonly-user .write-action { display: none !important; }
+    </style>
 </body>
 </html>

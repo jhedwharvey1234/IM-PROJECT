@@ -65,6 +65,21 @@
                 </div>
             </form>
 
+            <?php
+                $entraEnabled = filter_var((string) (getenv('ENTRA_ENABLED') ?: 'false'), FILTER_VALIDATE_BOOLEAN);
+                $entraTenant = trim((string) (getenv('ENTRA_TENANT_ID') ?: ''));
+                $entraClientId = trim((string) (getenv('ENTRA_CLIENT_ID') ?: ''));
+                $showMicrosoftLogin = $entraEnabled && $entraTenant !== '' && $entraClientId !== '';
+            ?>
+            <?php if ($showMicrosoftLogin): ?>
+                <div class="my-3 text-center text-muted">or</div>
+                <div class="form-actions">
+                    <a class="btn btn-outline-secondary btn-block" href="<?= site_url('auth/entra/login') ?>">
+                        <i class="bi bi-microsoft me-1"></i> Sign in with Microsoft
+                    </a>
+                </div>
+            <?php endif; ?>
+
             <div class="auth-help">
                 <p>Don't have an account? <a href="<?= site_url('register') ?>">Create an account</a></p>
             </div>

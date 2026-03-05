@@ -52,9 +52,11 @@
         @media (max-width: 768px) { .info-grid { grid-template-columns: 1fr; } }
         
         .note-item { background: #f8f9fa; border-left: 4px solid #0d6efd; border-radius: 6px; padding: 16px; margin-bottom: 15px; }
+        .readonly-user .write-action { display: none !important; }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'Peripheral Details']) ?>
 
     <div class="main-content">
@@ -247,7 +249,7 @@
                         <div class="detail-card">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h3 class="mb-0"><i class="bi bi-sticky"></i> Peripheral Notes</h3>
-                                <button class="btn btn-primary btn-sm">
+                                <button class="btn btn-primary btn-sm write-action">
                                     <i class="bi bi-plus-circle"></i> Add Note
                                 </button>
                             </div>
@@ -284,9 +286,9 @@
                     <!-- Actions Section -->
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #0d6efd;">
                         <h6 style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #6c757d; margin-bottom: 15px;"><i class="bi bi-lightning"></i> Quick Actions</h6>
-                        <a href="<?= site_url('peripherals/edit/' . $peripheral['id']) ?>" class="btn btn-warning action-btn" title="Edit this peripheral"><i class="bi bi-pencil-square"></i> Edit Peripheral</a>
-                        <button class="btn btn-primary action-btn" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button" title="Add a note"><i class="bi bi-sticky"></i> Add Note</button>
-                        <a href="<?= site_url('peripherals/delete/' . $peripheral['id']) ?>" class="btn btn-danger action-btn" onclick="return confirm('Are you sure you want to delete this peripheral?')" title="Delete this peripheral"><i class="bi bi-trash"></i> Delete Peripheral</a>
+                        <a href="<?= site_url('peripherals/edit/' . $peripheral['id']) ?>" class="btn btn-warning action-btn write-action" title="Edit this peripheral"><i class="bi bi-pencil-square"></i> Edit Peripheral</a>
+                        <button class="btn btn-primary action-btn write-action" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button" title="Add a note"><i class="bi bi-sticky"></i> Add Note</button>
+                        <a href="<?= site_url('peripherals/delete/' . $peripheral['id']) ?>" class="btn btn-danger action-btn write-action" onclick="return confirm('Are you sure you want to delete this peripheral?')" title="Delete this peripheral"><i class="bi bi-trash"></i> Delete Peripheral</a>
                     </div>
                 </div>
             </div>

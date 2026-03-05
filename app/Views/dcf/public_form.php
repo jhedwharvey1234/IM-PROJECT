@@ -113,7 +113,6 @@
                                     <label class="form-label">Role <span class="required-mark">*</span></label>
                                     <select class="form-select" id="respondentRole" name="respondent_role" required>
                                         <option value="">Select role</option>
-                                        <option value="all">All Roles</option>
                                         <?php foreach (($userRoles ?? []) as $role): ?>
                                             <?php $roleKey = trim((string) ($role['role_key'] ?? '')); ?>
                                             <?php if ($roleKey !== ''): ?>

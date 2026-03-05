@@ -64,9 +64,11 @@
         .back-link { display: inline-flex; align-items: center; margin-bottom: 15px; color: #0d6efd; text-decoration: none; font-weight: 500; }
         .back-link:hover { text-decoration: underline; }
         .back-link i { margin-right: 8px; }
+        .readonly-user .write-action { display: none !important; }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'Asset Details']) ?>
 
     <div class="main-content">
@@ -301,7 +303,7 @@
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            class="btn btn-sm btn-outline-primary"
+                                                            class="btn btn-sm btn-outline-primary write-action"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#editPeripheralModal"
                                                             data-peripheral-id="<?= (int) $peripheral['id'] ?>"
@@ -332,7 +334,7 @@
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            class="btn btn-sm btn-outline-danger"
+                                                            class="btn btn-sm btn-outline-danger write-action"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#deletePeripheralModal"
                                                             data-peripheral-id="<?= (int) $peripheral['id'] ?>"
@@ -375,7 +377,7 @@
                         <div class="detail-card">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h3><i class="bi bi-cpu"></i> Peripherals in this Asset</h3>
-                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addPeripheralModal">
+                                <button class="btn btn-success write-action" data-bs-toggle="modal" data-bs-target="#addPeripheralModal">
                                     <i class="bi bi-plus-circle"></i> Add Peripheral
                                 </button>
                             </div>
@@ -446,7 +448,7 @@
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            class="btn btn-sm btn-outline-primary"
+                                                            class="btn btn-sm btn-outline-primary write-action"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#editPeripheralModal"
                                                             data-peripheral-id="<?= (int) $peripheral['id'] ?>"
@@ -477,7 +479,7 @@
                                                         </button>
                                                         <button
                                                             type="button"
-                                                            class="btn btn-sm btn-outline-danger"
+                                                            class="btn btn-sm btn-outline-danger write-action"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#deletePeripheralModal"
                                                             data-peripheral-id="<?= (int) $peripheral['id'] ?>"
@@ -501,7 +503,7 @@
                         <div class="detail-card">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h3 class="mb-0"><i class="bi bi-sticky"></i> Asset Notes</h3>
-                                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+                                <button class="btn btn-primary btn-sm write-action" data-bs-toggle="modal" data-bs-target="#addNoteModal">
                                     <i class="bi bi-plus-circle"></i> Add Note
                                 </button>
                             </div>
@@ -515,7 +517,7 @@
                                                     <strong style="color: #212529;"><i class="bi bi-person-circle"></i> <?= esc($note['username'] ?? 'Unknown User') ?></strong>
                                                     <small class="text-muted ms-2"><i class="bi bi-calendar-event"></i> <?= date('M d, Y \a\t h:i A', strtotime($note['created_at'])) ?></small>
                                                 </div>
-                                                <?php if ($note['user_id'] == session()->get('user_id') || session()->get('usertype') === 'superadmin'): ?>
+                                                <?php if (!$isReadonlyUser && ($note['user_id'] == session()->get('user_id') || session()->get('usertype') === 'superadmin')): ?>
                                                     <a href="<?= site_url('assets/note/delete/' . $note['id']) ?>" 
                                                        class="btn btn-sm btn-outline-danger" 
                                                        onclick="return confirm('Delete this note?')"
@@ -642,10 +644,10 @@
                     <!-- Actions Section -->
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #0d6efd;">
                         <h6 style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #6c757d; margin-bottom: 15px;"><i class="bi bi-lightning"></i> Quick Actions</h6>
-                        <a href="<?= site_url('assets/edit/' . $asset['id']) ?>" class="btn btn-warning action-btn" title="Edit this asset"><i class="bi bi-pencil-square"></i> Edit Asset</a>
-                        <button id="quickAddPeripheralBtn" class="btn btn-info action-btn" data-bs-toggle="modal" data-bs-target="#addPeripheralModal" type="button" title="Add a new peripheral"><i class="bi bi-plus-square"></i> Add Peripheral</button>
-                        <button class="btn btn-primary action-btn" data-bs-toggle="modal" data-bs-target="#addNoteModal" title="Add a note"><i class="bi bi-sticky"></i> Add Note</button>
-                        <a href="<?= site_url('assets/delete/' . $asset['id']) ?>" class="btn btn-danger action-btn" onclick="return confirm('Are you sure you want to delete this asset?')" title="Delete this asset"><i class="bi bi-trash"></i> Delete Asset</a>
+                        <a href="<?= site_url('assets/edit/' . $asset['id']) ?>" class="btn btn-warning action-btn write-action" title="Edit this asset"><i class="bi bi-pencil-square"></i> Edit Asset</a>
+                        <button id="quickAddPeripheralBtn" class="btn btn-info action-btn write-action" data-bs-toggle="modal" data-bs-target="#addPeripheralModal" type="button" title="Add a new peripheral"><i class="bi bi-plus-square"></i> Add Peripheral</button>
+                        <button class="btn btn-primary action-btn write-action" data-bs-toggle="modal" data-bs-target="#addNoteModal" title="Add a note"><i class="bi bi-sticky"></i> Add Note</button>
+                        <a href="<?= site_url('assets/delete/' . $asset['id']) ?>" class="btn btn-danger action-btn write-action" onclick="return confirm('Are you sure you want to delete this asset?')" title="Delete this asset"><i class="bi bi-trash"></i> Delete Asset</a>
                     </div>
 
                     <!-- Share Asset Public Link -->
@@ -848,7 +850,7 @@
         </div>
 
         <!-- Edit Peripheral Modal -->
-        <div class="modal fade" id="editPeripheralModal" tabindex="-1" aria-labelledby="editPeripheralModalLabel" aria-hidden="true">
+        <div class="modal fade write-action" id="editPeripheralModal" tabindex="-1" aria-labelledby="editPeripheralModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content" style="border: 1px solid #e9ecef; border-top: 4px solid #0d6efd;">
                     <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #e9ecef;">
@@ -1009,7 +1011,7 @@
         </div>
 
         <!-- Delete Peripheral Modal -->
-        <div class="modal fade" id="deletePeripheralModal" tabindex="-1" aria-labelledby="deletePeripheralModalLabel" aria-hidden="true">
+        <div class="modal fade write-action" id="deletePeripheralModal" tabindex="-1" aria-labelledby="deletePeripheralModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content" style="border: 1px solid #e9ecef; border-top: 4px solid #dc3545;">
                     <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #e9ecef;">
@@ -1031,7 +1033,7 @@
         </div>
 
         <!-- Add Peripheral Modal -->
-        <div class="modal fade" id="addPeripheralModal" tabindex="-1" aria-labelledby="addPeripheralModalLabel" aria-hidden="true">
+        <div class="modal fade write-action" id="addPeripheralModal" tabindex="-1" aria-labelledby="addPeripheralModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl">
                 <div class="modal-content" style="border: 1px solid #e9ecef; border-top: 4px solid #198754;">
                     <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #e9ecef;">
@@ -1224,7 +1226,7 @@
         </div>
 
         <!-- Add Note Modal -->
-        <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+        <div class="modal fade write-action" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content" style="border: 1px solid #e9ecef; border-top: 4px solid #0d6efd;">
                     <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #e9ecef;">

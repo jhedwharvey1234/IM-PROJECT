@@ -40,7 +40,8 @@
         }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'DCF Management']) ?>
 
     <div class="main-content">
@@ -52,8 +53,8 @@
 
         <div class="d-flex gap-2 align-items-center mb-3 flex-wrap" style="padding: 10px; border-radius: 5px;">
             <div class="d-flex gap-1">
-                <a href="<?= site_url('dcf/create') ?>" class="btn btn-success btn-sm" title="Create" aria-label="Create" data-bs-toggle="tooltip"><i class="bi bi-plus-circle"></i></a>
-                <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></button>
+                <a href="<?= site_url('dcf/create') ?>" class="btn btn-success btn-sm write-action" title="Create" aria-label="Create" data-bs-toggle="tooltip"><i class="bi bi-plus-circle"></i></a>
+                <button class="btn btn-danger btn-sm write-action" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></button>
                 <button class="btn btn-info btn-sm" id="refreshBtn" title="Refresh" aria-label="Refresh" data-bs-toggle="tooltip"><i class="bi bi-arrow-clockwise"></i></button>
 
                 <div class="dropdown">
@@ -142,7 +143,7 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th style="width: 50px;"><input type="checkbox" id="selectAll" class="form-check-input" title="Select all DCFs"></th>
+                    <th style="width: 50px;" class="write-action"><input type="checkbox" id="selectAll" class="form-check-input" title="Select all DCFs"></th>
                     <th data-column="dcf_id">ID</th>
                     <th data-column="title">Title</th>
                     <th data-column="description">Description</th>
@@ -156,7 +157,7 @@
                 <?php if (!empty($dcfs)): ?>
                     <?php foreach ($dcfs as $dcf): ?>
                         <tr>
-                            <td><input type="checkbox" class="form-check-input dcfCheckbox" value="<?= $dcf['id'] ?>" title="Select this DCF"></td>
+                            <td class="write-action"><input type="checkbox" class="form-check-input dcfCheckbox" value="<?= $dcf['id'] ?>" title="Select this DCF"></td>
                             <td data-column="dcf_id"><?= $dcf['id'] ?></td>
                             <td data-column="title"><?= esc($dcf['title'] ?? 'N/A') ?></td>
                             <td data-column="description"><?= esc($dcf['description'] ?? 'N/A') ?></td>
@@ -165,8 +166,8 @@
                             <td data-column="created_at" style="display: none;"><?= esc($dcf['created_at'] ?? 'N/A') ?></td>
                             <td>
                                 <a href="<?= site_url('dcf/details/' . $dcf['id']) ?>" class="action-btn" style="background-color: #17a2b8;" title="View Details" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
-                                <a href="<?= site_url('dcf/edit/' . $dcf['id']) ?>" class="action-btn action-btn-edit" title="Edit DCF" data-bs-toggle="tooltip"><i class="bi bi-pencil-square"></i></a>
-                                <a href="<?= site_url('dcf/delete/' . $dcf['id']) ?>" class="action-btn action-btn-delete" onclick="return confirm('Are you sure?')" title="Delete DCF" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
+                                <a href="<?= site_url('dcf/edit/' . $dcf['id']) ?>" class="action-btn action-btn-edit write-action" title="Edit DCF" data-bs-toggle="tooltip"><i class="bi bi-pencil-square"></i></a>
+                                <a href="<?= site_url('dcf/delete/' . $dcf['id']) ?>" class="action-btn action-btn-delete write-action" onclick="return confirm('Are you sure?')" title="Delete DCF" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -184,6 +185,10 @@
 
         <?= view('partials/footer') ?>
     </div>
+
+    <style>
+        .readonly-user .write-action { display: none !important; }
+    </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

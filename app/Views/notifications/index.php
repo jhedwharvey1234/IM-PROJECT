@@ -15,7 +15,10 @@ $this->section('content');
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body { display: flex; min-height: 100vh; background-color: #eeeeee; }
+        .sidebar { width: 250px; background-color: #f8f9fa; padding: 20px; position: fixed; height: 100%; top: 56px; left: 0; }
         .main-content { margin-left: 250px; margin-top: 56px; padding: 20px; flex: 1; }
+         .sidebar a { display: block; padding: 10px; text-decoration: none; color: #333; border-bottom: 1px solid #ddd; }
+        .sidebar a:hover { background-color: #e9ecef; }
         .breadcrumb-nav { background-color: #e9ecef; padding: 12px 20px; border-radius: 5px; margin-bottom: 20px; display: flex; align-items: center; font-size: 16px; }
         .breadcrumb-nav a { color: #0d6efd; text-decoration: none; display: flex; align-items: center; }
         .breadcrumb-nav a:hover { text-decoration: underline; }

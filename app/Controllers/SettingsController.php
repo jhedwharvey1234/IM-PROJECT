@@ -14,13 +14,13 @@ use App\Models\DocumentType;
 
 class SettingsController extends BaseController
 {
-    private function ensureSuperadminSettingsAccess()
+    private function ensureSuperadminSettingsAccess(bool $requireFullAccess = true)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
-        if (session()->get('usertype') !== 'superadmin') {
+        if ($requireFullAccess && !$this->hasFullAccessRole()) {
             return redirect()->to('dashboard')->with('error', 'Unauthorized access');
         }
 
@@ -29,12 +29,8 @@ class SettingsController extends BaseController
 
     public function index()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess(false)) {
+            return $redirect;
         }
 
         $data['title'] = 'Settings';
@@ -43,12 +39,8 @@ class SettingsController extends BaseController
 
     public function categories()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess(false)) {
+            return $redirect;
         }
 
         $categoryModel = new Category();
@@ -60,12 +52,8 @@ class SettingsController extends BaseController
 
     public function saveCategory()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $categoryModel = new Category();
@@ -104,12 +92,8 @@ class SettingsController extends BaseController
 
     public function deleteCategory($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $categoryModel = new Category();
@@ -123,7 +107,7 @@ class SettingsController extends BaseController
 
     public function documentCategories()
     {
-        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+        if ($redirect = $this->ensureSuperadminSettingsAccess(false)) {
             return $redirect;
         }
 
@@ -202,7 +186,7 @@ class SettingsController extends BaseController
 
     public function documentTypes()
     {
-        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+        if ($redirect = $this->ensureSuperadminSettingsAccess(false)) {
             return $redirect;
         }
 
@@ -310,12 +294,8 @@ class SettingsController extends BaseController
     // Technologies Management
     public function technologies()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess(false)) {
+            return $redirect;
         }
 
         $technologyModel = new Technology();
@@ -327,12 +307,8 @@ class SettingsController extends BaseController
 
     public function storeTechnology()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $technologyModel = new Technology();
@@ -357,12 +333,8 @@ class SettingsController extends BaseController
 
     public function updateTechnology($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $technologyModel = new Technology();
@@ -387,12 +359,8 @@ class SettingsController extends BaseController
 
     public function deleteTechnology($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $technologyModel = new Technology();
@@ -407,12 +375,8 @@ class SettingsController extends BaseController
     // Application Status Management
     public function applicationStatus()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess(false)) {
+            return $redirect;
         }
 
         $statusModel = new ApplicationStatus();
@@ -424,12 +388,8 @@ class SettingsController extends BaseController
 
     public function storeApplicationStatus()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $statusModel = new ApplicationStatus();
@@ -454,12 +414,8 @@ class SettingsController extends BaseController
 
     public function updateApplicationStatus($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $statusModel = new ApplicationStatus();
@@ -484,12 +440,8 @@ class SettingsController extends BaseController
 
     public function deleteApplicationStatus($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $statusModel = new ApplicationStatus();
@@ -504,12 +456,8 @@ class SettingsController extends BaseController
     // Servers Management
     public function servers()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess(false)) {
+            return $redirect;
         }
 
         $serverModel = new Server();
@@ -521,12 +469,8 @@ class SettingsController extends BaseController
 
     public function storeServer()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $serverModel = new Server();
@@ -616,12 +560,8 @@ class SettingsController extends BaseController
 
     public function updateServer($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $serverModel = new Server();
@@ -665,12 +605,8 @@ class SettingsController extends BaseController
 
     public function deleteServer($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $serverModel = new Server();
@@ -685,12 +621,8 @@ class SettingsController extends BaseController
     // Environments Management
     public function environments()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess(false)) {
+            return $redirect;
         }
 
         $environmentModel = new Environment();
@@ -715,12 +647,8 @@ class SettingsController extends BaseController
 
     public function storeEnvironment()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $environmentModel = new Environment();
@@ -759,12 +687,8 @@ class SettingsController extends BaseController
 
     public function updateEnvironment($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $environmentModel = new Environment();
@@ -803,12 +727,8 @@ class SettingsController extends BaseController
 
     public function deleteEnvironment($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $environmentModel = new Environment();
@@ -823,12 +743,8 @@ class SettingsController extends BaseController
     // Application Contacts Management
     public function applicationContacts()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess(false)) {
+            return $redirect;
         }
 
         $contactModel = new ApplicationContact();
@@ -850,12 +766,8 @@ class SettingsController extends BaseController
 
     public function storeApplicationContact()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $contactModel = new ApplicationContact();
@@ -899,12 +811,8 @@ class SettingsController extends BaseController
 
     public function updateApplicationContact($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $contactModel = new ApplicationContact();
@@ -948,12 +856,8 @@ class SettingsController extends BaseController
 
     public function deleteApplicationContact($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->ensureSuperadminSettingsAccess()) {
+            return $redirect;
         }
 
         $contactModel = new ApplicationContact();

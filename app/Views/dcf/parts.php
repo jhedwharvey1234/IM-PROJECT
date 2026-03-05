@@ -33,7 +33,8 @@
         .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'Parts Management']) ?>
 
     <div class="main-content">
@@ -71,7 +72,7 @@
                 <div><i class="bi bi-inbox"></i></div>
                 <h5>No Parts Found</h5>
                 <p>There are no saved parts yet. Create a DCF with parts to get started.</p>
-                <a href="<?= site_url('dcf/create') ?>" class="btn btn-success btn-sm">Create DCF</a>
+                <a href="<?= site_url('dcf/create') ?>" class="btn btn-success btn-sm write-action">Create DCF</a>
             </div>
         <?php else: ?>
             <div class="table-responsive">
@@ -118,6 +119,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .readonly-user .write-action { display: none !important; }
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Enable tooltips

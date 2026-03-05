@@ -37,6 +37,7 @@
         .text-insight-canvas { position: relative; height: 280px; }
         .question-card-clickable { cursor: pointer; }
         .question-card-clickable:focus-visible { outline: 2px solid #0d6efd; outline-offset: 2px; }
+        .readonly-user .write-action { display: none !important; }
         
         /* WYSIWYG Content Display */
         .wysiwyg-content { line-height: 1.6; font-size: 14px; }
@@ -60,7 +61,8 @@
         .wysiwyg-modal-limited code { white-space: pre-wrap; word-break: break-word; }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'DCF Details']) ?>
 
     <div class="main-content">
@@ -74,7 +76,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3><i class="bi bi-file-earmark-text"></i> <?= esc($dcf['title']) ?></h3>
-            <a href="<?= site_url('dcf/edit/' . $dcf['id']) ?>" class="btn btn-warning btn-sm">
+            <a href="<?= site_url('dcf/edit/' . $dcf['id']) ?>" class="btn btn-warning btn-sm write-action">
                 <i class="bi bi-pencil-square"></i> Edit DCF
             </a>
         </div>

@@ -234,6 +234,7 @@
 
         function buildRoleOptions(selectedRole = 'all', includeInherit = false) {
             const options = [];
+            const excludedRoleKeys = ['readonly', 'readandwrite', 'superadmin'];
 
             if (includeInherit) {
                 const inheritSelected = selectedRole === '' ? 'selected' : '';
@@ -246,7 +247,7 @@
             if (Array.isArray(userRoles)) {
                 userRoles.forEach((role) => {
                     const roleKey = String(role.role_key || '').trim();
-                    if (!roleKey) {
+                    if (!roleKey || excludedRoleKeys.includes(roleKey)) {
                         return;
                     }
 

@@ -89,18 +89,26 @@
                         <input type="password" class="form-control" id="password" name="password">
                     </div>
                     <div class="col-md-6">
-                        <label for="usertype" class="form-label">Usertype <span class="text-danger">*</span></label>
-                        <?php
-                            $defaultRoleKey = '';
-                            if (!empty($userRoles) && is_array($userRoles)) {
-                                $defaultRoleKey = (string) ($userRoles[0]['role_key'] ?? '');
-                            }
-                            $selectedRoleKey = old('usertype', $defaultRoleKey);
-                        ?>
+                        <label for="usertype" class="form-label">Main User Type <span class="text-danger">*</span></label>
+                        <?php $selectedRoleKey = old('usertype', 'readonly'); ?>
                         <select class="form-select" id="usertype" name="usertype">
-                            <?php if (!empty($userRoles)): ?>
-                                <?php foreach ($userRoles as $role): ?>
+                            <?php if (!empty($mainUsertypes)): ?>
+                                <?php foreach ($mainUsertypes as $role): ?>
                                     <option value="<?= esc($role['role_key']) ?>" <?= $selectedRoleKey == $role['role_key'] ? 'selected' : '' ?>>
+                                        <?= esc($role['role_name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="user_role_id" class="form-label">Added Role (Optional)</label>
+                        <?php $selectedAddedRoleId = old('user_role_id', ''); ?>
+                        <select class="form-select" id="user_role_id" name="user_role_id">
+                            <option value="">None</option>
+                            <?php if (!empty($addedUserRoles)): ?>
+                                <?php foreach ($addedUserRoles as $role): ?>
+                                    <option value="<?= (int) $role['id'] ?>" <?= (string) $selectedAddedRoleId === (string) $role['id'] ? 'selected' : '' ?>>
                                         <?= esc($role['role_name']) ?>
                                     </option>
                                 <?php endforeach; ?>
@@ -149,6 +157,7 @@
                     document.getElementById('email').required = true;
                     document.getElementById('password').required = true;
                     document.getElementById('usertype').required = true;
+                    document.getElementById('user_role_id').required = false;
                     // Set non-system field as not required
                     document.getElementById('full_name').required = false;
                 } else {

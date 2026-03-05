@@ -76,6 +76,12 @@
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
 
+                <form action="<?= site_url('users/sync-entra') ?>" method="post" class="d-inline" onsubmit="return confirm('Sync Azure AD users now? This may take a while.');">
+                    <button type="submit" class="btn btn-primary btn-sm" title="Sync Azure AD" aria-label="Sync Azure AD" data-bs-toggle="tooltip">
+                        <i class="bi bi-cloud-arrow-down"></i>
+                    </button>
+                </form>
+
                 <!-- Column Visibility Dropdown -->
                 <div class="dropdown">
                     <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="columnsDropdown" data-bs-toggle="dropdown" title="Columns" aria-label="Columns">
@@ -86,6 +92,17 @@
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="type" checked> Type</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="email" checked> Email</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="usertype" checked> Usertype</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_display_name"> Azure Display Name</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_user_principal_name"> Azure UPN</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_object_id"> Azure Object ID</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_account_enabled"> Azure Account Enabled</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_last_password_change_at"> Azure Last Password Change</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_job_title"> Azure Job Title</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_employee_id"> Azure Employee ID</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_department"> Azure Department</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_manager_display_name"> Azure Manager Name</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_manager_user_principal_name"> Azure Manager UPN</label></li>
+                        <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="entra_manager_mail"> Azure Manager Email</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="assignable" checked> Assignable Status</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="created_at" checked> Created At</label></li>
                         <li><label class="dropdown-item"><input type="checkbox" class="columnToggle" value="updated_at"> Updated At</label></li>
@@ -188,6 +205,58 @@
                                     <option value="readonly">Readonly</option>
                                 </select>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Display Name</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_display_name" placeholder="Azure Display Name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure UPN</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_upn" placeholder="Azure UPN">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Object ID</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_object_id" placeholder="Azure Object ID">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Account Enabled</label>
+                                <select class="form-select form-select-sm advSearchField" id="advSearch_entra_account_enabled">
+                                    <option value="">All</option>
+                                    <option value="enabled">Enabled</option>
+                                    <option value="disabled">Disabled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Last Password Change</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_last_password_change_at" placeholder="e.g. 2026-03 or Mar 2026">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Job Title</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_job_title" placeholder="Azure Job Title">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Employee ID</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_employee_id" placeholder="Azure Employee ID">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Department</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_department" placeholder="Azure Department">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Manager Name</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_manager_display_name" placeholder="Azure Manager Name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Manager UPN</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_manager_upn" placeholder="Azure Manager UPN">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Manager Email</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_manager_mail" placeholder="Azure Manager Email">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Azure Email</label>
+                                <input type="text" class="form-control form-control-sm advSearchField" id="advSearch_entra_mail" placeholder="Azure Email">
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -232,6 +301,17 @@
                     <th data-column="type">Type</th>
                     <th data-column="email">Email</th>
                     <th data-column="usertype">Usertype</th>
+                    <th data-column="entra_display_name" style="display: none;">Azure Display Name</th>
+                    <th data-column="entra_user_principal_name" style="display: none;">Azure UPN</th>
+                    <th data-column="entra_object_id" style="display: none;">Azure Object ID</th>
+                    <th data-column="entra_account_enabled" style="display: none;">Azure Account Enabled</th>
+                    <th data-column="entra_last_password_change_at" style="display: none;">Azure Last Password Change</th>
+                    <th data-column="entra_job_title" style="display: none;">Azure Job Title</th>
+                    <th data-column="entra_employee_id" style="display: none;">Azure Employee ID</th>
+                    <th data-column="entra_department" style="display: none;">Azure Department</th>
+                    <th data-column="entra_manager_display_name" style="display: none;">Azure Manager Name</th>
+                    <th data-column="entra_manager_user_principal_name" style="display: none;">Azure Manager UPN</th>
+                    <th data-column="entra_manager_mail" style="display: none;">Azure Manager Email</th>
                     <th data-column="assignable">Assignable</th>
                     <th data-column="created_at">Created At</th>
                     <th data-column="updated_at" style="display: none;">Updated At</th>
@@ -264,10 +344,36 @@
                                 <span class="status-badge status-<?= $user['usertype'] ?>">
                                     <?= ucfirst($user['usertype']) ?>
                                 </span>
+                                <?php if (!empty($user['added_role_name'])): ?>
+                                    <div class="mt-1">
+                                        <span class="badge bg-secondary">Added: <?= esc($user['added_role_name']) ?></span>
+                                    </div>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <span class="text-muted">—</span>
                             <?php endif; ?>
                         </td>
+                        <td data-column="entra_display_name" style="display: none;"><?= !empty($user['entra_display_name']) ? esc($user['entra_display_name']) : '<span class="text-muted">—</span>' ?></td>
+                        <td data-column="entra_user_principal_name" style="display: none;"><?= !empty($user['entra_user_principal_name']) ? esc($user['entra_user_principal_name']) : '<span class="text-muted">—</span>' ?></td>
+                        <td data-column="entra_object_id" style="display: none;"><?= !empty($user['entra_object_id']) ? esc($user['entra_object_id']) : '<span class="text-muted">—</span>' ?></td>
+                        <td data-column="entra_account_enabled" style="display: none;">
+                            <?php if (array_key_exists('entra_account_enabled', $user) && $user['entra_account_enabled'] !== null): ?>
+                                <?php if ((string) $user['entra_account_enabled'] === '1'): ?>
+                                    <span class="badge bg-success">Enabled</span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger">Disabled</span>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span class="text-muted">—</span>
+                            <?php endif; ?>
+                        </td>
+                        <td data-column="entra_last_password_change_at" style="display: none;"><?= !empty($user['entra_last_password_change_at']) ? date('M d, Y h:i A', strtotime($user['entra_last_password_change_at'])) : '<span class="text-muted">—</span>' ?></td>
+                        <td data-column="entra_job_title" style="display: none;"><?= !empty($user['entra_job_title']) ? esc($user['entra_job_title']) : '<span class="text-muted">—</span>' ?></td>
+                        <td data-column="entra_employee_id" style="display: none;"><?= !empty($user['entra_employee_id']) ? esc($user['entra_employee_id']) : '<span class="text-muted">—</span>' ?></td>
+                        <td data-column="entra_department" style="display: none;"><?= !empty($user['entra_department']) ? esc($user['entra_department']) : '<span class="text-muted">—</span>' ?></td>
+                        <td data-column="entra_manager_display_name" style="display: none;"><?= !empty($user['entra_manager_display_name']) ? esc($user['entra_manager_display_name']) : '<span class="text-muted">—</span>' ?></td>
+                        <td data-column="entra_manager_user_principal_name" style="display: none;"><?= !empty($user['entra_manager_user_principal_name']) ? esc($user['entra_manager_user_principal_name']) : '<span class="text-muted">—</span>' ?></td>
+                        <td data-column="entra_manager_mail" style="display: none;"><?= !empty($user['entra_manager_mail']) ? esc($user['entra_manager_mail']) : '<span class="text-muted">—</span>' ?></td>
                         <td data-column="assignable">
                             <?php if ($user['is_system_user']): ?>
                                 <button class="btn btn-sm <?= $user['is_assignable'] ? 'btn-success' : 'btn-outline-secondary' ?> sync-toggle-btn" 
@@ -388,6 +494,9 @@
                 usertypeFilter.value = '';
                 typeFilter.value = '';
                 assignableCheckbox.checked = false;
+                document.querySelectorAll('.advSearchField').forEach(field => {
+                    field.value = '';
+                });
                 filterUsers();
             });
 
@@ -480,14 +589,75 @@
                 const typeValue = typeFilter.value.toLowerCase();
                 const assignableOnly = assignableCheckbox.checked;
 
+                const advUsername = (document.getElementById('advSearch_username')?.value || '').toLowerCase();
+                const advEmail = (document.getElementById('advSearch_email')?.value || '').toLowerCase();
+                const advUsertype = (document.getElementById('advSearch_usertype')?.value || '').toLowerCase();
+                const advEntraDisplayName = (document.getElementById('advSearch_entra_display_name')?.value || '').toLowerCase();
+                const advEntraUpn = (document.getElementById('advSearch_entra_upn')?.value || '').toLowerCase();
+                const advEntraObjectId = (document.getElementById('advSearch_entra_object_id')?.value || '').toLowerCase();
+                const advEntraAccountEnabled = (document.getElementById('advSearch_entra_account_enabled')?.value || '').toLowerCase();
+                const advEntraLastPasswordChange = (document.getElementById('advSearch_entra_last_password_change_at')?.value || '').toLowerCase();
+                const advEntraJobTitle = (document.getElementById('advSearch_entra_job_title')?.value || '').toLowerCase();
+                const advEntraEmployeeId = (document.getElementById('advSearch_entra_employee_id')?.value || '').toLowerCase();
+                const advEntraDepartment = (document.getElementById('advSearch_entra_department')?.value || '').toLowerCase();
+                const advEntraManagerDisplayName = (document.getElementById('advSearch_entra_manager_display_name')?.value || '').toLowerCase();
+                const advEntraManagerUpn = (document.getElementById('advSearch_entra_manager_upn')?.value || '').toLowerCase();
+                const advEntraManagerMail = (document.getElementById('advSearch_entra_manager_mail')?.value || '').toLowerCase();
+                const advEntraMail = (document.getElementById('advSearch_entra_mail')?.value || '').toLowerCase();
+
                 filteredUsers = allUsers.filter(user => {
+                    const username = (user.username || '').toLowerCase();
+                    const email = (user.email || '').toLowerCase();
+                    const usertype = (user.usertype || '').toLowerCase();
+                    const entraDisplayName = (user.entra_display_name || '').toLowerCase();
+                    const entraUpn = (user.entra_user_principal_name || '').toLowerCase();
+                    const entraObjectId = (user.entra_object_id || '').toLowerCase();
+                    const entraAccountEnabledRaw = user.entra_account_enabled;
+                    const entraAccountEnabled = (entraAccountEnabledRaw === 1 || entraAccountEnabledRaw === '1' || entraAccountEnabledRaw === true) ? 'enabled' : ((entraAccountEnabledRaw === 0 || entraAccountEnabledRaw === '0' || entraAccountEnabledRaw === false) ? 'disabled' : '');
+                    const entraLastPasswordChange = (user.entra_last_password_change_at || '').toLowerCase();
+                    const entraJobTitle = (user.entra_job_title || '').toLowerCase();
+                    const entraEmployeeId = (user.entra_employee_id || '').toLowerCase();
+                    const entraDepartment = (user.entra_department || '').toLowerCase();
+                    const entraManagerDisplayName = (user.entra_manager_display_name || '').toLowerCase();
+                    const entraManagerUpn = (user.entra_manager_user_principal_name || '').toLowerCase();
+                    const entraManagerMail = (user.entra_manager_mail || '').toLowerCase();
+                    const entraMail = (user.entra_mail || '').toLowerCase();
+
                     const matchSearch = !searchTerm || 
                         user.display_name.toLowerCase().includes(searchTerm) ||
-                        (user.username && user.username.toLowerCase().includes(searchTerm)) ||
-                        (user.email && user.email.toLowerCase().includes(searchTerm)) ||
-                        (user.usertype && user.usertype.toLowerCase().includes(searchTerm));
+                        username.includes(searchTerm) ||
+                        email.includes(searchTerm) ||
+                        usertype.includes(searchTerm) ||
+                        entraDisplayName.includes(searchTerm) ||
+                        entraUpn.includes(searchTerm) ||
+                        entraObjectId.includes(searchTerm) ||
+                        entraAccountEnabled.includes(searchTerm) ||
+                        entraLastPasswordChange.includes(searchTerm) ||
+                        entraJobTitle.includes(searchTerm) ||
+                        entraEmployeeId.includes(searchTerm) ||
+                        entraDepartment.includes(searchTerm) ||
+                        entraManagerDisplayName.includes(searchTerm) ||
+                        entraManagerUpn.includes(searchTerm) ||
+                        entraManagerMail.includes(searchTerm) ||
+                        entraMail.includes(searchTerm);
 
-                    const matchUsertype = !usertypeValue || (user.usertype && user.usertype.toLowerCase() === usertypeValue);
+                    const matchUsertype = !usertypeValue || usertype === usertypeValue;
+
+                    const matchAdvUsername = !advUsername || username.includes(advUsername);
+                    const matchAdvEmail = !advEmail || email.includes(advEmail);
+                    const matchAdvUsertype = !advUsertype || usertype === advUsertype;
+                    const matchAdvEntraDisplayName = !advEntraDisplayName || entraDisplayName.includes(advEntraDisplayName);
+                    const matchAdvEntraUpn = !advEntraUpn || entraUpn.includes(advEntraUpn);
+                    const matchAdvEntraObjectId = !advEntraObjectId || entraObjectId.includes(advEntraObjectId);
+                    const matchAdvEntraAccountEnabled = !advEntraAccountEnabled || entraAccountEnabled === advEntraAccountEnabled;
+                    const matchAdvEntraLastPasswordChange = !advEntraLastPasswordChange || entraLastPasswordChange.includes(advEntraLastPasswordChange);
+                    const matchAdvEntraJobTitle = !advEntraJobTitle || entraJobTitle.includes(advEntraJobTitle);
+                    const matchAdvEntraEmployeeId = !advEntraEmployeeId || entraEmployeeId.includes(advEntraEmployeeId);
+                    const matchAdvEntraDepartment = !advEntraDepartment || entraDepartment.includes(advEntraDepartment);
+                    const matchAdvEntraManagerDisplayName = !advEntraManagerDisplayName || entraManagerDisplayName.includes(advEntraManagerDisplayName);
+                    const matchAdvEntraManagerUpn = !advEntraManagerUpn || entraManagerUpn.includes(advEntraManagerUpn);
+                    const matchAdvEntraManagerMail = !advEntraManagerMail || entraManagerMail.includes(advEntraManagerMail);
+                    const matchAdvEntraMail = !advEntraMail || entraMail.includes(advEntraMail);
                     
                     const matchType = !typeValue || 
                         (typeValue === 'system' && user.is_system_user) ||
@@ -495,7 +665,25 @@
                     
                     const matchAssignable = !assignableOnly || user.is_assignable;
 
-                    return matchSearch && matchUsertype && matchType && matchAssignable;
+                    return matchSearch
+                        && matchUsertype
+                        && matchAdvUsername
+                        && matchAdvEmail
+                        && matchAdvUsertype
+                        && matchAdvEntraDisplayName
+                        && matchAdvEntraUpn
+                        && matchAdvEntraObjectId
+                        && matchAdvEntraAccountEnabled
+                        && matchAdvEntraLastPasswordChange
+                        && matchAdvEntraJobTitle
+                        && matchAdvEntraEmployeeId
+                        && matchAdvEntraDepartment
+                        && matchAdvEntraManagerDisplayName
+                        && matchAdvEntraManagerUpn
+                        && matchAdvEntraManagerMail
+                        && matchAdvEntraMail
+                        && matchType
+                        && matchAssignable;
                 });
 
                 currentPage = 1;
@@ -524,7 +712,7 @@
                 tableBody.innerHTML = '';
 
                 if (pageUsers.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="10" class="text-center text-muted">No results found</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="21" class="text-center text-muted">No results found</td></tr>`;
                 } else {
                     pageUsers.forEach(user => {
                         const isSystemUser = user.is_system_user || false;
@@ -538,7 +726,29 @@
                             : '<span class="badge bg-info" title="Assignable user without system access"><i class="bi bi-person-badge"></i> Assignable Only</span>';
                         
                         const emailHtml = user.email ? escapeHtml(user.email) : '<span class="text-muted">—</span>';
-                        const usertypeHtml = user.usertype ? `<span class="status-badge status-${user.usertype}">${formatUsertype(user.usertype)}</span>` : '<span class="text-muted">—</span>';
+                        const entraDisplayNameHtml = user.entra_display_name ? escapeHtml(user.entra_display_name) : '<span class="text-muted">—</span>';
+                        const entraUpnHtml = user.entra_user_principal_name ? escapeHtml(user.entra_user_principal_name) : '<span class="text-muted">—</span>';
+                        const entraObjectIdHtml = user.entra_object_id ? escapeHtml(user.entra_object_id) : '<span class="text-muted">—</span>';
+                        const entraAccountEnabledHtml = (user.entra_account_enabled === 1 || user.entra_account_enabled === '1' || user.entra_account_enabled === true)
+                            ? '<span class="badge bg-success">Enabled</span>'
+                            : ((user.entra_account_enabled === 0 || user.entra_account_enabled === '0' || user.entra_account_enabled === false)
+                                ? '<span class="badge bg-danger">Disabled</span>'
+                                : '<span class="text-muted">—</span>');
+                        const entraLastPasswordChangeHtml = user.entra_last_password_change_at
+                            ? new Date(user.entra_last_password_change_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+                            : '<span class="text-muted">—</span>';
+                        const entraJobTitleHtml = user.entra_job_title ? escapeHtml(user.entra_job_title) : '<span class="text-muted">—</span>';
+                        const entraEmployeeIdHtml = user.entra_employee_id ? escapeHtml(user.entra_employee_id) : '<span class="text-muted">—</span>';
+                        const entraDepartmentHtml = user.entra_department ? escapeHtml(user.entra_department) : '<span class="text-muted">—</span>';
+                        const entraManagerDisplayNameHtml = user.entra_manager_display_name ? escapeHtml(user.entra_manager_display_name) : '<span class="text-muted">—</span>';
+                        const entraManagerUpnHtml = user.entra_manager_user_principal_name ? escapeHtml(user.entra_manager_user_principal_name) : '<span class="text-muted">—</span>';
+                        const entraManagerMailHtml = user.entra_manager_mail ? escapeHtml(user.entra_manager_mail) : '<span class="text-muted">—</span>';
+                        const addedRoleHtml = user.added_role_name
+                            ? `<div class="mt-1"><span class="badge bg-secondary">Added: ${escapeHtml(user.added_role_name)}</span></div>`
+                            : '';
+                        const usertypeHtml = user.usertype
+                            ? `<span class="status-badge status-${user.usertype}">${formatUsertype(user.usertype)}</span>${addedRoleHtml}`
+                            : '<span class="text-muted">—</span>';
                         
                         const assignableHtml = isSystemUser
                             ? `<button class="btn btn-sm ${isSynced ? 'btn-success' : 'btn-outline-secondary'} sync-toggle-btn" 
@@ -567,6 +777,17 @@
                                 <td data-column="type">${typeHtml}</td>
                                 <td data-column="email">${emailHtml}</td>
                                 <td data-column="usertype">${usertypeHtml}</td>
+                                <td data-column="entra_display_name" style="display: none;">${entraDisplayNameHtml}</td>
+                                <td data-column="entra_user_principal_name" style="display: none;">${entraUpnHtml}</td>
+                                <td data-column="entra_object_id" style="display: none;">${entraObjectIdHtml}</td>
+                                <td data-column="entra_account_enabled" style="display: none;">${entraAccountEnabledHtml}</td>
+                                <td data-column="entra_last_password_change_at" style="display: none;">${entraLastPasswordChangeHtml}</td>
+                                <td data-column="entra_job_title" style="display: none;">${entraJobTitleHtml}</td>
+                                <td data-column="entra_employee_id" style="display: none;">${entraEmployeeIdHtml}</td>
+                                <td data-column="entra_department" style="display: none;">${entraDepartmentHtml}</td>
+                                <td data-column="entra_manager_display_name" style="display: none;">${entraManagerDisplayNameHtml}</td>
+                                <td data-column="entra_manager_user_principal_name" style="display: none;">${entraManagerUpnHtml}</td>
+                                <td data-column="entra_manager_mail" style="display: none;">${entraManagerMailHtml}</td>
                                 <td data-column="assignable">${assignableHtml}</td>
                                 <td data-column="created_at">${new Date(user.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</td>
                                 ${updatedAtCell}

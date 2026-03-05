@@ -1,0 +1,125 @@
+[Thu 03/05/2026 11:52:34.36] Starting Entra user sync... 
+
+CodeIgniter v4.6.4 Command Line Tool - Server Time: 2026-03-05 11:52:43 UTC+08:00
+
+^C[Thu 03/05/2026 11:54:17.76] Starting Entra user sync... 
+
+CodeIgniter v4.6.4 Command Line Tool - Server Time: 2026-03-05 11:54:17 UTC+08:00
+
+Entra sync completed.
+Fetched : 7305
+Created : 1
+Updated : 2
+Skipped : 7302
+Failed  : 0
+[Thu 03/05/2026 11:54:51.86] Finished Entra user sync. ExitCode=0 
+ 
+[Thu 03/05/2026 11:55:57.92] Starting Entra user sync... 
+
+CodeIgniter v4.6.4 Command Line Tool - Server Time: 2026-03-05 11:55:58 UTC+08:00
+
+Entra sync completed.
+Fetched : 7305
+Created : 0
+Updated : 0
+Skipped : 7305
+Failed  : 0
+[Thu 03/05/2026 11:56:34.20] Finished Entra user sync. ExitCode=0 
+ 
+[Thu 03/05/2026 12:20:12.06] Starting Entra user sync... 
+^C[Thu 03/05/2026 12:50:08.20] Starting Entra user sync... 
+
+CodeIgniter v4.6.4 Command Line Tool - Server Time: 2026-03-05 12:50:17 UTC+08:00
+
+Entra sync completed.
+Fetched : 7305
+Created : 0
+Updated : 0
+Skipped : 7305
+Failed  : 0
+[Thu 03/05/2026 12:50:54.73] Finished Entra user sync. ExitCode=0 
+ 
+[Thu 03/05/2026 13:20:02.65] Starting Entra user sync... 
+
+CodeIgniter v4.6.4 Command Line Tool - Server Time: 2026-03-05 13:20:04 UTC+08:00
+
+Entra sync completed.
+Fetched : 7305
+Created : 0
+Updated : 0
+Skipped : 5104
+Failed  : 2201
+
+Errors (first 20):
+- 3435a4a6-8cbe-4628-b5e2-cacae395a08e: Unknown column 'entra_manager_object_id' in 'field list'
+- 01934962-8718-43f1-a26a-8e06b883ef75: Unknown column 'entra_manager_object_id' in 'field list'
+- 91b35b46-00c7-4d21-ac7d-b028e6ed6f36: Unknown column 'entra_manager_object_id' in 'field list'
+- 1b69525b-3eae-494d-861f-1614d85aa68d: Unknown column 'entra_manager_object_id' in 'field list'
+- 74bfee44-0ee1-484e-b732-b5caf1f8ee10: Unknown column 'entra_manager_object_id' in 'field list'
+- 440cfba6-f4f4-4d5e-bdfa-a9fadc603557: Unknown column 'entra_manager_object_id' in 'field list'
+- d69296d8-5639-4662-8ebd-73a35e785456: Unknown column 'entra_manager_object_id' in 'field list'
+- 9852c533-42e6-486a-9c70-4644c8ab37a5: Unknown column 'entra_manager_object_id' in 'field list'
+- c536a37e-b15e-42a6-a1b6-aca783603120: Unknown column 'entra_manager_object_id' in 'field list'
+- 999f79d5-d66a-4ddb-a4a6-6f4eb3535388: Unknown column 'entra_manager_object_id' in 'field list'
+- ba473e02-7277-46a2-8002-a8b1eb530b7f: Unknown column 'entra_manager_object_id' in 'field list'
+- b61bb992-2744-4c15-be29-419a1c05ec49: Unknown column 'entra_manager_object_id' in 'field list'
+- c098c6e0-750d-4038-a47e-be10fd083c55: Unknown column 'entra_manager_object_id' in 'field list'
+- 172cc668-a5c8-4eed-bd59-9fc6f4e66e5c: Unknown column 'entra_manager_object_id' in 'field list'
+- 6428c3dc-4087-4fae-aeae-1d19938e9397: Unknown column 'entra_manager_object_id' in 'field list'
+- f824412d-ee92-4856-8546-d28e660dffc7: Unknown column 'entra_manager_object_id' in 'field list'
+- eb7323b4-39ce-494c-b250-47fc18032541: Unknown column 'entra_manager_object_id' in 'field list'
+- 4d807afa-d2b8-4705-a9be-91994071b224: Unknown column 'entra_manager_object_id' in 'field list'
+- d5ead6fb-8edb-46a6-8e27-13bdd7e8ab8d: Unknown column 'entra_manager_object_id' in 'field list'
+- 0defaf29-527b-46a3-9343-a9df7da77990: Unknown column 'entra_manager_object_id' in 'field list'
+[Thu 03/05/2026 13:29:13.84] Finished Entra user sync. ExitCode=0 
+ 
+[Thu 03/05/2026 13:50:02.47] Starting Entra user sync... 
+
+CodeIgniter v4.6.4 Command Line Tool - Server Time: 2026-03-05 13:50:03 UTC+08:00
+
+Entra sync completed.
+Fetched : 7305
+Created : 0
+Updated : 0
+Skipped : 5104
+Failed  : 2201
+
+Errors (first 20):
+- 3435a4a6-8cbe-4628-b5e2-cacae395a08e: Unknown column 'entra_manager_object_id' in 'field list'
+- 01934962-8718-43f1-a26a-8e06b883ef75: Unknown column 'entra_manager_object_id' in 'field list'
+- 91b35b46-00c7-4d21-ac7d-b028e6ed6f36: Unknown column 'entra_manager_object_id' in 'field list'
+- 1b69525b-3eae-494d-861f-1614d85aa68d: Unknown column 'entra_manager_object_id' in 'field list'
+- 74bfee44-0ee1-484e-b732-b5caf1f8ee10: Unknown column 'entra_manager_object_id' in 'field list'
+- 440cfba6-f4f4-4d5e-bdfa-a9fadc603557: Unknown column 'entra_manager_object_id' in 'field list'
+- d69296d8-5639-4662-8ebd-73a35e785456: Unknown column 'entra_manager_object_id' in 'field list'
+- 9852c533-42e6-486a-9c70-4644c8ab37a5: Unknown column 'entra_manager_object_id' in 'field list'
+- c536a37e-b15e-42a6-a1b6-aca783603120: Unknown column 'entra_manager_object_id' in 'field list'
+- 999f79d5-d66a-4ddb-a4a6-6f4eb3535388: Unknown column 'entra_manager_object_id' in 'field list'
+- ba473e02-7277-46a2-8002-a8b1eb530b7f: Unknown column 'entra_manager_object_id' in 'field list'
+- b61bb992-2744-4c15-be29-419a1c05ec49: Unknown column 'entra_manager_object_id' in 'field list'
+- c098c6e0-750d-4038-a47e-be10fd083c55: Unknown column 'entra_manager_object_id' in 'field list'
+- 172cc668-a5c8-4eed-bd59-9fc6f4e66e5c: Unknown column 'entra_manager_object_id' in 'field list'
+- 6428c3dc-4087-4fae-aeae-1d19938e9397: Unknown column 'entra_manager_object_id' in 'field list'
+- f824412d-ee92-4856-8546-d28e660dffc7: Unknown column 'entra_manager_object_id' in 'field list'
+- eb7323b4-39ce-494c-b250-47fc18032541: Unknown column 'entra_manager_object_id' in 'field list'
+- 4d807afa-d2b8-4705-a9be-91994071b224: Unknown column 'entra_manager_object_id' in 'field list'
+- d5ead6fb-8edb-46a6-8e27-13bdd7e8ab8d: Unknown column 'entra_manager_object_id' in 'field list'
+- 0defaf29-527b-46a3-9343-a9df7da77990: Unknown column 'entra_manager_object_id' in 'field list'
+[Thu 03/05/2026 13:59:16.77] Finished Entra user sync. ExitCode=0 
+ 
+[Thu 03/05/2026 14:20:02.73] Starting Entra user sync... 
+
+CodeIgniter v4.6.4 Command Line Tool - Server Time: 2026-03-05 14:20:04 UTC+08:00
+
+^C[Thu 03/05/2026 14:22:57.92] Starting Entra user sync... 
+
+CodeIgniter v4.6.4 Command Line Tool - Server Time: 2026-03-05 14:22:58 UTC+08:00
+
+Entra sync completed.
+Fetched : 7305
+Created : 0
+Updated : 1763
+Skipped : 5542
+Failed  : 0
+[Thu 03/05/2026 14:39:05.95] Finished Entra user sync. ExitCode=0 
+ 

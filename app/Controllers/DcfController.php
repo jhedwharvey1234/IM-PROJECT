@@ -17,12 +17,8 @@ class DcfController extends BaseController
 
     public function index()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
         $dcfModel = new Dcf();
@@ -41,12 +37,8 @@ class DcfController extends BaseController
 
     public function create()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $departmentModel = new Department();
@@ -59,12 +51,8 @@ class DcfController extends BaseController
 
     public function store()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $dcfModel = new Dcf();
@@ -146,12 +134,8 @@ class DcfController extends BaseController
 
     public function edit($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $dcfModel = new Dcf();
@@ -176,12 +160,8 @@ class DcfController extends BaseController
 
     public function update($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $dcfModel = new Dcf();
@@ -254,12 +234,8 @@ class DcfController extends BaseController
 
     public function delete($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $dcfModel = new Dcf();
@@ -273,12 +249,8 @@ class DcfController extends BaseController
 
     public function questions()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
         $questionModel = new DcfQuestion();
@@ -300,7 +272,7 @@ class DcfController extends BaseController
             return $this->response->setStatusCode(401)->setJSON(['success' => false, 'message' => 'Unauthorized']);
         }
 
-        if (session()->get('usertype') !== 'superadmin') {
+        if (!$this->hasFullAccessRole()) {
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Forbidden']);
         }
 
@@ -336,12 +308,8 @@ class DcfController extends BaseController
 
     public function details($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
         $dcfModel = new Dcf();
@@ -487,12 +455,19 @@ class DcfController extends BaseController
 
     private function getRoleFilterOptions(): array
     {
+        $excludedRoleKeys = ['readonly', 'readandwrite', 'superadmin'];
+
+        $roles = array_filter($this->getAvailableRoles(), static function ($role) use ($excludedRoleKeys) {
+            $roleKey = strtolower(trim((string) ($role['role_key'] ?? '')));
+            return $roleKey !== '' && !in_array($roleKey, $excludedRoleKeys, true);
+        });
+
         return array_map(static function ($role) {
             return [
                 'role_key' => (string) ($role['role_key'] ?? ''),
                 'role_name' => (string) ($role['role_name'] ?? ($role['role_key'] ?? '')),
             ];
-        }, $this->getAvailableRoles());
+        }, array_values($roles));
     }
 
     private function generateAnswerSummary($question, $answers)
@@ -985,12 +960,8 @@ class DcfController extends BaseController
 
     public function parts()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
         $partModel = new DcfPart();
@@ -1019,7 +990,7 @@ class DcfController extends BaseController
             return $this->response->setStatusCode(401)->setJSON(['success' => false, 'message' => 'Unauthorized']);
         }
 
-        if (session()->get('usertype') !== 'superadmin') {
+        if (!$this->hasFullAccessRole()) {
             return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => 'Forbidden']);
         }
 

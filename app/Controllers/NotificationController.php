@@ -15,7 +15,7 @@ class NotificationController extends BaseController
 
     public function index()
     {
-        if ($redirect = $this->ensureSuperadmin()) {
+        if ($redirect = $this->requireAuthenticated()) {
             return $redirect;
         }
 
@@ -38,14 +38,6 @@ class NotificationController extends BaseController
 
     private function ensureSuperadmin()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
-        }
-
-        return null;
+        return $this->requireFullAccess();
     }
 }

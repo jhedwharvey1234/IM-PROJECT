@@ -61,6 +61,9 @@
                 <button class="nav-link active" id="tab-profile-btn" data-bs-toggle="tab" data-bs-target="#tab-profile" type="button" role="tab" aria-controls="tab-profile" aria-selected="true"><i class="bi bi-person"></i> Profile</button>
             </li>
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-azure-btn" data-bs-toggle="tab" data-bs-target="#tab-azure" type="button" role="tab" aria-controls="tab-azure" aria-selected="false"><i class="bi bi-microsoft"></i> Azure AD</button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="tab-assets-btn" data-bs-toggle="tab" data-bs-target="#tab-assets" type="button" role="tab" aria-controls="tab-assets" aria-selected="false"><i class="bi bi-box-seam"></i> Assets</button>
             </li>
             <li class="nav-item" role="presentation">
@@ -105,7 +108,7 @@
                             <?php if (!empty($profile['email'])): ?>
                                 <div class="detail-row">
                                     <span class="detail-label"><i class="bi bi-envelope"></i> Email</span>
-                                    <span class="detail-value"><?= esc($profile['email']) ?></span>
+                                    <span class="detail-value\"><?= esc($profile['email']) ?></span>
                                 </div>
                             <?php endif; ?>
                             <?php if (!empty($profile['usertype'])): ?>
@@ -115,6 +118,14 @@
                                         <span class="status-badge status-<?= esc($profile['usertype']) ?>">
                                             <?= esc(ucfirst($profile['usertype'])) ?>
                                         </span>
+                                    </span>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!empty($profile['added_role_name'])): ?>
+                                <div class="detail-row">
+                                    <span class="detail-label"><i class="bi bi-person-badge"></i> Added Role</span>
+                                    <span class="detail-value">
+                                        <span class="badge bg-secondary"><?= esc($profile['added_role_name']) ?></span>
                                     </span>
                                 </div>
                             <?php endif; ?>
@@ -132,6 +143,120 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="tab-azure" role="tabpanel" aria-labelledby="tab-azure-btn">
+                <div class="detail-card">
+                    <h3><i class="bi bi-microsoft"></i> Azure AD Details</h3>
+                    <?php if (!empty($profile['entra_object_id']) || !empty($profile['entra_display_name']) || !empty($profile['entra_user_principal_name']) || (($profile['entra_account_enabled'] ?? null) !== null && ($profile['entra_account_enabled'] ?? '') !== '') || !empty($profile['entra_last_password_change_at']) || !empty($profile['entra_user_type']) || !empty($profile['entra_given_name']) || !empty($profile['entra_surname']) || !empty($profile['entra_job_title']) || !empty($profile['entra_company_name']) || !empty($profile['entra_department']) || !empty($profile['entra_employee_id']) || !empty($profile['entra_office_location']) || !empty($profile['entra_city']) || !empty($profile['entra_state']) || !empty($profile['entra_postal_code']) || !empty($profile['entra_country']) || !empty($profile['entra_mobile_phone']) || !empty($profile['entra_mail']) || !empty($profile['entra_identities']) || !empty($profile['entra_business_phones']) || !empty($profile['entra_manager_object_id']) || !empty($profile['entra_manager_display_name']) || !empty($profile['entra_manager_user_principal_name']) || !empty($profile['entra_manager_mail'])): ?>
+                        <div class="info-grid">
+                            <div>
+                                <?php if (!empty($profile['entra_display_name'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Display Name</span><span class="detail-value"><?= esc($profile['entra_display_name']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_given_name'])): ?>
+                                    <div class="detail-row"><span class="detail-label">First Name</span><span class="detail-value"><?= esc($profile['entra_given_name']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_surname'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Last Name</span><span class="detail-value"><?= esc($profile['entra_surname']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_user_principal_name'])): ?>
+                                    <div class="detail-row"><span class="detail-label">User Principal Name</span><span class="detail-value"><?= esc($profile['entra_user_principal_name']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (array_key_exists('entra_account_enabled', $profile) && $profile['entra_account_enabled'] !== null && $profile['entra_account_enabled'] !== ''): ?>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Account Enabled</span>
+                                        <span class="detail-value">
+                                            <?php if ((string) $profile['entra_account_enabled'] === '1'): ?>
+                                                <span class="badge bg-success">Enabled</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-danger">Disabled</span>
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_last_password_change_at'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Last Password Change</span><span class="detail-value"><?= date('M d, Y h:i A', strtotime($profile['entra_last_password_change_at'])) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_object_id'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Object ID</span><span class="detail-value"><?= esc($profile['entra_object_id']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_identities'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Identities</span><span class="detail-value" style="white-space: pre-wrap;"><?= esc($profile['entra_identities']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_user_type'])): ?>
+                                    <div class="detail-row"><span class="detail-label">User Type</span><span class="detail-value"><?= esc($profile['entra_user_type']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_job_title'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Job Title</span><span class="detail-value"><?= esc($profile['entra_job_title']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_company_name'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Company Name</span><span class="detail-value"><?= esc($profile['entra_company_name']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_department'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Department</span><span class="detail-value"><?= esc($profile['entra_department']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_employee_id'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Employee ID</span><span class="detail-value"><?= esc($profile['entra_employee_id']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_manager_display_name']) || !empty($profile['entra_manager_user_principal_name']) || !empty($profile['entra_manager_mail']) || !empty($profile['entra_manager_object_id'])): ?>
+                                    <div class="detail-row" style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #f0f0f0;">
+                                        <span class="detail-label" style="color: #0d6efd; font-weight: 700;"><i class="bi bi-people"></i> Manager Information</span>
+                                    </div>
+                                    <?php if (!empty($profile['entra_manager_display_name'])): ?>
+                                        <div class="detail-row"><span class="detail-label">Manager Name</span><span class="detail-value"><?= esc($profile['entra_manager_display_name']) ?></span></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($profile['entra_manager_user_principal_name'])): ?>
+                                        <div class="detail-row"><span class="detail-label">Manager UPN</span><span class="detail-value"><?= esc($profile['entra_manager_user_principal_name']) ?></span></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($profile['entra_manager_mail'])): ?>
+                                        <div class="detail-row"><span class="detail-label">Manager Email</span><span class="detail-value"><?= esc($profile['entra_manager_mail']) ?></span></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($profile['entra_manager_object_id'])): ?>
+                                        <div class="detail-row"><span class="detail-label">Manager Object ID</span><span class="detail-value"><?= esc($profile['entra_manager_object_id']) ?></span></div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
+                            <div>
+                                <?php if (!empty($profile['entra_office_location'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Office Location</span><span class="detail-value"><?= esc($profile['entra_office_location']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_city'])): ?>
+                                    <div class="detail-row"><span class="detail-label">City</span><span class="detail-value"><?= esc($profile['entra_city']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_state'])): ?>
+                                    <div class="detail-row"><span class="detail-label">State</span><span class="detail-value"><?= esc($profile['entra_state']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_postal_code'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Zip Code</span><span class="detail-value"><?= esc($profile['entra_postal_code']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_country'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value"><?= esc($profile['entra_country']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_mobile_phone'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Mobile Number</span><span class="detail-value"><?= esc($profile['entra_mobile_phone']) ?></span></div>
+                                <?php endif; ?>
+                                <?php if (!empty($profile['entra_mail'])): ?>
+                                    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value"><?= esc($profile['entra_mail']) ?></span></div>
+                                <?php endif; ?>
+                                <?php
+                                    $businessPhones = [];
+                                    if (!empty($profile['entra_business_phones']) && is_string($profile['entra_business_phones'])) {
+                                        $decodedPhones = json_decode($profile['entra_business_phones'], true);
+                                        if (is_array($decodedPhones)) {
+                                            $businessPhones = array_values(array_filter(array_map(static fn($phone) => is_string($phone) ? trim($phone) : '', $decodedPhones), static fn($phone) => $phone !== ''));
+                                        }
+                                    }
+                                ?>
+                                <?php if (!empty($businessPhones)): ?>
+                                    <div class="detail-row"><span class="detail-label">Business Phones</span><span class="detail-value"><?= esc(implode(', ', $businessPhones)) ?></span></div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info mb-0"><i class="bi bi-info-circle"></i> No Azure AD details found for this user.</div>
+                    <?php endif; ?>
                 </div>
             </div>
 

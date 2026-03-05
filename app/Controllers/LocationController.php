@@ -8,12 +8,8 @@ class LocationController extends BaseController
 {
     public function index()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
         $locationModel = new Location();
@@ -25,12 +21,8 @@ class LocationController extends BaseController
 
     public function create()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $data['title'] = 'Create Location';
@@ -39,12 +31,8 @@ class LocationController extends BaseController
 
     public function store()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $locationModel = new Location();
@@ -63,12 +51,8 @@ class LocationController extends BaseController
 
     public function edit($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $locationModel = new Location();
@@ -84,12 +68,8 @@ class LocationController extends BaseController
 
     public function update($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $locationModel = new Location();
@@ -108,12 +88,8 @@ class LocationController extends BaseController
 
     public function delete($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $locationModel = new Location();

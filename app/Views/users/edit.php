@@ -70,12 +70,24 @@
                         <small class="text-muted">Leave blank to keep current password</small>
                     </div>
                     <div class="col-md-6">
-                        <label for="usertype" class="form-label">Usertype <span class="text-danger">*</span></label>
+                        <label for="usertype" class="form-label">Main User Type <span class="text-danger">*</span></label>
                         <select class="form-select" id="usertype" name="usertype" required>
-                            <option value="">Select Usertype</option>
-                            <?php if (!empty($userRoles)): ?>
-                                <?php foreach ($userRoles as $role): ?>
+                            <?php if (!empty($mainUsertypes)): ?>
+                                <?php foreach ($mainUsertypes as $role): ?>
                                     <option value="<?= esc($role['role_key']) ?>" <?= old('usertype', $user['usertype']) == $role['role_key'] ? 'selected' : '' ?>>
+                                        <?= esc($role['role_name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="user_role_id" class="form-label">Added Role (Optional)</label>
+                        <select class="form-select" id="user_role_id" name="user_role_id">
+                            <option value="">None</option>
+                            <?php if (!empty($addedUserRoles)): ?>
+                                <?php foreach ($addedUserRoles as $role): ?>
+                                    <option value="<?= (int) $role['id'] ?>" <?= (string) old('user_role_id', $user['user_role_id'] ?? '') === (string) $role['id'] ? 'selected' : '' ?>>
                                         <?= esc($role['role_name']) ?>
                                     </option>
                                 <?php endforeach; ?>

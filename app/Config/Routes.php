@@ -12,6 +12,9 @@ $routes->post('/auth/store', 'Auth::store');
 $routes->get('/login', 'Auth::login');
 $routes->post('/auth/authenticate', 'Auth::authenticate');
 $routes->get('/auth/logout', 'Auth::logout');
+$routes->get('/auth/entra/login', 'EntraAuthController::login');
+$routes->get('/auth/entra/callback', 'EntraAuthController::callback');
+$routes->get('/auth/entra/logout', 'EntraAuthController::logout');
 $routes->get('/dashboard', 'Dashboard::index');
 
 $routes->get('/users', 'UserController::index');
@@ -23,6 +26,7 @@ $routes->post('/users/update/(:num)', 'UserController::update/$1');
 $routes->get('/users/delete/(:num)', 'UserController::delete/$1');
 $routes->get('/users/search', 'UserController::search');
 $routes->post('/users/toggleSync/(:num)', 'UserController::toggleSync/$1');
+$routes->post('/users/sync-entra', 'UserController::syncEntra');
 
 $routes->get('/assets', 'AssetController::index');
 $routes->get('/assets/create', 'AssetController::create');

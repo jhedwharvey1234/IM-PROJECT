@@ -72,9 +72,13 @@ class Auth extends Controller
         $user = $userModel->where('email', $email)->first();
 
         if ($user && password_verify($password, $user['password'])) {
+            $actualRole = (string) ($user['usertype'] ?? '');
+            $sessionRole = strtolower($actualRole) === 'readandwrite' ? 'superadmin' : $actualRole;
+
             session()->set('user_id', $user['id']);
             session()->set('username', $user['username']);
-            session()->set('usertype', $user['usertype']);
+            session()->set('usertype', $sessionRole);
+            session()->set('usertype_actual', $actualRole);
             return redirect()->to(site_url('dashboard'));
         } else {
             return redirect()->back()->with('error', 'Invalid credentials');
@@ -83,7 +87,16 @@ class Auth extends Controller
 
     public function logout()
     {
+        $authProvider = (string) session()->get('auth_provider');
+        $entraEnabledRaw = getenv('ENTRA_ENABLED');
+        $entraEnabled = filter_var($entraEnabledRaw !== false ? $entraEnabledRaw : 'false', FILTER_VALIDATE_BOOLEAN);
+
         session()->destroy();
+
+        if ($entraEnabled && $authProvider === 'entra') {
+            return redirect()->to(site_url('auth/entra/logout'));
+        }
+
         return redirect()->to(site_url('login'));
     }
 

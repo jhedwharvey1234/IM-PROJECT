@@ -2,6 +2,20 @@
 <link rel="stylesheet" href="/IM/public/css/responsive-global.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
+<?php
+    $sessionRole = strtolower(trim((string) session()->get('usertype')));
+    $sessionActualRole = strtolower(trim((string) session()->get('usertype_actual')));
+
+    $computedCanFullAccess = in_array($sessionRole, ['superadmin', 'readandwrite'], true);
+    $computedIsSuperadmin = $sessionActualRole !== ''
+        ? $sessionActualRole === 'superadmin'
+        : $sessionRole === 'superadmin';
+
+    $headerCanFullAccess = isset($headerCanFullAccess) ? (bool) $headerCanFullAccess : $computedCanFullAccess;
+    $headerIsSuperadmin = isset($headerIsSuperadmin) ? (bool) $headerIsSuperadmin : $computedIsSuperadmin;
+    $headerIsReadonly = $sessionRole === 'readonly';
+?>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" style = "height: 50px;">
     <div class="container-fluid">
         <div class="d-flex align-items-center">
@@ -14,7 +28,7 @@
             <a class="navbar-brand" href="#"><?= isset($title) ? esc($title) : '' ?></a>
         </div>
         <div class="d-flex align-items-center">
-            <?php if (session()->get('usertype') === 'superadmin'): ?>
+            <?php if (!empty($headerCanFullAccess)): ?>
                 <a href="<?= site_url('notifications') ?>" class="btn btn-header notification-btn me-2" title="Notifications">
                     <i class="bi bi-bell"></i>
                     <?php if (!empty($headerUnreadNotifications)): ?>
@@ -39,25 +53,29 @@
         <i class="bi bi-speedometer2"></i>
         <span class="link-text">Dashboard</span>
     </a>
-    <?php if (session()->get('usertype') === 'superadmin'): ?>
-        <!-- Manage Users -->
-        <div class="sidebar-item">
-            <a href="<?= site_url('users') ?>" class="sidebar-link" data-tooltip="Manage Users">
-                <i class="bi bi-people"></i>
-                <span class="link-text">Manage Users</span>
-                <i class="bi bi-chevron-down dropdown-icon"></i>
-            </a>
-            <div class="sidebar-submenu">
-                <a href="<?= site_url('users/create') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Create User</span>
+    <?php if (session()->get('user_id')): ?>
+        <?php if (!empty($headerIsSuperadmin)): ?>
+            <!-- Manage Users -->
+            <div class="sidebar-item">
+                <a href="<?= site_url('users') ?>" class="sidebar-link" data-tooltip="Manage Users">
+                    <i class="bi bi-people"></i>
+                    <span class="link-text">Manage Users</span>
+                    <i class="bi bi-chevron-down dropdown-icon"></i>
                 </a>
-                 <a href="<?= site_url('users') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-gear"></i>
-                    <span>Manage Users</span>
-                </a>
+                <div class="sidebar-submenu">
+                    <?php if (!empty($headerCanFullAccess)): ?>
+                        <a href="<?= site_url('users/create') ?>" class="sidebar-submenu-link">
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Create User</span>
+                        </a>
+                    <?php endif; ?>
+                     <a href="<?= site_url('users') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-gear"></i>
+                        <span>Manage Users</span>
+                    </a>
+                </div>
             </div>
-        </div>
+        <?php endif; ?>
 
         <!-- Manage Units -->
         <div class="sidebar-item">
@@ -67,10 +85,12 @@
                 <i class="bi bi-chevron-down dropdown-icon"></i>
             </a>
             <div class="sidebar-submenu">
-                <a href="<?= site_url('units/create') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Create Unit</span>
-                </a>
+                <?php if (!empty($headerCanFullAccess)): ?>
+                    <a href="<?= site_url('units/create') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Create Unit</span>
+                    </a>
+                <?php endif; ?>
                 <a href="<?= site_url('units') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-gear"></i>
                     <span>Manage Units</span>       
@@ -86,10 +106,12 @@
                 <i class="bi bi-chevron-down dropdown-icon"></i>
             </a>
             <div class="sidebar-submenu">
-                <a href="<?= site_url('assets/create') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Create Asset</span>
-                </a>
+                <?php if (!empty($headerCanFullAccess)): ?>
+                    <a href="<?= site_url('assets/create') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Create Asset</span>
+                    </a>
+                <?php endif; ?>
                 <a href="<?= site_url('assets') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-gear"></i>
                     <span>Manage Assets</span>
@@ -105,10 +127,12 @@
                 <i class="bi bi-chevron-down dropdown-icon"></i>
             </a>
             <div class="sidebar-submenu">
-                <a href="<?= site_url('peripherals/create') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Create Peripheral</span>
-                </a>
+                <?php if (!empty($headerCanFullAccess)): ?>
+                    <a href="<?= site_url('peripherals/create') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Create Peripheral</span>
+                    </a>
+                <?php endif; ?>
                 <a href="<?= site_url('peripherals') ?>" class="sidebar-submenu-link"       >
                     <i class="bi bi-gear"></i>
                     <span>Manage Peripherals</span> 
@@ -124,10 +148,12 @@
                 <i class="bi bi-chevron-down dropdown-icon"></i>
             </a>
             <div class="sidebar-submenu">
-                <a href="<?= site_url('applications/create') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Create Application</span>
-                </a>
+                <?php if (!empty($headerCanFullAccess)): ?>
+                    <a href="<?= site_url('applications/create') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Create Application</span>
+                    </a>
+                <?php endif; ?>
                 <a href="<?= site_url('applications') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-gear"></i>
                     <span>Manage Applications</span>    
@@ -143,10 +169,12 @@
                 <i class="bi bi-chevron-down dropdown-icon"></i>
             </a>
             <div class="sidebar-submenu">
-                <a href="<?= site_url('documents/create') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Create Document</span>
-                </a>
+                <?php if (!empty($headerCanFullAccess)): ?>
+                    <a href="<?= site_url('documents/create') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Create Document</span>
+                    </a>
+                <?php endif; ?>
                 <a href="<?= site_url('documents/alerts') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-calendar-event"></i>
                     <span>Document Alerts</span>
@@ -166,18 +194,22 @@
                 <i class="bi bi-chevron-down dropdown-icon"></i>
             </a>
             <div class="sidebar-submenu">
-                <a href="<?= site_url('dcf/create') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Create DCF</span>
-                </a>
-                <a href="<?= site_url('dcf/questions') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-question-circle"></i>
-                    <span>Questions</span>
-                </a>
-                <a href="<?= site_url('dcf/parts') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-collection"></i>
-                    <span>Parts</span>
-                </a>
+                <?php if (!empty($headerCanFullAccess)): ?>
+                    <a href="<?= site_url('dcf/create') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Create DCF</span>
+                    </a>
+                <?php endif; ?>
+                <?php if (empty($headerIsReadonly)): ?>
+                    <a href="<?= site_url('dcf/questions') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-question-circle"></i>
+                        <span>Questions</span>
+                    </a>
+                    <a href="<?= site_url('dcf/parts') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-collection"></i>
+                        <span>Parts</span>
+                    </a>
+                <?php endif; ?>
                 <a href="<?= site_url('dcf') ?>" class="sidebar-submenu-link">
                     <i class="bi bi-gear"></i>
                     <span>Manage DCF</span>
@@ -186,80 +218,84 @@
         </div>
 
         <!-- Notifications -->
-        <a href="<?= site_url('notifications') ?>" class="sidebar-link" data-tooltip="Notifications">
-            <i class="bi bi-bell"></i>
-            <span class="link-text">Notification</span>
-            <?php if (!empty($headerUnreadNotifications)): ?>
-                <span class="badge bg-danger ms-auto"><?= (int) $headerUnreadNotifications ?></span>
-            <?php endif; ?>
-        </a>
+        <?php if (empty($headerIsReadonly)): ?>
+            <a href="<?= site_url('notifications') ?>" class="sidebar-link" data-tooltip="Notifications">
+                <i class="bi bi-bell"></i>
+                <span class="link-text">Notification</span>
+                <?php if (!empty($headerUnreadNotifications)): ?>
+                    <span class="badge bg-danger ms-auto"><?= (int) $headerUnreadNotifications ?></span>
+                <?php endif; ?>
+            </a>
+        <?php endif; ?>
         
         <!-- Settings -->
-        <div class="sidebar-item">
-            <a href="<?= site_url('settings') ?>" class="sidebar-link" data-tooltip="Settings">
-                <i class="bi bi-gear"></i>
-                <span class="link-text">Settings</span>
-                <i class="bi bi-chevron-down dropdown-icon"></i>
-            </a>
-            <div class="sidebar-submenu" style = "max-height: 200px; overflow-y: auto;">
-                <a href="<?= site_url('settings/locations') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-geo-alt"></i>
-                    <span>Locations</span>
-                </a>
-                <a href="<?= site_url('settings/workstations') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-pc-display"></i>
-                    <span>Workstations</span>
-                </a>
-                <a href="<?= site_url('settings/peripheral-types') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-usb-symbol"></i>
-                    <span>Peripheral Types</span>
-                </a>
-                <a href="<?= site_url('settings/departments') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-diagram-3"></i>
-                    <span>Departments</span>
-                </a>
-                <a href="<?= site_url('settings/user-roles') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-person-badge"></i>
-                    <span>User Roles</span>
-                </a>
-                <a href="<?= site_url('settings/categories') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-tags"></i>
-                    <span>Asset Categories</span>
-                </a>
-                <a href="<?= site_url('settings/document-categories') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-folder"></i>
-                    <span>Document Categories</span>
-                </a>
-                <a href="<?= site_url('settings/document-types') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-file-earmark-text"></i>
-                    <span>Document Types</span>
-                </a>
-                <a href="<?= site_url('settings/technologies') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-cpu"></i>
-                    <span>Technologies</span>
-                </a>
-                <a href="<?= site_url('settings/statuses') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-activity"></i>
-                    <span>Application Statuses</span>
-                </a>
-                <a href="<?= site_url('settings/servers') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-server"></i>
-                    <span>Servers</span>
-                </a>
-                <a href="<?= site_url('settings/environments') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-cloud"></i>
-                    <span>Environments</span>
-                </a>
-                <a href="<?= site_url('settings/contacts') ?>" class="sidebar-submenu-link">
-                    <i class="bi bi-person-badge"></i>
-                    <span>Application Contacts</span>
-                </a>
-                <a href="<?= site_url('settings') ?>" class="sidebar-submenu-link">
+        <?php if (empty($headerIsReadonly)): ?>
+            <div class="sidebar-item">
+                <a href="<?= site_url('settings') ?>" class="sidebar-link" data-tooltip="Settings">
                     <i class="bi bi-gear"></i>
-                    <span>All Settings</span>
+                    <span class="link-text">Settings</span>
+                    <i class="bi bi-chevron-down dropdown-icon"></i>
                 </a>
+                <div class="sidebar-submenu" style = "max-height: 200px; overflow-y: auto;">
+                    <a href="<?= site_url('settings/locations') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-geo-alt"></i>
+                        <span>Locations</span>
+                    </a>
+                    <a href="<?= site_url('settings/workstations') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-pc-display"></i>
+                        <span>Workstations</span>
+                    </a>
+                    <a href="<?= site_url('settings/peripheral-types') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-usb-symbol"></i>
+                        <span>Peripheral Types</span>
+                    </a>
+                    <a href="<?= site_url('settings/departments') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-diagram-3"></i>
+                        <span>Departments</span>
+                    </a>
+                    <a href="<?= site_url('settings/user-roles') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-person-badge"></i>
+                        <span>User Roles</span>
+                    </a>
+                    <a href="<?= site_url('settings/categories') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-tags"></i>
+                        <span>Asset Categories</span>
+                    </a>
+                    <a href="<?= site_url('settings/document-categories') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-folder"></i>
+                        <span>Document Categories</span>
+                    </a>
+                    <a href="<?= site_url('settings/document-types') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>Document Types</span>
+                    </a>
+                    <a href="<?= site_url('settings/technologies') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-cpu"></i>
+                        <span>Technologies</span>
+                    </a>
+                    <a href="<?= site_url('settings/statuses') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-activity"></i>
+                        <span>Application Statuses</span>
+                    </a>
+                    <a href="<?= site_url('settings/servers') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-server"></i>
+                        <span>Servers</span>
+                    </a>
+                    <a href="<?= site_url('settings/environments') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-cloud"></i>
+                        <span>Environments</span>
+                    </a>
+                    <a href="<?= site_url('settings/contacts') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Application Contacts</span>
+                    </a>
+                    <a href="<?= site_url('settings') ?>" class="sidebar-submenu-link">
+                        <i class="bi bi-gear"></i>
+                        <span>All Settings</span>
+                    </a>
+                </div>
             </div>
-        </div>
+        <?php endif; ?>
     <?php endif; ?>
 </div>
 

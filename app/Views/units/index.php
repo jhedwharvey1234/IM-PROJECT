@@ -45,7 +45,8 @@
         }
     </style>
 </head>
-<body>
+<?php $isReadonlyUser = strtolower(trim((string) session()->get('usertype'))) === 'readonly'; ?>
+<body class="<?= $isReadonlyUser ? 'readonly-user' : '' ?>">
     <?= view('partials/header', ['title' => 'Units Management']) ?>
 
     <div class="main-content">
@@ -60,12 +61,12 @@
             <!-- Action Buttons Group -->
             <div class="d-flex gap-1">
                 <!-- Create Button -->
-                <a href="<?= site_url('units/create') ?>" class="btn btn-success btn-sm" title="Create" aria-label="Create" data-bs-toggle="tooltip">
+                <a href="<?= site_url('units/create') ?>" class="btn btn-success btn-sm write-action" title="Create" aria-label="Create" data-bs-toggle="tooltip">
                     <i class="bi bi-plus-circle"></i>
                 </a>
 
                 <!-- Delete Selected Button -->
-                <button class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip">
+                <button class="btn btn-danger btn-sm write-action" id="deleteSelectedBtn" disabled title="Delete" aria-label="Delete" data-bs-toggle="tooltip">
                     <i class="bi bi-trash"></i>
                 </button>
 
@@ -217,7 +218,7 @@
                 <table class="table table-striped align-middle mb-0">
                     <thead>
                         <tr>
-                            <th style="width: 50px;">
+                            <th style="width: 50px;" class="write-action">
                                 <input type="checkbox" id="selectAll" class="form-check-input" title="Select all units">
                             </th>
                             <th data-column="id" style="width: 70px;">ID</th>
@@ -236,7 +237,7 @@
                                 $searchValue = trim(strtolower($unit['unit_name'] . ' ' . $unit['unit_type'] . ' ' . $assetLabel . ' ' . $peripheralLabel));
                             ?>
                             <tr data-search="<?= esc($searchValue) ?>" data-type="<?= esc($unit['unit_type']) ?>">
-                                <td>
+                                <td class="write-action">
                                     <input type="checkbox" class="form-check-input unitCheckbox" value="<?= $unit['id'] ?>" title="Select this unit">
                                 </td>
                                 <td data-column="id"><?= $unit['id'] ?></td>
@@ -264,8 +265,8 @@
                                 </td>
                                 <td>
                                     <a href="<?= site_url('units/view/' . $unit['id']) ?>" class="action-btn action-btn-view" title="View" data-bs-toggle="tooltip"><i class="bi bi-eye"></i></a>
-                                    <a href="<?= site_url('units/edit/' . $unit['id']) ?>" class="action-btn action-btn-edit" title="Edit" data-bs-toggle="tooltip"><i class="bi bi-pencil"></i></a>
-                                    <a href="<?= site_url('units/delete/' . $unit['id']) ?>" class="action-btn action-btn-delete" onclick="return confirm('Are you sure?')" title="Delete" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
+                                    <a href="<?= site_url('units/edit/' . $unit['id']) ?>" class="action-btn action-btn-edit write-action" title="Edit" data-bs-toggle="tooltip"><i class="bi bi-pencil"></i></a>
+                                    <a href="<?= site_url('units/delete/' . $unit['id']) ?>" class="action-btn action-btn-delete write-action" onclick="return confirm('Are you sure?')" title="Delete" data-bs-toggle="tooltip"><i class="bi bi-trash"></i></a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -273,6 +274,10 @@
                 </table>
             </div>
         </div>
+
+        <style>
+            .readonly-user .write-action { display: none !important; }
+        </style>
 
         <!-- Pagination Controls -->
         <div class="pagination-controls">

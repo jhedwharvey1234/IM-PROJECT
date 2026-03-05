@@ -53,12 +53,8 @@ class ApplicationController extends BaseController
 
     public function index()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
         $page = (int) $this->request->getGet('page') ?? 1;
@@ -77,12 +73,8 @@ class ApplicationController extends BaseController
 
     public function create()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $data['statuses'] = $this->statusModel->orderBy('status_name', 'ASC')->findAll();
@@ -95,12 +87,8 @@ class ApplicationController extends BaseController
 
     public function store()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $data = [
@@ -251,12 +239,8 @@ class ApplicationController extends BaseController
 
     public function edit($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $data['application'] = $this->applicationModel->getWithDepartment($id);
@@ -290,12 +274,8 @@ class ApplicationController extends BaseController
 
     public function update($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $application = $this->applicationModel->find($id);
@@ -474,12 +454,8 @@ class ApplicationController extends BaseController
 
     public function delete($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $application = $this->applicationModel->find($id);
@@ -506,12 +482,8 @@ class ApplicationController extends BaseController
 
     public function details($id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
         $data['application'] = $this->applicationModel->getWithDepartment($id);
@@ -541,12 +513,8 @@ class ApplicationController extends BaseController
 
     public function search()
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireAuthenticated()) {
+            return $redirect;
         }
 
         $keyword = $this->request->getGet('q') ?? '';
@@ -564,12 +532,8 @@ class ApplicationController extends BaseController
 
     public function storeRelatedData($applicationId)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $application = $this->applicationModel->find($applicationId);
@@ -596,12 +560,8 @@ class ApplicationController extends BaseController
 
     public function updateRelatedData($applicationId, $id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $item = $this->relatedDataModel->find($id);
@@ -627,12 +587,8 @@ class ApplicationController extends BaseController
 
     public function deleteRelatedData($applicationId, $id)
     {
-        if (!session()->get('user_id')) {
-            return redirect()->to('login');
-        }
-
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('dashboard')->with('error', 'Unauthorized access');
+        if ($redirect = $this->requireFullAccess()) {
+            return $redirect;
         }
 
         $item = $this->relatedDataModel->find($id);

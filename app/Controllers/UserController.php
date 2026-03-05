@@ -7,10 +7,12 @@ use App\Models\AssignableUser;
 use App\Models\Asset;
 use App\Models\AssetHistory;
 use App\Models\UserRole;
-use CodeIgniter\Controller;
+use App\Libraries\EntraDirectorySyncService;
 
-class UserController extends Controller
+class UserController extends BaseController
 {
+    private const BASE_USER_TYPES = ['superadmin', 'readandwrite', 'readonly'];
+
     protected $userModel;
     protected $assignableUserModel;
 
@@ -22,8 +24,8 @@ class UserController extends Controller
 
     public function index()
     {
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('/dashboard')->with('error', 'Access denied');
+        if ($redirect = $this->requireSuperadmin()) {
+            return $redirect;
         }
 
         $systemUsers = $this->userModel->orderBy('id','DESC')->findAll();
@@ -68,6 +70,13 @@ class UserController extends Controller
             }
         }
         
+        $addedRoleMap = $this->getAddedRoleMap();
+        foreach ($allUsers as &$user) {
+            $roleId = isset($user['user_role_id']) ? (int) $user['user_role_id'] : 0;
+            $user['added_role_name'] = $roleId > 0 ? ($addedRoleMap[$roleId] ?? null) : null;
+        }
+        unset($user);
+
         $data['users'] = $allUsers;
         $data['assignableMap'] = $assignableMap;
         
@@ -76,7 +85,7 @@ class UserController extends Controller
 
     public function search()
     {
-        if (session()->get('usertype') !== 'superadmin') {
+        if ($redirect = $this->requireSuperadmin()) {
             return $this->response->setJSON([]);
         }
 
@@ -96,35 +105,38 @@ class UserController extends Controller
 
     public function create()
     {
-        if (session()->get('usertype') !== 'superadmin') {
+        if ($redirect = $this->requireSuperadmin()) {
             return redirect()->to('/dashboard')->with('error', 'Access denied');
         }
 
-            $data['userRoles'] = $this->getAvailableRoles();
+        $data['mainUsertypes'] = $this->getMainUsertypeOptions();
+        $data['addedUserRoles'] = $this->getAddedRoles();
 
         return view('users/create', $data);
     }
 
     public function store()
     {
-        if (session()->get('usertype') !== 'superadmin') {
+        if ($redirect = $this->requireSuperadmin()) {
             return redirect()->to('/dashboard')->with('error', 'Access denied');
         }
 
         $userType = $this->request->getPost('user_type');
 
         if ($userType === 'system') {
-            $selectedRole = trim((string) $this->request->getPost('usertype'));
+            $selectedMainType = strtolower(trim((string) $this->request->getPost('usertype')));
+            $selectedAddedRoleId = $this->normalizeAddedRoleId($this->request->getPost('user_role_id'));
 
             // Create system user
             $data = [
                 'username' => trim((string) $this->request->getPost('username')),
                 'email'    => strtolower(trim((string) $this->request->getPost('email'))),
                 'password' => $this->request->getPost('password'),
-                'usertype' => $selectedRole,
+                'usertype' => $selectedMainType,
+                'user_role_id' => $selectedAddedRoleId,
             ];
 
-            if ($selectedRole === '') {
+            if ($selectedMainType === '') {
                 return redirect()->back()->withInput()->with('errors', ['usertype' => 'User role is required.']);
             }
 
@@ -132,7 +144,8 @@ class UserController extends Controller
                 'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username]',
                 'email' => 'required|valid_email|is_unique[users.email]',
                 'password' => 'required|min_length[8]',
-                'usertype' => 'required|max_length[50]',
+                'usertype' => 'required|in_list[superadmin,readandwrite,readonly]',
+                'user_role_id' => 'permit_empty|integer',
             ];
 
             $messages = [
@@ -148,8 +161,12 @@ class UserController extends Controller
                 return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
             }
 
-                if (!$this->isValidRoleKey((string) $data['usertype'])) {
-                return redirect()->back()->withInput()->with('errors', ['usertype' => 'Selected user role is invalid.']);
+            if (!$this->isValidMainUsertype((string) $data['usertype'])) {
+                return redirect()->back()->withInput()->with('errors', ['usertype' => 'Selected main user type is invalid.']);
+            }
+
+            if (!$this->isValidAddedRoleId($data['user_role_id'])) {
+                return redirect()->back()->withInput()->with('errors', ['user_role_id' => 'Selected added role is invalid.']);
             }
 
             if ($this->userModel->insert($data)) {
@@ -187,7 +204,7 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        if (session()->get('usertype') !== 'superadmin') {
+        if ($redirect = $this->requireSuperadmin()) {
             return redirect()->to('/dashboard')->with('error', 'Access denied');
         }
 
@@ -200,14 +217,15 @@ class UserController extends Controller
         $assignableUser = $this->assignableUserModel->where('full_name', $data['user']['username'])->first();
         $data['is_assignable'] = !empty($assignableUser);
 
-        $data['userRoles'] = $this->getAvailableRoles();
+        $data['mainUsertypes'] = $this->getMainUsertypeOptions();
+        $data['addedUserRoles'] = $this->getAddedRoles();
 
         return view('users/edit', $data);
     }
 
     public function update($id)
     {
-        if (session()->get('usertype') !== 'superadmin') {
+        if ($redirect = $this->requireSuperadmin()) {
             return redirect()->to('/dashboard')->with('error', 'Access denied');
         }
     
@@ -219,7 +237,8 @@ class UserController extends Controller
         $data = [
             'username' => trim((string) $this->request->getPost('username')),
             'email'    => strtolower(trim((string) $this->request->getPost('email'))),
-            'usertype' => $this->request->getPost('usertype'),
+            'usertype' => strtolower(trim((string) $this->request->getPost('usertype'))),
+            'user_role_id' => $this->normalizeAddedRoleId($this->request->getPost('user_role_id')),
             'password' => $this->request->getPost('password'),
         ];
 
@@ -227,7 +246,8 @@ class UserController extends Controller
             'username' => 'required|min_length[3]|max_length[100]|is_unique[users.username,id,' . (int) $id . ']',
             'email' => 'required|valid_email|is_unique[users.email,id,' . (int) $id . ']',
             'password' => 'permit_empty|min_length[8]',
-            'usertype' => 'required|max_length[50]',
+            'usertype' => 'required|in_list[superadmin,readandwrite,readonly]',
+            'user_role_id' => 'permit_empty|integer',
         ];
 
         $messages = [
@@ -243,8 +263,12 @@ class UserController extends Controller
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        if (!$this->isValidRoleKey((string) $data['usertype'])) {
-            return redirect()->back()->withInput()->with('errors', ['usertype' => 'Selected user role is invalid.']);
+        if (!$this->isValidMainUsertype((string) $data['usertype'])) {
+            return redirect()->back()->withInput()->with('errors', ['usertype' => 'Selected main user type is invalid.']);
+        }
+
+        if (!$this->isValidAddedRoleId($data['user_role_id'])) {
+            return redirect()->back()->withInput()->with('errors', ['user_role_id' => 'Selected added role is invalid.']);
         }
 
         if (empty($data['password'])) {
@@ -252,6 +276,8 @@ class UserController extends Controller
         }
 
         $syncToAssignable = $this->request->getPost('sync_to_assignable');
+
+        $this->userModel->skipValidation(true);
 
         if ($this->userModel->update($id, $data)) {
             // Handle sync to assignable users
@@ -282,7 +308,7 @@ class UserController extends Controller
 
     public function delete($id)
     {
-        if (session()->get('usertype') !== 'superadmin') {
+        if ($redirect = $this->requireSuperadmin()) {
             return redirect()->to('/dashboard')->with('error', 'Access denied');
         }
 
@@ -310,7 +336,7 @@ class UserController extends Controller
      */
     public function toggleSync($id)
     {
-        if (session()->get('usertype') !== 'superadmin') {
+        if ($redirect = $this->requireSuperadmin()) {
             return $this->response->setJSON(['success' => false, 'message' => 'Access denied']);
         }
 
@@ -334,8 +360,8 @@ class UserController extends Controller
 
     public function details($id)
     {
-        if (session()->get('usertype') !== 'superadmin') {
-            return redirect()->to('/dashboard')->with('error', 'Access denied');
+        if ($redirect = $this->requireSuperadmin()) {
+            return $redirect;
         }
 
         $assetModel = new Asset();
@@ -380,9 +406,39 @@ class UserController extends Controller
                 'username' => $systemUser['username'],
                 'email' => $systemUser['email'],
                 'usertype' => $systemUser['usertype'],
+                'user_role_id' => $systemUser['user_role_id'] ?? null,
+                'entra_object_id' => $systemUser['entra_object_id'] ?? null,
+                'entra_display_name' => $systemUser['entra_display_name'] ?? null,
+                'entra_user_principal_name' => $systemUser['entra_user_principal_name'] ?? null,
+                'entra_account_enabled' => $systemUser['entra_account_enabled'] ?? null,
+                'entra_last_password_change_at' => $systemUser['entra_last_password_change_at'] ?? null,
+                'entra_user_type' => $systemUser['entra_user_type'] ?? null,
+                'entra_given_name' => $systemUser['entra_given_name'] ?? null,
+                'entra_surname' => $systemUser['entra_surname'] ?? null,
+                'entra_job_title' => $systemUser['entra_job_title'] ?? null,
+                'entra_company_name' => $systemUser['entra_company_name'] ?? null,
+                'entra_department' => $systemUser['entra_department'] ?? null,
+                'entra_employee_id' => $systemUser['entra_employee_id'] ?? null,
+                'entra_office_location' => $systemUser['entra_office_location'] ?? null,
+                'entra_city' => $systemUser['entra_city'] ?? null,
+                'entra_state' => $systemUser['entra_state'] ?? null,
+                'entra_postal_code' => $systemUser['entra_postal_code'] ?? null,
+                'entra_country' => $systemUser['entra_country'] ?? null,
+                'entra_mobile_phone' => $systemUser['entra_mobile_phone'] ?? null,
+                'entra_mail' => $systemUser['entra_mail'] ?? null,
+                'entra_manager_object_id' => $systemUser['entra_manager_object_id'] ?? null,
+                'entra_manager_display_name' => $systemUser['entra_manager_display_name'] ?? null,
+                'entra_manager_user_principal_name' => $systemUser['entra_manager_user_principal_name'] ?? null,
+                'entra_manager_mail' => $systemUser['entra_manager_mail'] ?? null,
+                'entra_identities' => $systemUser['entra_identities'] ?? null,
+                'entra_business_phones' => $systemUser['entra_business_phones'] ?? null,
                 'created_at' => $systemUser['created_at'] ?? null,
                 'updated_at' => $systemUser['updated_at'] ?? null,
             ];
+
+            $addedRoleMap = $this->getAddedRoleMap();
+            $profileRoleId = isset($profile['user_role_id']) ? (int) $profile['user_role_id'] : 0;
+            $profile['added_role_name'] = $profileRoleId > 0 ? ($addedRoleMap[$profileRoleId] ?? null) : null;
         }
 
         $assets = [];
@@ -434,25 +490,104 @@ class UserController extends Controller
         return view('users/details', $data);
     }
 
-    private function getAvailableRoles(): array
+    public function syncEntra()
+    {
+        if ($redirect = $this->requireSuperadmin()) {
+            return redirect()->to('/dashboard')->with('error', 'Access denied');
+        }
+
+        try {
+            set_time_limit(0);
+
+            $service = new EntraDirectorySyncService();
+            $result = $service->syncAllUsers();
+
+            $message = sprintf(
+                'Azure AD sync completed. Fetched: %d, Created: %d, Updated: %d, Skipped: %d, Failed: %d.',
+                (int) ($result['fetched'] ?? 0),
+                (int) ($result['created'] ?? 0),
+                (int) ($result['updated'] ?? 0),
+                (int) ($result['skipped'] ?? 0),
+                (int) ($result['failed'] ?? 0)
+            );
+
+            if (!empty($result['failed'])) {
+                $errors = $result['errors'] ?? [];
+                if (is_array($errors) && !empty($errors)) {
+                    $message .= ' First error: ' . (string) $errors[0];
+                }
+            }
+
+            return redirect()->to('/users')->with('success', $message);
+        } catch (\Throwable $e) {
+            return redirect()->to('/users')->with('error', 'Azure AD sync failed: ' . $e->getMessage());
+        }
+    }
+
+    private function getMainUsertypeOptions(): array
+    {
+        return [
+            ['role_name' => 'Superadmin', 'role_key' => 'superadmin'],
+            ['role_name' => 'Read and Write', 'role_key' => 'readandwrite'],
+            ['role_name' => 'Readonly', 'role_key' => 'readonly'],
+        ];
+    }
+
+    private function getAddedRoles(): array
     {
         $db = \Config\Database::connect();
         if (!$db->tableExists('user_roles')) {
-            return [
-                ['role_name' => 'Readonly', 'role_key' => 'readonly'],
-                ['role_name' => 'Read and Write', 'role_key' => 'readandwrite'],
-                ['role_name' => 'Superadmin', 'role_key' => 'superadmin'],
-            ];
+            return [];
         }
 
         $roleModel = new UserRole();
-        return $roleModel->orderBy('role_name', 'ASC')->findAll();
+        return $roleModel
+            ->whereNotIn('role_key', self::BASE_USER_TYPES)
+            ->orderBy('role_name', 'ASC')
+            ->findAll();
     }
 
-    private function isValidRoleKey(string $roleKey): bool
+    private function isValidMainUsertype(string $roleKey): bool
     {
-        $roles = $this->getAvailableRoles();
-        $keys = array_column($roles, 'role_key');
-        return in_array($roleKey, $keys, true);
+        return in_array(strtolower(trim($roleKey)), self::BASE_USER_TYPES, true);
+    }
+
+    private function normalizeAddedRoleId($rawRoleId): ?int
+    {
+        if ($rawRoleId === null || $rawRoleId === '') {
+            return null;
+        }
+
+        if (!is_numeric($rawRoleId)) {
+            return null;
+        }
+
+        $roleId = (int) $rawRoleId;
+        return $roleId > 0 ? $roleId : null;
+    }
+
+    private function isValidAddedRoleId(?int $roleId): bool
+    {
+        if ($roleId === null) {
+            return true;
+        }
+
+        $roles = $this->getAddedRoles();
+        $ids = array_map(static fn($role) => (int) ($role['id'] ?? 0), $roles);
+        return in_array($roleId, $ids, true);
+    }
+
+    private function getAddedRoleMap(): array
+    {
+        $roles = $this->getAddedRoles();
+        $map = [];
+        foreach ($roles as $role) {
+            $id = (int) ($role['id'] ?? 0);
+            if ($id > 0) {
+                $map[$id] = (string) ($role['role_name'] ?? '');
+            }
+        }
+
+        return $map;
     }
 }
