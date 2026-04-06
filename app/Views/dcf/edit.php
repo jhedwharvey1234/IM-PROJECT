@@ -6,6 +6,8 @@
     <title>Edit DCF</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
     <style>
         body { display: flex; min-height: 100vh; }
         .main-content { margin-left: 250px; margin-top: 56px; padding: 20px; flex: 1; }
@@ -52,6 +54,11 @@
         .question-preview-text { color: #2f3550; }
         .preview-type { font-weight: 500; }
         .required-mark { color: #dc3545; font-weight: 700; }
+        
+        /* Select2 customization */
+        .select2-container--bootstrap-5 .select2-selection--single { min-height: 38px; }
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered { padding-top: 0.375rem; }
+        .select2-container--bootstrap-5.select2-container--open .select2-selection--single { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
     </style>
 </head>
 <body>
@@ -119,15 +126,31 @@
         <?= view('partials/footer') ?>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         const ANSWER_TYPES_WITH_OPTIONS = ['multiple_choice', 'checkbox', 'dropdown'];
         const partsContainer = document.getElementById('partsContainer');
         const addPartBtn = document.getElementById('addPartBtn');
         const userRoles = <?= json_encode($userRoles ?? [], JSON_UNESCAPED_UNICODE) ?>;
+        const jobTitles = <?= json_encode($jobTitles ?? [], JSON_UNESCAPED_UNICODE) ?>;
 
         let partIndex = 0;
         const questionIndexByPart = {};
+
+        function initializeSelect2OnRoleDropdown(roleSelector) {
+            const $select = $(roleSelector);
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+            $select.select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                searchInputPlaceholder: 'Search roles or job titles...',
+                allowClear: false
+            });
+        }
 
         const oldParts = <?= json_encode(old('parts') ?: null, JSON_UNESCAPED_UNICODE) ?>;
         const existingParts = <?= json_encode(array_map(static function ($part) {
@@ -176,14 +199,17 @@
         function buildRoleOptions(selectedRole = 'all', includeInherit = false) {
             const options = [];
             const excludedRoleKeys = ['readonly', 'readandwrite', 'superadmin'];
+            const selectedRoleText = String(selectedRole || '').trim();
+            const knownValues = new Set();
 
             if (includeInherit) {
                 const inheritSelected = selectedRole === '' ? 'selected' : '';
-                options.push(`<option value="" ${inheritSelected}>Inherit from Part Role</option>`);
+                options.push(`<option value="__inherit__" ${inheritSelected}>Inherit from Part Role</option>`);
             }
 
             const allSelected = selectedRole === 'all' ? 'selected' : '';
             options.push(`<option value="all" ${allSelected}>All Roles</option>`);
+            knownValues.add('all');
 
             if (Array.isArray(userRoles)) {
                 userRoles.forEach((role) => {
@@ -195,7 +221,26 @@
                     const roleName = String(role.role_name || roleKey);
                     const selected = selectedRole === roleKey ? 'selected' : '';
                     options.push(`<option value="${escapeHtml(roleKey)}" ${selected}>${escapeHtml(roleName)}</option>`);
+                    knownValues.add(roleKey.toLowerCase());
                 });
+            }
+
+            // Add Azure job titles
+            if (Array.isArray(jobTitles) && jobTitles.length > 0) {
+                options.push(`<option disabled>─────────────────────</option>`);
+                options.push(`<option disabled>Azure Job Titles</option>`);
+                jobTitles.forEach((jobObj) => {
+                    const jobTitle = String(jobObj.job_title || '').trim();
+                    if (jobTitle) {
+                        const selected = selectedRole === jobTitle ? 'selected' : '';
+                        options.push(`<option value="${escapeHtml(jobTitle)}" ${selected}>${escapeHtml(jobTitle)}</option>`);
+                        knownValues.add(jobTitle.toLowerCase());
+                    }
+                });
+            }
+
+            if (selectedRoleText !== '' && selectedRoleText !== 'all' && !knownValues.has(selectedRoleText.toLowerCase())) {
+                options.push(`<option value="${escapeHtml(selectedRoleText)}" selected>${escapeHtml(selectedRoleText)}</option>`);
             }
 
             return options.join('');
@@ -411,10 +456,19 @@
             const qIdx = questionIndexByPart[partIdx] || 0;
             questionIndexByPart[partIdx] = qIdx + 1;
 
+            const partRoleSelect = partBlock.querySelector(`select[name="parts[${partIdx}][role_key]"]`);
+            const partSelectedRole = partRoleSelect
+                ? String(partRoleSelect.value || '').trim()
+                : 'all';
+            const defaultQuestionRole = partSelectedRole !== '' ? partSelectedRole : 'all';
+            const hasExistingQuestion = !!question;
+
             const questionText = question?.question_text || '';
             const isRequired = question?.is_required ? 'checked' : '';
             const answerType = question?.answer_type || 'short_answer';
-            const questionRoleKey = question?.role_key || '';
+            const questionRoleKey = hasExistingQuestion
+                ? ((question?.role_key || '') === '' ? '__inherit__' : String(question.role_key))
+                : defaultQuestionRole;
             const allowMultiple = question?.allow_multiple ? 'checked' : '';
             const options = Array.isArray(question?.options) ? question.options : [];
             const rateMin = Number.isFinite(Number(question?.rate_min)) ? Number(question.rate_min) : 1;
@@ -573,6 +627,11 @@
 
             partBlock.querySelector('.questions-container').appendChild(block);
             toggleOptionsArea(block, answerType);
+
+            const questionRoleSelect = block.querySelector(`select[name="parts[${partIdx}][questions][${qIdx}][role_key]"]`);
+            if (questionRoleSelect) {
+                initializeSelect2OnRoleDropdown(questionRoleSelect);
+            }
         }
 
         function addPartBlock(part = null) {
@@ -605,7 +664,7 @@
                     <select class="form-select" name="parts[${pIdx}][role_key]">
                         ${buildRoleOptions(partRoleKey, false)}
                     </select>
-                    <small class="text-muted">Default is All Roles. Questions can inherit this role.</small>
+                    <small class="text-muted">Default is All Roles. Select a user role or Azure job title. Questions can inherit this role.</small>
                 </div>
                 <div class="questions-container"></div>
                 <button type="button" class="btn btn-outline-primary btn-sm add-question-btn"><i class="bi bi-plus-circle"></i> Add Question</button>
@@ -622,6 +681,13 @@
             });
 
             partsContainer.appendChild(block);
+
+            // Initialize Select2 on role dropdown
+            const roleSelect = block.querySelector(`select[name="parts[${pIdx}][role_key]"]`);
+            if (roleSelect) {
+                initializeSelect2OnRoleDropdown(roleSelect);
+            }
+
             questions.forEach(q => addQuestionBlock(block, q));
         }
 

@@ -119,6 +119,16 @@
                                                 <option value="<?= esc($roleKey) ?>"><?= esc((string) ($role['role_name'] ?? $roleKey)) ?></option>
                                             <?php endif; ?>
                                         <?php endforeach; ?>
+                                        <?php if (!empty($jobTitles)): ?>
+                                            <option disabled>─────────────────────</option>
+                                            <option disabled>Azure Job Titles</option>
+                                            <?php foreach ($jobTitles as $jobObj): ?>
+                                                <?php $jobTitle = trim((string) ($jobObj['job_title'] ?? '')); ?>
+                                                <?php if ($jobTitle !== ''): ?>
+                                                    <option value="<?= esc($jobTitle) ?>"><?= esc($jobTitle) ?></option>
+                                                <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
                                     </select>
                                     <small class="text-muted">If your email is registered, your role is auto-detected.</small>
                                 </div>
@@ -340,6 +350,7 @@
         const isPastDue = <?= !empty($isPastDue) ? 'true' : 'false' ?>;
         const emailRoleLookupUrl = '<?= site_url('dcf/email-role/' . $dcf['share_token']) ?>';
         let emailLookupTimer = null;
+        let detectedRoleKeys = [];
 
         function setEmailRoleStatus(message, cssClass = 'text-muted') {
             if (!emailRoleStatus) {
@@ -401,27 +412,41 @@
 
                 if (!result || result.success !== true) {
                     setEmailRoleStatus('Unable to verify email right now.', 'text-warning');
+                    detectedRoleKeys = [];
                     setRoleLocked(false);
                     return;
                 }
 
                 if (result.registered && result.role_key) {
+                    const serverRoleKeys = Array.isArray(result.role_keys) ? result.role_keys : [];
+                    detectedRoleKeys = serverRoleKeys
+                        .map(value => String(value || '').trim())
+                        .filter(value => value !== '');
+
+                    if (detectedRoleKeys.length === 0) {
+                        detectedRoleKeys = [String(result.role_key || '').trim()].filter(value => value !== '');
+                    }
+
+                    detectedRoleKeys.forEach((roleKey) => ensureRoleOption(roleKey));
                     ensureRoleOption(result.role_key);
                     respondentRoleSelect.value = result.role_key;
                     setRoleLocked(true);
-                    setEmailRoleStatus(`Registered email detected. Role auto-selected: ${result.role_key}`, 'text-success');
+                    setEmailRoleStatus(`Registered email detected. Role/Job Title auto-selected: ${result.role_key}`, 'text-success');
                     applyRoleScope();
                 } else if (result.registered) {
+                    detectedRoleKeys = [];
                     setRoleLocked(false);
                     setEmailRoleStatus('Registered email found, but no role is assigned yet. Please select your role.', 'text-warning');
                     applyRoleScope();
                 } else {
+                    detectedRoleKeys = [];
                     setRoleLocked(false);
                     setEmailRoleStatus('Email is not registered. Please select your role.', 'text-warning');
                     applyRoleScope();
                 }
             } catch (error) {
                 setEmailRoleStatus('Unable to verify email right now.', 'text-warning');
+                detectedRoleKeys = [];
                 setRoleLocked(false);
             }
         }
@@ -436,30 +461,105 @@
             return pRole !== '' ? pRole : 'all';
         }
 
-        function canAccessByRole(targetRole, selectedRole) {
-            const target = String(targetRole || '').trim();
-            const selected = String(selectedRole || '').trim();
+        function normalizeRoleKey(value) {
+            const text = String(value || '').trim();
+            if (!text) {
+                return '';
+            }
+
+            return text.replace(/\s+/g, ' ').toLowerCase();
+        }
+
+        function roleKeysMatch(leftRoleKey, rightRoleKey) {
+            const left = normalizeRoleKey(leftRoleKey);
+            const right = normalizeRoleKey(rightRoleKey);
+
+            if (!left || !right) {
+                return false;
+            }
+
+            if (left === right) {
+                return true;
+            }
+
+            if (canonicalizeRoleKey(left) === canonicalizeRoleKey(right)) {
+                return true;
+            }
+
+            const shorterLength = Math.min(left.length, right.length);
+            if (shorterLength < 45) {
+                return false;
+            }
+
+            return left.startsWith(right) || right.startsWith(left);
+        }
+
+        function canonicalizeRoleKey(value) {
+            const normalized = normalizeRoleKey(value);
+            if (!normalized) {
+                return '';
+            }
+
+            const collapsed = normalized
+                .replace(/[^a-z0-9]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (!collapsed) {
+                return '';
+            }
+
+            return collapsed
+                .split(' ')
+                .map((token) => {
+                    if (token.length > 3 && token.endsWith('s')) {
+                        return token.slice(0, -1);
+                    }
+                    return token;
+                })
+                .filter(Boolean)
+                .join(' ');
+        }
+
+        function canAccessByRole(targetRole, selectedRoles = []) {
+            const target = normalizeRoleKey(targetRole);
+            const normalizedSelectedRoles = (Array.isArray(selectedRoles) ? selectedRoles : [selectedRoles])
+                .map((value) => normalizeRoleKey(value))
+                .filter((value) => value !== '');
 
             if (target === '' || target === 'all') {
                 return true;
             }
 
-            if (selected === '' || selected === 'all') {
+            if (normalizedSelectedRoles.length === 0 || normalizedSelectedRoles.includes('all')) {
                 return true;
             }
 
-            return target === selected;
+            return normalizedSelectedRoles.some((selectedRole) => roleKeysMatch(target, selectedRole));
         }
 
         function applyRoleScope() {
             const selectedRole = respondentRoleSelect ? respondentRoleSelect.value : '';
+            const roleCandidates = [];
+            if (selectedRole && String(selectedRole).trim() !== '') {
+                roleCandidates.push(selectedRole);
+            }
+
+            if (Array.isArray(detectedRoleKeys)) {
+                detectedRoleKeys.forEach((roleKey) => {
+                    if (String(roleKey || '').trim() !== '') {
+                        roleCandidates.push(roleKey);
+                    }
+                });
+            }
+
             const questionBlocks = document.querySelectorAll('.question-block');
 
             questionBlocks.forEach((block) => {
                 const questionRole = block.getAttribute('data-question-role') || '';
                 const partRole = block.getAttribute('data-part-role') || 'all';
                 const targetRole = resolveEffectiveTargetRole(questionRole, partRole);
-                const accessible = canAccessByRole(targetRole, selectedRole);
+                const accessible = canAccessByRole(targetRole, roleCandidates);
 
                 block.style.display = accessible ? '' : 'none';
 

@@ -496,32 +496,229 @@ class UserController extends BaseController
             return redirect()->to('/dashboard')->with('error', 'Access denied');
         }
 
+        $isAjax = $this->request->isAJAX();
+        $userId = (int) session()->get('user_id');
+        $lockKey = $this->getEntraSyncLockKey($userId);
+
+        if (!$this->acquireEntraSyncLock($lockKey)) {
+            $busyMessage = 'Azure AD sync is already running for your account. Please wait until it finishes.';
+
+            if ($isAjax) {
+                return $this->response
+                    ->setStatusCode(409)
+                    ->setJSON([
+                        'success' => false,
+                        'message' => $busyMessage,
+                    ]);
+            }
+
+            return redirect()->to('/users')->with('error', $busyMessage);
+        }
+
         try {
             set_time_limit(0);
 
             $service = new EntraDirectorySyncService();
             $result = $service->syncAllUsers();
 
-            $message = sprintf(
-                'Azure AD sync completed. Fetched: %d, Created: %d, Updated: %d, Skipped: %d, Failed: %d.',
-                (int) ($result['fetched'] ?? 0),
-                (int) ($result['created'] ?? 0),
-                (int) ($result['updated'] ?? 0),
-                (int) ($result['skipped'] ?? 0),
-                (int) ($result['failed'] ?? 0)
-            );
+            $message = $this->buildEntraSyncMessage($result);
 
-            if (!empty($result['failed'])) {
-                $errors = $result['errors'] ?? [];
-                if (is_array($errors) && !empty($errors)) {
-                    $message .= ' First error: ' . (string) $errors[0];
-                }
+            if ($isAjax) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => $message,
+                    'result' => $result,
+                ]);
             }
 
             return redirect()->to('/users')->with('success', $message);
         } catch (\Throwable $e) {
+            if ($isAjax) {
+                return $this->response
+                    ->setStatusCode(500)
+                    ->setJSON([
+                        'success' => false,
+                        'message' => 'Azure AD sync failed: ' . $e->getMessage(),
+                    ]);
+            }
+
             return redirect()->to('/users')->with('error', 'Azure AD sync failed: ' . $e->getMessage());
+        } finally {
+            $this->releaseEntraSyncLock($lockKey);
         }
+    }
+
+    public function syncEntraStream()
+    {
+        if (!session()->get('user_id') || !$this->hasSuperadminRole()) {
+            return $this->response
+                ->setStatusCode(403)
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Access denied',
+                ]);
+        }
+
+            $userId = (int) session()->get('user_id');
+            $lockKey = $this->getEntraSyncLockKey($userId);
+            $lockAcquired = $this->acquireEntraSyncLock($lockKey);
+
+            $syncId = bin2hex(random_bytes(8));
+            $cache = service('cache');
+            $cancelKey = $this->getEntraSyncCancelKey($userId, $syncId);
+            $cache->save($cancelKey, 0, 3600);
+
+            if (function_exists('session_write_close')) {
+                session_write_close();
+            }
+
+        set_time_limit(0);
+
+        while (ob_get_level() > 0) {
+            ob_end_flush();
+        }
+
+        header('Content-Type: text/event-stream');
+        header('Cache-Control: no-cache, no-transform');
+        header('Connection: keep-alive');
+        header('X-Accel-Buffering: no');
+
+        $sendEvent = static function (array $payload) use ($syncId): void {
+            $payload['sync_id'] = $syncId;
+            echo 'data: ' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n";
+            @ob_flush();
+            flush();
+        };
+
+        if (!$lockAcquired) {
+            $sendEvent([
+                'type' => 'done',
+                'success' => false,
+                'already_running' => true,
+                'percent' => 100,
+                'message' => 'Azure AD sync is already running for your account. Please wait until it finishes.',
+            ]);
+            $cache->delete($cancelKey);
+            return;
+        }
+
+        try {
+            $service = new EntraDirectorySyncService();
+            $result = $service->syncAllUsers(
+                static function (array $progress) use ($sendEvent): void {
+                    $sendEvent(array_merge(['type' => 'progress'], $progress));
+                },
+                function () use ($cache, $cancelKey): bool {
+                    return (int) ($cache->get($cancelKey) ?? 0) !== 1;
+                }
+            );
+
+            $message = $this->buildEntraSyncMessage($result);
+
+            $sendEvent([
+                'type' => 'done',
+                'success' => true,
+                'percent' => 100,
+                'message' => $message,
+                'result' => $result,
+            ]);
+        } catch (\Throwable $e) {
+            $isCanceled = stripos($e->getMessage(), 'canceled') !== false;
+
+            $sendEvent([
+                'type' => 'done',
+                'success' => false,
+                'percent' => 100,
+                'cancelled' => $isCanceled,
+                'message' => $isCanceled ? 'Azure AD sync was cancelled.' : ('Azure AD sync failed: ' . $e->getMessage()),
+            ]);
+        } finally {
+            $cache->delete($cancelKey);
+            $this->releaseEntraSyncLock($lockKey);
+        }
+
+        return;
+    }
+
+    public function cancelEntraSync()
+    {
+        if (!session()->get('user_id') || !$this->hasSuperadminRole()) {
+            return $this->response
+                ->setStatusCode(403)
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Access denied',
+                ]);
+        }
+
+        $userId = (int) session()->get('user_id');
+        $syncId = trim((string) ($this->request->getPost('sync_id') ?? ''));
+        if ($syncId === '') {
+            return $this->response
+                ->setStatusCode(422)
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Missing sync ID.',
+                ]);
+        }
+
+        $cache = service('cache');
+        $cancelKey = $this->getEntraSyncCancelKey($userId, $syncId);
+        $cache->save($cancelKey, 1, 3600);
+
+        return $this->response->setJSON([
+            'success' => true,
+            'message' => 'Cancel request sent.',
+        ]);
+    }
+
+    private function getEntraSyncCancelKey(int $userId, string $syncId): string
+    {
+        return 'entra_sync_cancel_' . $userId . '_' . preg_replace('/[^a-zA-Z0-9]/', '', $syncId);
+    }
+
+    private function getEntraSyncLockKey(int $userId): string
+    {
+        return 'entra_sync_lock_' . $userId;
+    }
+
+    private function acquireEntraSyncLock(string $lockKey): bool
+    {
+        $cache = service('cache');
+        $existing = (int) ($cache->get($lockKey) ?? 0);
+        if ($existing === 1) {
+            return false;
+        }
+
+        $cache->save($lockKey, 1, 3600);
+        return true;
+    }
+
+    private function releaseEntraSyncLock(string $lockKey): void
+    {
+        $cache = service('cache');
+        $cache->delete($lockKey);
+    }
+
+    private function buildEntraSyncMessage(array $result): string
+    {
+        $message = sprintf(
+            'Azure AD sync completed. Fetched: %d, Created: %d, Updated: %d, Skipped: %d, Failed: %d.',
+            (int) ($result['fetched'] ?? 0),
+            (int) ($result['created'] ?? 0),
+            (int) ($result['updated'] ?? 0),
+            (int) ($result['skipped'] ?? 0),
+            (int) ($result['failed'] ?? 0)
+        );
+
+        if (!empty($result['failed'])) {
+            $errors = $result['errors'] ?? [];
+            if (is_array($errors) && !empty($errors)) {
+                $message .= ' First error: ' . (string) $errors[0];
+            }
+        }
+
+        return $message;
     }
 
     private function getMainUsertypeOptions(): array

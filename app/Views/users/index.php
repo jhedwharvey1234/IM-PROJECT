@@ -44,6 +44,26 @@
             height: 100%;
             overflow: auto;
         }
+        .sync-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .sync-overlay.show {
+            display: flex;
+        }
+        .sync-overlay-card {
+            width: min(520px, 95vw);
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -76,8 +96,8 @@
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
 
-                <form action="<?= site_url('users/sync-entra') ?>" method="post" class="d-inline" onsubmit="return confirm('Sync Azure AD users now? This may take a while.');">
-                    <button type="submit" class="btn btn-primary btn-sm" title="Sync Azure AD" aria-label="Sync Azure AD" data-bs-toggle="tooltip">
+                <form action="<?= site_url('users/sync-entra') ?>" method="post" class="d-inline" id="syncEntraForm">
+                    <button type="submit" class="btn btn-primary btn-sm" title="Sync Azure AD" aria-label="Sync Azure AD" data-bs-toggle="tooltip" id="syncEntraBtn">
                         <i class="bi bi-cloud-arrow-down"></i>
                     </button>
                 </form>
@@ -414,6 +434,22 @@
             <button id="nextPageBtn" title="Next page">Next →</button>
         </div>
 
+        <div id="syncOverlay" class="sync-overlay" role="status" aria-live="polite" aria-label="Sync in progress">
+            <div class="sync-overlay-card">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status" aria-hidden="true"></div>
+                    <strong>Syncing Azure AD users...</strong>
+                </div>
+                <div class="progress" role="progressbar" aria-label="Sync progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div id="syncProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%">0%</div>
+                </div>
+                <div id="syncProgressText" class="text-muted mt-2" style="font-size: 13px;">Preparing sync...</div>
+                <div class="mt-3 d-flex justify-content-end">
+                    <button type="button" id="syncCancelBtn" class="btn btn-outline-danger btn-sm">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <?= view('partials/footer') ?>
     </div>
 
@@ -438,11 +474,193 @@
             const prevPageBtn = document.getElementById('prevPageBtn');
             const nextPageBtn = document.getElementById('nextPageBtn');
             const pageNumbersContainer = document.getElementById('pageNumbers');
+            const syncEntraForm = document.getElementById('syncEntraForm');
+            const syncEntraBtn = document.getElementById('syncEntraBtn');
+            const syncOverlay = document.getElementById('syncOverlay');
+            const syncProgressBar = document.getElementById('syncProgressBar');
+            const syncProgressText = document.getElementById('syncProgressText');
+            const syncCancelBtn = document.getElementById('syncCancelBtn');
             
             let allUsers = <?= json_encode($users) ?>;
             let filteredUsers = [...allUsers];
             let currentPage = 1;
             let rowsPerPage = 20;
+            let syncEventSource = null;
+            let currentSyncId = '';
+            let cancelRequested = false;
+
+            function showPageAlert(type, message) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.innerHTML = `${message} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+                const mainContent = document.querySelector('.main-content');
+                const anchor = document.querySelector('.pagination-info');
+                if (mainContent && anchor) {
+                    mainContent.insertBefore(alertDiv, anchor);
+                } else if (mainContent) {
+                    mainContent.prepend(alertDiv);
+                }
+            }
+
+            const syncResultMessage = sessionStorage.getItem('usersSyncResultMessage');
+            const syncResultType = sessionStorage.getItem('usersSyncResultType');
+            if (syncResultMessage && syncResultType) {
+                showPageAlert(syncResultType, syncResultMessage);
+                sessionStorage.removeItem('usersSyncResultMessage');
+                sessionStorage.removeItem('usersSyncResultType');
+            }
+
+            function updateSyncProgress(value, text) {
+                const percent = Math.max(0, Math.min(100, Math.round(value)));
+                syncProgressBar.style.width = `${percent}%`;
+                syncProgressBar.textContent = `${percent}%`;
+                syncProgressBar.parentElement.setAttribute('aria-valuenow', String(percent));
+                if (text) {
+                    syncProgressText.textContent = text;
+                }
+            }
+
+            function startSyncProgress() {
+                updateSyncProgress(1, 'Connecting to Azure AD...');
+                syncOverlay.classList.add('show');
+                cancelRequested = false;
+                currentSyncId = '';
+
+                if (syncEntraBtn) {
+                    syncEntraBtn.disabled = true;
+                    syncEntraBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                }
+
+                if (syncCancelBtn) {
+                    syncCancelBtn.disabled = true;
+                    syncCancelBtn.textContent = 'Cancel';
+                }
+            }
+
+            function stopSyncProgress() {
+                syncOverlay.classList.remove('show');
+
+                if (syncEntraBtn) {
+                    syncEntraBtn.disabled = false;
+                    syncEntraBtn.innerHTML = '<i class="bi bi-cloud-arrow-down"></i>';
+                }
+
+                if (syncCancelBtn) {
+                    syncCancelBtn.disabled = true;
+                    syncCancelBtn.textContent = 'Cancel';
+                }
+
+                currentSyncId = '';
+                cancelRequested = false;
+            }
+
+            if (syncCancelBtn) {
+                syncCancelBtn.addEventListener('click', async function () {
+                    if (cancelRequested || !currentSyncId) {
+                        return;
+                    }
+
+                    cancelRequested = true;
+                    syncCancelBtn.disabled = true;
+                    syncCancelBtn.textContent = 'Cancelling...';
+                    updateSyncProgress(parseInt(syncProgressBar.textContent, 10) || 1, 'Sending cancel request...');
+
+                    try {
+                        const response = await fetch('<?= site_url('users/sync-entra-cancel') ?>', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: `sync_id=${encodeURIComponent(currentSyncId)}`
+                        });
+
+                        const payload = await response.json();
+                        if (!response.ok || !payload.success) {
+                            throw new Error(payload.message || 'Failed to cancel sync.');
+                        }
+
+                        updateSyncProgress(parseInt(syncProgressBar.textContent, 10) || 1, 'Cancel requested. Waiting for server to stop...');
+                    } catch (error) {
+                        cancelRequested = false;
+                        syncCancelBtn.disabled = false;
+                        syncCancelBtn.textContent = 'Cancel';
+                        const message = error instanceof Error ? error.message : 'Failed to cancel sync.';
+                        showPageAlert('danger', message);
+                    }
+                });
+            }
+
+            if (syncEntraForm) {
+                syncEntraForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+
+                    if (!confirm('Sync Azure AD users now? This may take a while.')) {
+                        return;
+                    }
+
+                    startSyncProgress();
+
+                    const streamUrl = '<?= site_url('users/sync-entra-stream') ?>?t=' + Date.now();
+                    syncEventSource = new EventSource(streamUrl);
+
+                    syncEventSource.onmessage = function (event) {
+                        let payload;
+                        try {
+                            payload = JSON.parse(event.data);
+                        } catch (parseError) {
+                            return;
+                        }
+
+                        if (payload.sync_id && !currentSyncId) {
+                            currentSyncId = payload.sync_id;
+                            if (syncCancelBtn && !cancelRequested) {
+                                syncCancelBtn.disabled = false;
+                            }
+                        }
+
+                        if (payload.type === 'progress') {
+                            updateSyncProgress(payload.percent ?? 1, payload.message || 'Sync in progress...');
+                            return;
+                        }
+
+                        if (payload.type === 'done') {
+                            syncEventSource.close();
+                            syncEventSource = null;
+
+                            if (payload.success) {
+                                updateSyncProgress(100, payload.message || 'Sync complete. Refreshing user list...');
+                                sessionStorage.setItem('usersSyncResultMessage', payload.message || 'Azure AD sync completed.');
+                                sessionStorage.setItem('usersSyncResultType', 'success');
+
+                                setTimeout(() => {
+                                    window.location.href = '<?= site_url('users') ?>';
+                                }, 500);
+                            } else {
+                                stopSyncProgress();
+                                const isCancelled = payload.cancelled === true;
+                                const isAlreadyRunning = payload.already_running === true;
+                                const message = payload.message || (isCancelled ? 'Azure AD sync was cancelled.' : (isAlreadyRunning ? 'Azure AD sync is already running.' : 'Azure AD sync failed.'));
+                                sessionStorage.setItem('usersSyncResultMessage', message);
+                                sessionStorage.setItem('usersSyncResultType', (isCancelled || isAlreadyRunning) ? 'warning' : 'danger');
+                                showPageAlert((isCancelled || isAlreadyRunning) ? 'warning' : 'danger', message);
+                            }
+                        }
+                    };
+
+                    syncEventSource.onerror = function () {
+                        if (syncEventSource) {
+                            syncEventSource.close();
+                            syncEventSource = null;
+                        }
+                        stopSyncProgress();
+                        const message = 'Connection lost during Azure AD sync. Please try again.';
+                        sessionStorage.setItem('usersSyncResultMessage', message);
+                        sessionStorage.setItem('usersSyncResultType', 'danger');
+                        showPageAlert('danger', message);
+                    };
+                });
+            }
 
             // Column visibility toggle
             document.querySelectorAll('.columnToggle').forEach(checkbox => {

@@ -88,6 +88,7 @@ class DcfPublicController extends BaseController
             'questions' => $questions,
             'parts' => $partsWithQuestions,
             'userRoles' => $this->getAvailableRoles(),
+            'jobTitles' => $this->getAvailableJobTitles(),
             'isPastDue' => $this->isPastDueDate($dcf['due_date'] ?? null),
             'title' => $dcf['title']
         ];
@@ -116,7 +117,7 @@ class DcfPublicController extends BaseController
             'respondent_name' => 'required|max_length[255]',
             'respondent_mobile' => 'permit_empty|max_length[50]',
             'respondent_email' => 'required|valid_email|max_length[255]',
-            'respondent_role' => 'permit_empty|max_length[50]',
+            'respondent_role' => 'permit_empty|max_length[255]',
             'user_consent' => 'required'
         ]);
 
@@ -135,17 +136,28 @@ class DcfPublicController extends BaseController
         $selectedRole = is_string($selectedRoleRaw) ? trim($selectedRoleRaw) : '';
 
         $registeredUser = $this->findRegisteredUserByEmail($respondentEmail);
-        $detectedRole = $registeredUser['role_key'];
-        if (($detectedRole === null || $detectedRole === '') && $selectedRole === '') {
+        $detectedRoleKeys = isset($registeredUser['role_keys']) && is_array($registeredUser['role_keys'])
+            ? array_values(array_filter(array_map(static fn($value) => trim((string) $value), $registeredUser['role_keys']), static fn($value) => $value !== ''))
+            : [];
+
+        if (count($detectedRoleKeys) === 0 && $selectedRole === '') {
             return $this->response->setJSON(['success' => false, 'message' => 'Please select your role.']);
         }
 
-        $effectiveRole = $detectedRole !== null && $detectedRole !== ''
-            ? $detectedRole
-            : ($selectedRole !== '' ? $selectedRole : self::ALL_ROLES_KEY);
+        $effectiveRoleKeys = $detectedRoleKeys;
+        if ($selectedRole !== '') {
+            $effectiveRoleKeys[] = $selectedRole;
+        }
 
-        if (!$this->isAllowedRoleKey($effectiveRole)) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Selected role is invalid.']);
+        $effectiveRoleKeys = array_values(array_unique(array_filter(array_map(static fn($value) => trim((string) $value), $effectiveRoleKeys), static fn($value) => $value !== '')));
+        $primaryEffectiveRole = $selectedRole !== ''
+            ? $selectedRole
+            : ($detectedRoleKeys[0] ?? self::ALL_ROLES_KEY);
+
+        foreach ($effectiveRoleKeys as $roleKey) {
+            if (!$this->isAllowedRoleKey($roleKey)) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Selected role is invalid.']);
+            }
         }
 
         $existingResponse = $responseModel
@@ -170,7 +182,7 @@ class DcfPublicController extends BaseController
             'respondent_name' => $this->request->getPost('respondent_name'),
             'respondent_mobile' => $this->request->getPost('respondent_mobile'),
             'respondent_email' => $respondentEmail,
-            'respondent_role' => $effectiveRole,
+            'respondent_role' => $primaryEffectiveRole,
             'user_consent' => $userConsent,
             'consent_timestamp' => $userConsent ? date('Y-m-d H:i:s') : null,
             'ip_address' => $this->request->getIPAddress(),
@@ -190,12 +202,12 @@ class DcfPublicController extends BaseController
         }
 
         $questions = $questionModel->where('dcf_id', $dcf['id'])->findAll();
-        $questions = array_values(array_filter($questions, function ($question) use ($effectiveRole, $partRoleMap) {
+        $questions = array_values(array_filter($questions, function ($question) use ($effectiveRoleKeys, $partRoleMap) {
             $partId = (int) ($question['part_id'] ?? 0);
             $partRole = $partRoleMap[$partId] ?? self::ALL_ROLES_KEY;
             $targetRole = $this->getEffectiveRoleKey((string) ($question['role_key'] ?? ''), (string) $partRole);
 
-            return $this->canAccessRole($targetRole, $effectiveRole);
+            return $this->canAccessRole($targetRole, $effectiveRoleKeys);
         }));
 
         foreach ($questions as $question) {
@@ -306,17 +318,85 @@ class DcfPublicController extends BaseController
             'success' => true,
             'registered' => (bool) ($registeredUser['registered'] ?? false),
             'role_key' => $registeredUser['role_key'] ?? null,
+            'role_keys' => $registeredUser['role_keys'] ?? [],
         ]);
     }
 
-    private function canAccessRole(string $targetRoleKey, string $currentRoleKey): bool
+    private function canAccessRole(string $targetRoleKey, array $currentRoleKeys): bool
     {
-        $target = trim($targetRoleKey);
+        $target = $this->normalizeRoleKey($targetRoleKey);
         if ($target === '' || $target === self::ALL_ROLES_KEY) {
             return true;
         }
 
-        return $currentRoleKey !== '' && $target === $currentRoleKey;
+        if (empty($currentRoleKeys)) {
+            return false;
+        }
+
+        foreach ($currentRoleKeys as $roleKey) {
+            $current = $this->normalizeRoleKey((string) $roleKey);
+            if ($current !== '' && $this->roleKeysMatch($target, $current)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function roleKeysMatch(string $leftRoleKey, string $rightRoleKey): bool
+    {
+        $left = $this->normalizeRoleKey($leftRoleKey);
+        $right = $this->normalizeRoleKey($rightRoleKey);
+
+        if ($left === '' || $right === '') {
+            return false;
+        }
+
+        if ($left === $right) {
+            return true;
+        }
+
+        if ($this->canonicalizeRoleKey($left) === $this->canonicalizeRoleKey($right)) {
+            return true;
+        }
+
+        $shorterLength = min(strlen($left), strlen($right));
+        if ($shorterLength < 45) {
+            return false;
+        }
+
+        return str_starts_with($left, $right) || str_starts_with($right, $left);
+    }
+
+    private function canonicalizeRoleKey(string $value): string
+    {
+        $normalized = $this->normalizeRoleKey($value);
+        if ($normalized === '') {
+            return '';
+        }
+
+        $alnumSpaced = preg_replace('/[^a-z0-9]+/', ' ', $normalized);
+        $collapsed = trim(preg_replace('/\s+/', ' ', (string) $alnumSpaced));
+        if ($collapsed === '') {
+            return '';
+        }
+
+        $tokens = explode(' ', $collapsed);
+        $canonicalTokens = array_map(static function (string $token): string {
+            $token = trim($token);
+            if ($token === '') {
+                return '';
+            }
+
+            if (strlen($token) > 3 && str_ends_with($token, 's')) {
+                return substr($token, 0, -1);
+            }
+
+            return $token;
+        }, $tokens);
+
+        $canonicalTokens = array_values(array_filter($canonicalTokens, static fn($token) => $token !== ''));
+        return implode(' ', $canonicalTokens);
     }
 
     private function getEffectiveRoleKey(string $questionRoleKey, string $partRoleKey): string
@@ -341,9 +421,13 @@ class DcfPublicController extends BaseController
 
         $db = \Config\Database::connect();
         $builder = $db->table('users');
-        $builder->select('users.id, users.usertype, users.user_role_id, user_roles.role_key AS added_role_key');
+        $builder->select('users.id, users.usertype, users.user_role_id, users.email, users.entra_user_principal_name, users.entra_mail, users.entra_job_title, user_roles.role_key AS added_role_key');
         $builder->join('user_roles', 'user_roles.id = users.user_role_id', 'left');
-        $builder->where('users.email', $email);
+        $builder->groupStart()
+            ->where('LOWER(users.email)', $email)
+            ->orWhere('LOWER(users.entra_user_principal_name)', $email)
+            ->orWhere('LOWER(users.entra_mail)', $email)
+            ->groupEnd();
 
         $user = $builder->get()->getRowArray();
 
@@ -355,11 +439,14 @@ class DcfPublicController extends BaseController
         }
 
         $addedRole = trim((string) ($user['added_role_key'] ?? ''));
+        $jobTitle = trim((string) ($user['entra_job_title'] ?? ''));
 
-        $role = $addedRole;
+        $roleKeys = array_values(array_unique(array_filter([$addedRole, $jobTitle], static fn($value) => $value !== '')));
+        $role = $addedRole !== '' ? $addedRole : $jobTitle;
         return [
             'registered' => true,
             'role_key' => $role !== '' ? $role : null,
+            'role_keys' => $roleKeys,
         ];
     }
 
@@ -382,12 +469,59 @@ class DcfPublicController extends BaseController
 
     private function isAllowedRoleKey(string $roleKey): bool
     {
-        $normalized = trim($roleKey);
+        $normalized = $this->normalizeRoleKey($roleKey);
         if ($normalized === self::ALL_ROLES_KEY) {
             return true;
         }
 
         $keys = array_column($this->getAvailableRoles(), 'role_key');
-        return in_array($normalized, $keys, true);
+        
+        // Also check against Azure job titles
+        $db = \Config\Database::connect();
+        if ($db->tableExists('users')) {
+            $jobTitles = $db->table('users')
+                ->distinct()
+                ->select('entra_job_title')
+                ->where('entra_job_title IS NOT NULL')
+                ->where('entra_job_title !=', '')
+                ->get()
+                ->getResultArray();
+            
+            $jobTitleValues = array_map(static fn($row) => trim((string) ($row['entra_job_title'] ?? '')), $jobTitles);
+            $keys = array_merge($keys, array_filter($jobTitleValues, static fn($title) => $title !== ''));
+        }
+
+        $normalizedKeys = array_map(fn($key) => $this->normalizeRoleKey((string) $key), $keys);
+        return in_array($normalized, $normalizedKeys, true);
+    }
+
+    private function normalizeRoleKey(string $value): string
+    {
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return '';
+        }
+
+        $singleSpaced = preg_replace('/\s+/', ' ', $trimmed);
+        return strtolower((string) $singleSpaced);
+    }
+
+    private function getAvailableJobTitles(): array
+    {
+        $db = \Config\Database::connect();
+        if (!$db->tableExists('users')) {
+            return [];
+        }
+
+        $result = $db->table('users')
+            ->distinct()
+            ->select('entra_job_title as job_title')
+            ->where('entra_job_title IS NOT NULL')
+            ->where('entra_job_title !=', '')
+            ->orderBy('entra_job_title', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        return $result;
     }
 }

@@ -44,6 +44,7 @@ class DcfController extends BaseController
         $departmentModel = new Department();
         $data['departments'] = $departmentModel->orderBy('department_name', 'ASC')->findAll();
         $data['userRoles'] = $this->getAvailableRoles();
+        $data['jobTitles'] = $this->getAvailableJobTitles();
         $data['parts'] = [];
         $data['title'] = 'Create DCF';
         return view('dcf/create', $data);
@@ -153,6 +154,7 @@ class DcfController extends BaseController
 
         $data['departments'] = $departmentModel->orderBy('department_name', 'ASC')->findAll();
         $data['userRoles'] = $this->getAvailableRoles();
+        $data['jobTitles'] = $this->getAvailableJobTitles();
         $data['parts'] = $parts;
         $data['title'] = 'Edit DCF';
         return view('dcf/edit', $data);
@@ -462,12 +464,42 @@ class DcfController extends BaseController
             return $roleKey !== '' && !in_array($roleKey, $excludedRoleKeys, true);
         });
 
-        return array_map(static function ($role) {
+        $options = array_map(static function ($role) {
             return [
                 'role_key' => (string) ($role['role_key'] ?? ''),
                 'role_name' => (string) ($role['role_name'] ?? ($role['role_key'] ?? '')),
             ];
         }, array_values($roles));
+
+        foreach ($this->getAvailableJobTitles() as $jobTitleRow) {
+            $jobTitle = trim((string) ($jobTitleRow['job_title'] ?? ''));
+            if ($jobTitle === '') {
+                continue;
+            }
+
+            $options[] = [
+                'role_key' => $jobTitle,
+                'role_name' => $jobTitle,
+            ];
+        }
+
+        $unique = [];
+        foreach ($options as $option) {
+            $roleKey = trim((string) ($option['role_key'] ?? ''));
+            if ($roleKey === '') {
+                continue;
+            }
+
+            $dedupeKey = strtolower(preg_replace('/\s+/', ' ', $roleKey));
+            if (!isset($unique[$dedupeKey])) {
+                $unique[$dedupeKey] = [
+                    'role_key' => $roleKey,
+                    'role_name' => (string) ($option['role_name'] ?? $roleKey),
+                ];
+            }
+        }
+
+        return array_values($unique);
     }
 
     private function generateAnswerSummary($question, $answers)
@@ -742,6 +774,11 @@ class DcfController extends BaseController
                 $questionRoleKey = isset($row['role_key']) && is_string($row['role_key'])
                     ? trim($row['role_key'])
                     : '';
+
+                if ($questionRoleKey === '__inherit__') {
+                    $questionRoleKey = '';
+                }
+
                 if ($questionRoleKey !== '' && !in_array($questionRoleKey, $allowedRoleKeys, true)) {
                     return ['error' => 'Invalid question role provided.'];
                 }
@@ -1118,8 +1155,30 @@ class DcfController extends BaseController
     {
         $keys = array_column($this->getAvailableRoles(), 'role_key');
         $keys[] = 'all';
+        // Add job titles as allowed keys
+        $jobTitles = $this->getAvailableJobTitles();
+        $keys = array_merge($keys, array_column($jobTitles, 'job_title'));
         $keys = array_values(array_unique(array_filter(array_map('strval', $keys), static fn($key) => $key !== '')));
 
         return $keys;
+    }
+
+    private function getAvailableJobTitles(): array
+    {
+        $db = \Config\Database::connect();
+        if (!$db->tableExists('users')) {
+            return [];
+        }
+
+        $result = $db->table('users')
+            ->distinct()
+            ->select('entra_job_title as job_title')
+            ->where('entra_job_title IS NOT NULL')
+            ->where('entra_job_title !=', '')
+            ->orderBy('entra_job_title', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        return $result;
     }
 }

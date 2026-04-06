@@ -39,9 +39,15 @@ class EntraDirectorySyncService
         $this->userModel = new User();
     }
 
-    public function syncAllUsers(): array
+    public function syncAllUsers(?callable $progressCallback = null, ?callable $shouldContinue = null): array
     {
         $config = $this->getConfig();
+
+        $this->emitProgress($progressCallback, [
+            'stage' => 'starting',
+            'percent' => 1,
+            'message' => 'Starting Azure AD sync...',
+        ]);
 
         if (!$config['enabled']) {
             throw new \RuntimeException('ENTRA sync is disabled. Set ENTRA_SYNC_ENABLED=true in .env.');
@@ -51,9 +57,25 @@ class EntraDirectorySyncService
             throw new \RuntimeException('Missing ENTRA app-only credentials in .env (ENTRA_TENANT_ID, ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET).');
         }
 
+        $this->ensureCanContinue($shouldContinue);
+
         $token = $this->acquireAccessToken($config);
-        $graphUsers = $this->fetchAllUsers($token, (int) $config['page_size']);
-        $managerMap = $this->fetchManagersMap($token, $graphUsers);
+        $this->emitProgress($progressCallback, [
+            'stage' => 'fetch_users',
+            'percent' => 3,
+            'message' => 'Access token acquired. Fetching users from Microsoft Graph...',
+        ]);
+
+        $graphUsers = $this->fetchAllUsers($token, (int) $config['page_size'], $progressCallback, $shouldContinue);
+
+        $this->emitProgress($progressCallback, [
+            'stage' => 'fetch_managers',
+            'percent' => 35,
+            'message' => 'Fetching manager details...',
+            'fetched' => count($graphUsers),
+        ]);
+
+        $managerMap = $this->fetchManagersMap($token, $graphUsers, $progressCallback, $shouldContinue);
 
         $stats = [
             'fetched' => count($graphUsers),
@@ -64,7 +86,21 @@ class EntraDirectorySyncService
             'errors' => [],
         ];
 
+        $totalUsers = max(1, count($graphUsers));
+        $processed = 0;
+
+        $this->emitProgress($progressCallback, [
+            'stage' => 'sync_users',
+            'percent' => 55,
+            'message' => sprintf('Syncing %d user(s) to local database...', (int) $stats['fetched']),
+            'processed' => 0,
+            'total' => (int) $stats['fetched'],
+            'stats' => $stats,
+        ]);
+
         foreach ($graphUsers as $graphUser) {
+            $this->ensureCanContinue($shouldContinue);
+
             try {
                 $result = $this->syncSingleUser($graphUser, (string) $config['default_main_role'], $managerMap);
                 if ($result === 'created') {
@@ -81,7 +117,29 @@ class EntraDirectorySyncService
                     $stats['errors'][] = $identifier . ': ' . $e->getMessage();
                 }
             }
+
+            $processed++;
+            $syncPercent = 55 + (int) floor(($processed / $totalUsers) * 44);
+            $identifier = (string) ($graphUser['userPrincipalName'] ?? $graphUser['id'] ?? 'user');
+
+            $this->emitProgress($progressCallback, [
+                'stage' => 'sync_users',
+                'percent' => min(99, max(55, $syncPercent)),
+                'message' => sprintf('Processed %d/%d users (%s)', $processed, (int) $stats['fetched'], $identifier),
+                'processed' => $processed,
+                'total' => (int) $stats['fetched'],
+                'stats' => $stats,
+            ]);
         }
+
+        $this->emitProgress($progressCallback, [
+            'stage' => 'completed',
+            'percent' => 100,
+            'message' => 'Azure AD sync completed.',
+            'processed' => (int) $stats['fetched'],
+            'total' => (int) $stats['fetched'],
+            'stats' => $stats,
+        ]);
 
         return $stats;
     }
@@ -225,7 +283,7 @@ class EntraDirectorySyncService
         return $accessToken;
     }
 
-    private function fetchAllUsers(string $accessToken, int $pageSize): array
+    private function fetchAllUsers(string $accessToken, int $pageSize, ?callable $progressCallback = null, ?callable $shouldContinue = null): array
     {
         $pageSize = max(1, min(999, $pageSize));
         $select = implode(',', self::GRAPH_FIELDS);
@@ -237,9 +295,13 @@ class EntraDirectorySyncService
         $url = 'https://graph.microsoft.com/v1.0/users?' . $query;
         $allUsers = [];
         $guard = 0;
+        $page = 0;
 
         while ($url !== '' && $guard < 10000) {
             $guard++;
+            $page++;
+
+            $this->ensureCanContinue($shouldContinue);
 
             $client = service('curlrequest', [
                 'timeout' => 45,
@@ -271,12 +333,20 @@ class EntraDirectorySyncService
 
             $next = $json['@odata.nextLink'] ?? null;
             $url = is_string($next) ? trim($next) : '';
+
+            $estimatedPercent = min(34, 5 + ($page * 2));
+            $this->emitProgress($progressCallback, [
+                'stage' => 'fetch_users',
+                'percent' => $estimatedPercent,
+                'message' => sprintf('Fetched %d users from Graph (page %d)', count($allUsers), $page),
+                'fetched' => count($allUsers),
+            ]);
         }
 
         return $allUsers;
     }
 
-    private function fetchManagersMap(string $accessToken, array $graphUsers): array
+    private function fetchManagersMap(string $accessToken, array $graphUsers, ?callable $progressCallback = null, ?callable $shouldContinue = null): array
     {
         $map = [];
         $userIds = [];
@@ -297,8 +367,12 @@ class EntraDirectorySyncService
         }
 
         $chunks = array_chunk(array_values(array_unique($userIds)), 20);
+        $totalChunks = max(1, count($chunks));
+        $processedChunks = 0;
 
         foreach ($chunks as $chunk) {
+            $this->ensureCanContinue($shouldContinue);
+
             $requests = [];
 
             foreach ($chunk as $id) {
@@ -355,10 +429,47 @@ class EntraDirectorySyncService
                 }
             } catch (\Throwable $e) {
                 continue;
+            } finally {
+                $processedChunks++;
+                $managerPercent = 35 + (int) floor(($processedChunks / $totalChunks) * 20);
+                $this->emitProgress($progressCallback, [
+                    'stage' => 'fetch_managers',
+                    'percent' => min(55, max(35, $managerPercent)),
+                    'message' => sprintf('Fetched manager data for batch %d/%d', $processedChunks, $totalChunks),
+                ]);
             }
         }
 
         return $map;
+    }
+
+    private function emitProgress(?callable $progressCallback, array $payload): void
+    {
+        if ($progressCallback === null) {
+            return;
+        }
+
+        try {
+            $progressCallback($payload);
+        } catch (\Throwable $e) {
+        }
+    }
+
+    private function ensureCanContinue(?callable $shouldContinue): void
+    {
+        if ($shouldContinue === null) {
+            return;
+        }
+
+        try {
+            if ($shouldContinue() === false) {
+                throw new \RuntimeException('Sync canceled by user.');
+            }
+        } catch (\RuntimeException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Sync canceled by user.');
+        }
     }
 
     private function generateUniqueUsername(string $seed): string

@@ -1,2 +1,0 @@
-ALTER TABLE documents
-ADD COLUMN IF NOT EXISTS details LONGTEXT NULL AFTER description;

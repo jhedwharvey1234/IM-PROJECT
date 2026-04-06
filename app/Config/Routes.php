@@ -27,6 +27,8 @@ $routes->get('/users/delete/(:num)', 'UserController::delete/$1');
 $routes->get('/users/search', 'UserController::search');
 $routes->post('/users/toggleSync/(:num)', 'UserController::toggleSync/$1');
 $routes->post('/users/sync-entra', 'UserController::syncEntra');
+$routes->get('/users/sync-entra-stream', 'UserController::syncEntraStream');
+$routes->post('/users/sync-entra-cancel', 'UserController::cancelEntraSync');
 
 $routes->get('/assets', 'AssetController::index');
 $routes->get('/assets/create', 'AssetController::create');

@@ -6,6 +6,8 @@
     <title>DCF Details - <?= esc($dcf['title']) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -1238,6 +1240,8 @@
         <?= view('partials/footer') ?>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Generate QR Code
@@ -1477,6 +1481,18 @@
         });
 
         document.addEventListener('DOMContentLoaded', function () {
+            if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
+                const $roleFilter = $('#roleFilter');
+                if ($roleFilter.length) {
+                    $roleFilter.select2({
+                        theme: 'bootstrap-5',
+                        width: '100%',
+                        placeholder: 'Search role or job title...',
+                        allowClear: false,
+                    });
+                }
+            }
+
             initRespondentTable();
 
             if (window.location.hash === '#results') {
